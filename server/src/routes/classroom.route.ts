@@ -17,31 +17,37 @@ import {
 
 import authMiddleware from "../Middlewares/authMiddleware";
 import { handleValidation } from "../Middlewares/validate";
+import isInstructor from "../Middlewares/isInstructor";
 
-const router = express.Router();
-router.use(authMiddleware); // all routes require auth
+const classRouter = express.Router();
 
+classRouter.use(authMiddleware); // all routes require auth
 
-// Create a new classroom
-router.post("/", createClassroomValidator, handleValidation, createClassroom);
 
 // Get all classrooms
-router.get("/", getClassrooms);
+classRouter.get("/", getClassrooms);
 
 // Get classroom by ID
-router.get("/:id", idParamValidator, handleValidation, getClassroomById);
+classRouter.get("/:id", idParamValidator, handleValidation, getClassroomById);
+
+// isInstructor?
+classRouter.use(isInstructor)
+
+// Create a new classroom
+classRouter.post("/", createClassroomValidator, handleValidation,  createClassroom);
+
 
 // Update classroom
-router.put("/:id", updateClassroomValidator, handleValidation, updateClassroom);
+classRouter.put("/:id", updateClassroomValidator, handleValidation, updateClassroom);
 
 // Delete classroom
-router.delete("/:id", idParamValidator, handleValidation, deleteClassroom);
+classRouter.delete("/:id", idParamValidator, handleValidation, deleteClassroom);
 
 // Join classroom
-router.post("/join", joinClassroomValidator, handleValidation, joinClassroom);
+classRouter.post("/join", joinClassroomValidator, handleValidation, joinClassroom);
 
 // Archive classroom
-router.put("/:id/archive", idParamValidator, handleValidation, archiveClassroom);
+classRouter.put("/:id/archive", idParamValidator, handleValidation, archiveClassroom);
 
 
-export default router;
+export default classRouter;

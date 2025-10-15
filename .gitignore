@@ -1,0 +1,80 @@
+# =========================
+# Node & Dependencies
+# =========================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+package-lock.json
+yarn.lock
+.pnpm-debug.log
+
+# =========================
+# Build / Output
+# =========================
+# Ignore server build output only
+server/dist/
+server/build/
+
+# Optional: ignore client build output if it's auto-generated (like React)
+client/.next/
+client/out/
+client/build/
+
+# Common temp / output folders
+out/
+coverage/
+tmp/
+temp/
+
+# =========================
+# TypeScript
+# =========================
+*.tsbuildinfo
+
+# =========================
+# Environment / Secrets
+# =========================
+.env
+.env.*
+server/.env.*
+client/.env.*
+
+# =========================
+# Logs & Cache
+# =========================
+logs/
+*.log
+*.log.*
+pids/
+*.pid
+*.seed
+*.pid.lock
+.cache/
+.nyc_output/
+.vscode/
+.idea/
+
+# =========================
+# OS / Editor Files
+# =========================
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# =========================
+# Testing / Coverage
+# =========================
+coverage/
+.jest/
+jest-cache/
+jest-stare/
+
+# =========================
+# Misc
+# =========================
+*.bak
+*.old
+*.tmp

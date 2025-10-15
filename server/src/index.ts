@@ -11,6 +11,7 @@ import authRouter from "./routes/auth/auth.routes";
 import profileRouter from "./routes/profile.routes";
 import http, { Server as HTTPServer } from "http";
 import { initSocket } from './socket';
+import classRouter from './routes/classroom.route';
 
 
 const PORT = process.env.PORT || 3000;
@@ -45,9 +46,10 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 
-app.get("/", (_, res) => res.send("✅ Socket.IO Server Running"));
+app.get("/", (_, res) => res.send("Socket.IO Server Running"));
 app.use('/api/auth', authRouter);
 app.use('/api/profile', profileRouter);
+app.use('/api/class', classRouter);
 
 
 server.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
