@@ -1,15 +1,7 @@
 import { Schema, model, models, Document, Types } from "mongoose";
+import { ISubmission } from "../types/type";
 
-export interface ISubmission extends Document {
-  assignment: Types.ObjectId;
-  student: Types.ObjectId;
-  submittedAt: Date;
-  files?: string[]; // array of file URLs
-  grade?: number; // optional grade
-  feedback?: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
+
 
 const submissionSchema = new Schema<ISubmission>(
   {
@@ -21,6 +13,7 @@ const submissionSchema = new Schema<ISubmission>(
     student: { type: Schema.Types.ObjectId, ref: "User", required: true },
     submittedAt: { type: Date, default: Date.now },
     files: [{ type: String }],
+    content: String,
     grade: Number,
     feedback: String,
   },

@@ -20,7 +20,7 @@ export default function authMiddleware(
 ) {
   // Get token from cookies or Authorization header
   const token =
-    req.cookies?.accessToken ||
+    req.cookies?.authToken ||
     req.header("Authorization")?.replace("Bearer ", "");
   if (!token) {
     return res.status(401).json({ error: "No token found, please log in." });
@@ -31,9 +31,9 @@ export default function authMiddleware(
       token,
       process.env.JWT_SECRET as string
     ) as MyJwtPayload;
+    
     req.userId = decoded._id; // attach user ID to request
     req.userRole = decoded.role;
-    console.log("user role : ",decoded.role);
     next(); // user is authenticated, proceed
   } catch (err) {
     return res.status(403).json({ error: "Invalid or expired token." });

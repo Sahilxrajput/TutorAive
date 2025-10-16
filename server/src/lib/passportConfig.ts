@@ -1,13 +1,13 @@
 import passport from "passport";
 import { Strategy as GoogleStrategy, Profile } from "passport-google-oauth20";
-import User, { IUser } from "../models/user.model";
+import User from "../models/user.model";
+import { IUser } from "../types/type";
 
 declare global {
   namespace Express {
     interface User extends IUser {}
   }
 }
-
 
 passport.serializeUser((user: IUser, done) => done(null, user._id));
 passport.deserializeUser(async (id: string, done) => {
@@ -28,7 +28,7 @@ passport.use(
       clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
       callbackURL: "http://localhost:3000/api/auth/callback/google",
     },
-    async (accessToken, refreshToken, profile: Profile, done) => {
+    async (authToken, refreshToken, profile: Profile, done) => {
       try {
         let user = await User.findOne({ oauthId: profile.id });
         if (!user) {
@@ -41,7 +41,7 @@ passport.use(
             email: profile.emails?.[0].value,
           });
         }
-        console.log("user:" + user);
+        console.log("authToken:" + authToken);
         done(null, user);
       } catch (err) {
         done(err as Error, false);

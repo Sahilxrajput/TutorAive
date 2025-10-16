@@ -24,7 +24,7 @@ export const initSocket = (httpServer: HTTPServer) => {
     const cookieHeader = socket.handshake.headers.cookie;
     const token = cookieHeader
       ?.split("; ")
-      .find((row) => row.startsWith("accessToken="))
+      .find((row) => row.startsWith("authToken="))
       ?.split("=")[1];
     if (!token) {
       console.log("token not found in cookie: ");

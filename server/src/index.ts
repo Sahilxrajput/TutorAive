@@ -7,12 +7,16 @@ import session from "express-session";
 import passport from "passport";
 import "./lib/passportConfig"; // <-- Import the passportConfig
 import connectDB from "./database/db";
-import authRouter from "./routes/auth/auth.routes";
-import profileRouter from "./routes/profile.routes";
 import http, { Server as HTTPServer } from "http";
 import { initSocket } from "./socket";
-import classRouter from "./routes/classroom.route";
+
+/* --------------- routes ------------------------ */
+import authRouter from "./routes/auth.routes";
+import classRouter from "./routes/classroom.routes";
+import profileRouter from "./routes/profile.routes";
 import invitationRouter from "./routes/invitation.routes";
+import assignmentRoutes from "./routes/assignment.routes";
+import submissionRoutes from "./routes/submission.routes";
 
 const PORT = process.env.PORT || 3000;
 
@@ -26,16 +30,20 @@ app.use(
     credentials: true,
   })
 );
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 // Use session middleware
 app.use(
   session({
-    secret: process.env.SESSION_SECRET as string, // change this to a strong secret!
-    resave: false,
-    saveUninitialized: false,
+    secret: process.env.SESSION_SECRET as string, // used to sign the session ID cookie
+    resave: false, // don't save session if unmodified
+    saveUninitialized: false, // don't create session until something is stored
     cookie: {
-      secure: process.env.NODE_ENV === "production", // HTTPS only in prod
-      maxAge: 1000 * 60 * 60 * 24 * 7, // 7 day
+      secure: process.env.NODE_ENV === "production", // only send cookie over HTTPS in production
+      maxAge: 1000 * 60 * 60 * 24 * 7, // cookie expires in 7 days
+      sameSite: "lax",
+      httpOnly: true,
     },
   })
 );
@@ -49,5 +57,7 @@ app.use("/api/auth", authRouter);
 app.use("/api/profile", profileRouter);
 app.use("/api/class", classRouter);
 app.use("/api/invitations", invitationRouter);
+app.use("/api/assignments", assignmentRoutes);
+app.use("/api/submissions", submissionRoutes);
 
 server.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));

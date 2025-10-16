@@ -1,6 +1,6 @@
 import User from "../models/user.model";
 
-export const getUserProfile = async (req:any, res:any) => {
+export const getUserProfile = async (req: any, res: any) => {
   try {
     const userId = req.params.id;
 
@@ -14,10 +14,17 @@ export const getUserProfile = async (req:any, res:any) => {
     console.error(err);
     res.status(500).json({ message: "Server error." });
   }
-}
+};
 
-export const myProfile = async (req:any, res:any) => {
-  const user = await User.findById(req.userId);
-  if (!user) return res.status(404).json({ error: "User not found" });
-  res.json(user);
-}
+export const myProfile = async (req: any, res: any) => {
+  try {
+    const user = await User.findById(req.userId).select("+password"); // convert to plain JS object
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    // exclude password
+    const { password, ...userData } = user.toObject(); 
+    res.status(200).json(userData);
+  } catch (err: any) {
+    res.status(500).json({ error: "Server error", message: err.message });
+  }
+};

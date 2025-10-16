@@ -1,13 +1,12 @@
 import jwt from "jsonwebtoken";
-import { IUser } from "../models/user.model";
+import { IUser } from "../types/type";
 
 const generateAuthToken = (user: IUser) => {
   // @ts-ignore
   return jwt.sign(
     {
       _id: user._id,
-      email: user.email,
-      profileImage: user.profilePicture,
+      role: user.role,
     },
     process.env.JWT_SECRET as string,
     { expiresIn: process.env.TOKEN_EXPIRY || "1d" }

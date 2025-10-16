@@ -1,15 +1,6 @@
 import mongoose, { Schema, model, models, Document, Types } from "mongoose";
+import { IClassInvitation } from "../types/type";
 
-export interface IClassInvitation extends Document {
-  classroom: Types.ObjectId;
-  createdBy: Types.ObjectId;
-  inviteCode: string; // short unique code
-  expiresAt?: Date;
-  maxUses?: number; // optional usage limit
-  usedBy: Types.ObjectId[]; // track which users have used it
-  createdAt: Date;
-  updatedAt: Date;
-}
 
 const invitationSchema = new Schema<IClassInvitation>(
   {

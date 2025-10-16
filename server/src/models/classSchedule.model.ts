@@ -1,17 +1,6 @@
 import mongoose, { Schema, model, models, Document, Types } from "mongoose";
+import { IClassSchedule } from "../types/type";
 
-export interface IClassSchedule extends Document {
-  classroom: Types.ObjectId;
-  title: string;
-  description?: string;
-  startTime: Date; // first session start
-  endTime?: Date; // optional end time for the first session
-  recurrenceRule?: string; // e.g., "RRULE:FREQ=WEEKLY;BYDAY=MO,WE,FR"
-  createdBy: Types.ObjectId;
-  status: "scheduled" | "completed" | "cancelled";
-  createdAt: Date;
-  updatedAt: Date;
-}
 
 const classScheduleSchema = new Schema<IClassSchedule>(
   {

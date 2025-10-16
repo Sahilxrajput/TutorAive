@@ -1,17 +1,9 @@
 import { Schema, model, models, Document, Types } from "mongoose";
+import { IAssignment } from "../types/type";
 
-export interface IAssignment extends Document {
-  classroom: Types.ObjectId;
-  title: string;
-  description?: string;
-  dueDate: Date;
-  createdBy: Types.ObjectId;
-  maxPoints?: number;
-  createdAt: Date;
-  updatedAt: Date;
-}
 
-const assignmentSchema = new Schema<IAssignment>(
+
+const assignmentSchema = new Schema<IAssignment >(
   {
     classroom: {
       type: Schema.Types.ObjectId,
@@ -22,7 +14,7 @@ const assignmentSchema = new Schema<IAssignment>(
     description: String,
     dueDate: { type: Date, required: true },
     createdBy: { type: Schema.Types.ObjectId, ref: "User", required: true },
-    maxPoints: { type: Number, default: 100 },
+    maxPoints: { type: Number, default: 0 },
   },
   { timestamps: true }
 );

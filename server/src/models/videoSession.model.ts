@@ -1,26 +1,7 @@
 import mongoose, { Schema, model, Types, models, Document } from "mongoose";
+import { IVideoSession } from "../types/type";
 
-export interface IVideoParticipant {
-  user: Types.ObjectId;
-  joinAt: Date;
-  leaveAt: Date;
-  role: "student" | "instructor" | "admin";
-}
-
-export interface IVideoSession extends Document {
-  classroom: Types.ObjectId;
-  title?: string;
-  createdBy: Types.ObjectId;
-  startedAt: Date;
-  endedAt?: Date;
-  provider?: string;
-  providerRoomId?: string;
-  participants?: IVideoParticipant[];
-  isRecorded?: boolean;
-  meta?: Record<string, any>; // or use a more specific type if known
-}
-
-const VideoSessionSchema = new Schema(
+const VideoSessionSchema = new Schema<IVideoSession>(
   {
     classroom: {
       type: Types.ObjectId,

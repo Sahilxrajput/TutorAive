@@ -2,17 +2,14 @@
 import React from "react";
 import { Routes, Route } from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
-import LoginButton from "./components/LoginButton";
 import AuthSuccess from "./pages/AuthSuccess";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ChatRoom from "./pages/ChatRoom";
+import Home from "./pages/Home";
 
-const Home: React.FC = () => (
-  <div>
-    <h1>Home</h1>
-    <LoginButton />
-  </div>
-);
+
+
+
 
 const App: React.FC = () => {
   return (

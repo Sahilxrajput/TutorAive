@@ -3,6 +3,7 @@ import { nanoid } from "nanoid";
 import Invitation from "../models/Invitation.model";
 import genearteQrCode from "../utils/generateQrCode";
 import Classroom from "../models/classroom.model";
+import Attendance from "../models/attendence.model.";
 
 // Create new invitation
 export const createInvitation = async (req: Request, res: Response) => {
@@ -19,9 +20,9 @@ export const createInvitation = async (req: Request, res: Response) => {
       maxUses: maxUses || 0,
     });
 
-   const qrCode = genearteQrCode(inviteCode)
+    const qrCode = genearteQrCode(inviteCode);
 
-    res.status(201).json({invitation, qrCode});
+    res.status(201).json({ invitation, qrCode });
   } catch (err) {
     console.error("Error creating invitation:", err);
     res.status(500).json({ message: "Error creating invitation", error: err });
@@ -29,7 +30,10 @@ export const createInvitation = async (req: Request, res: Response) => {
 };
 
 //  Get all invitations for a classroom
-export const getInvitationsByClassroom = async (req: Request, res: Response) => {
+export const getInvitationsByClassroom = async (
+  req: Request,
+  res: Response
+) => {
   try {
     const invitations = await Invitation.find({ classroom: req.params.id })
       .populate("createdBy", "username email")
@@ -44,31 +48,45 @@ export const getInvitationsByClassroom = async (req: Request, res: Response) => 
 // Get single invitation by invite code
 export const getInvitationByCode = async (req: Request, res: Response) => {
   try {
-    const invitation = await Invitation.findOne({ inviteCode: req.params.code });
-    if (!invitation) return res.status(404).json({ message: "Invalid invite code" });
+    const invitation = await Invitation.findOne({
+      inviteCode: req.params.code,
+    });
+    if (!invitation)
+      return res.status(404).json({ message: "Invalid invite code" });
 
     if (invitation.expiresAt && invitation.expiresAt < new Date())
       return res.status(400).json({ message: "Invite expired" });
 
-    if (invitation.maxUses > 0 && invitation.usedBy.length >= invitation.maxUses)
+    if (
+      invitation.maxUses > 0 &&
+      invitation.usedBy.length >= invitation.maxUses
+    )
       return res.status(400).json({ message: "Invite usage limit reached" });
 
     res.json(invitation);
   } catch (err) {
-    res.status(500).json({ message: "Error retrieving invitation", error: err });
+    res
+      .status(500)
+      .json({ message: "Error retrieving invitation", error: err });
   }
 };
 
 // Use an invitation to join a classroom
 export const useInvitation = async (req: Request, res: Response) => {
   try {
-    const invitation = await Invitation.findOne({ inviteCode: req.params.code });
-    if (!invitation) return res.status(404).json({ message: "Invalid invite code" });
+    const invitation = await Invitation.findOne({
+      inviteCode: req.params.code,
+    });
+    if (!invitation)
+      return res.status(404).json({ message: "Invalid invite code" });
 
     if (invitation.expiresAt && invitation.expiresAt < new Date())
       return res.status(400).json({ message: "Invite expired" });
 
-    if (invitation.maxUses > 0 && invitation.usedBy.length >= invitation.maxUses)
+    if (
+      invitation.maxUses > 0 &&
+      invitation.usedBy.length >= invitation.maxUses
+    )
       return res.status(400).json({ message: "Invite usage limit reached" });
 
     if (invitation.usedBy.includes(req.userId))
@@ -76,6 +94,16 @@ export const useInvitation = async (req: Request, res: Response) => {
 
     invitation.usedBy.push(req.userId);
     await invitation.save();
+
+    // Auto-mark attendance
+    // const today = new Date();
+    // const startOfDay = new Date(today.setHours(0, 0, 0, 0));
+
+    // await Attendance.findOneAndUpdate(
+    //   { classroom: invitation. , user: req.userId, date: startOfDay },
+    //   { status: "present", date: new Date() },
+    //   { upsert: true, new: true }
+    // );
 
     // Add user to classroom
     await Classroom.findByIdAndUpdate(invitation.classroom, {
@@ -95,10 +123,14 @@ export const useInvitation = async (req: Request, res: Response) => {
 export const deleteInvitation = async (req: Request, res: Response) => {
   try {
     const invitation = await Invitation.findById(req.params.id);
-    if (!invitation) return res.status(404).json({ message: "Invitation not found" });
+    if (!invitation)
+      return res.status(404).json({ message: "Invitation not found" });
 
-    //TODO add admin to delete this code also
-    if (invitation.createdBy.toString() !== req.userId)
+    // admin also delete this code
+    if (
+      invitation.createdBy.toString() !== req.userId &&
+      req.userRole !== "admin"
+    )
       return res.status(403).json({ message: "Not authorized" });
 
     await invitation.deleteOne();

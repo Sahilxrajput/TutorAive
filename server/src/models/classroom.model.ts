@@ -1,25 +1,7 @@
 import mongoose, { Schema, model, models, Types, Document } from "mongoose";
+import { IClassroom } from "../types/type";
 
-export interface IClassroom extends Document {
-  title: string;
-  description?: string;
-  isPublic: boolean;
-  createdBy: Types.ObjectId;
-  joinCode: string;
-  tags: string[];
-  students?: Types.ObjectId[];
-  assignments?: Types.ObjectId[];
-  schedules?: Types.ObjectId[];
-  invitations?: Types.ObjectId[];
-  status: "active" | "archived" | "deleted";
-  settings?: {
-    maxStudents: number;
-    allowGuests: boolean;
-    chatEnabled: boolean;
-    codeEditorEnabled: boolean;
-    canvasEnabled: boolean;
-  };
-}
+
 
 const classroomSchema = new Schema<IClassroom>(
   {
@@ -43,6 +25,7 @@ const classroomSchema = new Schema<IClassroom>(
     },
     schedules: [{ type: Schema.Types.ObjectId, ref: "ClassSchedule" }],
     invitations: [{ type: Schema.Types.ObjectId, ref: "Invitation" }],
+    attendance: [{ type: Schema.Types.ObjectId, ref: "Attendance" }],
     status: {
       type: String,
       enum: ["active", "archived", "deleted"],

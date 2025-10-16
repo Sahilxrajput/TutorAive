@@ -1,19 +1,5 @@
 import mongoose, { Schema, model, models, Types, Document } from "mongoose";
-// import { IAssignment } from "./Assignment";
-// import { IClassroom } from "./Classroom";
-
-export interface IUser extends Document {
-  firstName: string;
-  lastName?: string;
-  oauthProvider?: string;
-  oauthId?: string;
-  profilePicture?: string;
-  email: string;
-  password?: string;
-  assignments?: ( Types.ObjectId)[];
-  classrooms?: ( Types.ObjectId)[];
-  role: "student" | "instructor" | "admin";
-}
+import { IUser } from "../types/type";
 
 const userSchema = new Schema<IUser>(
   {
@@ -26,6 +12,11 @@ const userSchema = new Schema<IUser>(
       type: String,
       trim: true,
     },
+    userName: {
+      type: String,
+      trim: true,
+      unique: true,
+    },
     oauthProvider: {
       type: String,
       enum: ["google", "github", "facebook", "discord", null],
@@ -33,7 +24,7 @@ const userSchema = new Schema<IUser>(
     oauthId: {
       type: String,
       unique: false,
-      sparse: true,  // allows multiple docs with null
+      sparse: true, // allows multiple docs with null
     },
     profilePicture: {
       type: String,
@@ -51,7 +42,7 @@ const userSchema = new Schema<IUser>(
       required: function (this: IUser) {
         return !this.oauthProvider;
       },
-      select: false
+      select: false,
     },
     classrooms: [
       {
@@ -77,8 +68,10 @@ const userSchema = new Schema<IUser>(
 );
 
 // Compound index to enforce unique (oauthProvider, oauthId)
-userSchema.index({ oauthProvider: 1, oauthId: 1 }, { unique: true, sparse: true });
-
+userSchema.index(
+  { oauthProvider: 1, oauthId: 1 },
+  { unique: true, sparse: true }
+);
 
 const User = models.User || model<IUser>("User", userSchema);
 
