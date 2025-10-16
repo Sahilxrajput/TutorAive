@@ -5,7 +5,7 @@ import authMiddleware from "../Middlewares/authMiddleware";
 import {
   deleteAccount,
   forgotPassword,
-  login,
+  signin,
   loginfailed,
   logout,
   resetPassword,
@@ -47,7 +47,7 @@ router.get("/login/failed", loginfailed);
 router.post("/signup", signup);
 
 // TODO validation
-router.post("/login", login);
+router.post("/signin", signin);
 
 router.get("/logout", authMiddleware, logout);
 router.put("/reset-password", authMiddleware, resetPassword);

@@ -40,7 +40,7 @@ temp/
 .env.*
 server/.env.*
 client/.env.*
-
+readme.md
 # =========================
 # Logs & Cache
 # =========================

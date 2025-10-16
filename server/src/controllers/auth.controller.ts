@@ -4,15 +4,20 @@ import User from "../models/user.model";
 import generateAuthToken from "../utils/generateAuthToken";
 import bcrypt from "bcrypt";
 
+//TODO add firstname, lastname default
 const signup = async (req: any, res: any) => {
   try {
-    const { email, firstName, lastName, userName, password, role } = req.body;
+    let { email, firstName, lastName, userName, password, role } = req.body;
 
     // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: "User already exists" });
     }
+
+    //FIX
+    firstName = "tony";
+    lastName = "stark";
 
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 12);
@@ -52,7 +57,7 @@ const signup = async (req: any, res: any) => {
   }
 };
 
-const login = async (req: any, res: any) => {
+const signin = async (req: any, res: any) => {
   const { email, password } = req.body;
 
   try {
@@ -221,13 +226,13 @@ const forgotPassword = async (req: any, res: any) => {
   //   return res.status(200).json({ message: "Password reset email sent" });
   // } catch (err) {
   //   console.error(err);
-    return res.status(500).json({ message: "Server error" });
+  return res.status(500).json({ message: "Server error" });
   // }
 };
 
 export {
   signup,
-  login,
+  signin,
   loginfailed,
   logout,
   deleteAccount,

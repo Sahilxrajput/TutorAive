@@ -6,6 +6,8 @@ import AuthSuccess from "./pages/AuthSuccess";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ChatRoom from "./pages/ChatRoom";
 import Home from "./pages/Home";
+import { Signin } from "./pages/Signin";
+import { Signup } from "./pages/signup";
 
 
 
@@ -16,6 +18,8 @@ const App: React.FC = () => {
 
     <Routes>
       <Route path="/" element={<Home />} />
+      <Route path="/signin" element={<Signin />} />
+      <Route path="/signup" element={<Signup />} />
       <Route path="/auth/success" element={<AuthSuccess />} />
       <Route path="/chat" element={<ChatRoom />} />
       <Route
