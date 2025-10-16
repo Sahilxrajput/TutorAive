@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import Classroom from "../models/classroom.model";
+import ClassSchedule from "../models/classSchedule.model";
 
 // Create a new classroom
 export const createClassroom = async (req: Request, res: Response) => {
@@ -29,6 +30,40 @@ export const getClassrooms = async (req: Request, res: Response) => {
     res.json(classrooms);
   } catch (error) {
     res.status(500).json({ message: "Error fetching classrooms", error });
+  }
+};
+
+// schedule class
+export const createClassSchedule = async (req: Request, res: Response) => {
+  try {
+    const { classroomId, title, description, startTime, endTime, recurrenceRule } = req.body;
+
+    // 1. Check if classroom exists
+    const classroom = await Classroom.findById(classroomId);
+    if (!classroom) {
+      return res.status(404).json({ message: "Classroom not found" });
+    }
+
+    // 3. Create class schedule
+    const schedule = await ClassSchedule.create({
+      classroom: classroomId,
+      title,
+      description,
+      startTime,
+      endTime,
+      recurrenceRule,
+      createdBy: req.userId,
+    });
+
+    // 4. Add schedule to classroom's schedules array
+    classroom.schedules = classroom.schedules || [];
+    classroom.schedules.push(schedule._id);
+    await classroom.save();
+
+    res.status(201).json({ message: "Class scheduled successfully", schedule });
+  } catch (error) {
+    console.error("Error creating class schedule:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 

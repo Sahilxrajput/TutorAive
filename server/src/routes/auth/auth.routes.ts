@@ -26,7 +26,7 @@ authRouter.get(
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
 
-    res.redirect(`${process.env.FRONTEND_URL}/auth/success`);
+    res.redirect(`${process.env.CLIENT_URL}/auth/success`);
   }
 );
 
@@ -43,7 +43,7 @@ authRouter.get("/logout", authMiddleware, (req, res) => {
     sameSite: "strict", // recommended for security
     path: "/", // must match cookie path
   });
-  console.log("logout called")
+  console.log("logout called");
   // Optionally, you can send a response
   res.status(200).json({ message: "Logged out successfully" });
 });

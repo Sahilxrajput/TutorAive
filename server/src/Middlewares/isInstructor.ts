@@ -6,13 +6,7 @@ export default function isInstructor(
   next: NextFunction
 ) {
   try {
-    const user = req.userId as { role?: string };
-
-    if (!user) {
-      return res.status(401).json({ message: "Unauthorized. User not found." });
-    }
-
-    if (user.role !== "instructor") {
+    if (req.userRole !== "instructor") {
       return res
         .status(403)
         .json({ message: "Access denied. Instructors only." });

@@ -60,6 +60,46 @@ export const createClassroomValidator = [
     .withMessage("canvasEnabled must be a boolean"),
 ];
 
+export const createClassScheduleValidator = [
+  body("classroomId")
+    .notEmpty()
+    .withMessage("classroomId is required")
+    .isMongoId()
+    .withMessage("classroomId must be a valid Mongo ID"),
+
+  body("title")
+    .trim()
+    .notEmpty()
+    .withMessage("Title is required")
+    .isLength({ min: 3 })
+    .withMessage("Title must be at least 3 characters long"),
+
+  body("description")
+    .optional()
+    .isString()
+    .withMessage("Description must be a string"),
+
+  body("startTime")
+    .notEmpty()
+    .withMessage("startTime is required")
+    .isISO8601()
+    .withMessage("startTime must be a valid ISO8601 date"),
+
+  body("endTime")
+    .optional()
+    .isISO8601()
+    .withMessage("endTime must be a valid ISO8601 date"),
+
+  body("recurrenceRule")
+    .optional()
+    .isString()
+    .withMessage("recurrenceRule must be a string"),
+
+  body("status")
+    .optional()
+    .isIn(["scheduled", "completed", "cancelled"])
+    .withMessage("Status must be one of scheduled, completed, or cancelled")
+];
 
 export const updateClassroomValidator = [
   param("id").isMongoId().withMessage("Invalid classroom ID"),

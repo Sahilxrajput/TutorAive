@@ -1,8 +1,8 @@
-import 'dotenv/config';
+import "dotenv/config";
 
 import express, { Application } from "express";
 import cors from "cors";
-import cookieParser from 'cookie-parser'
+import cookieParser from "cookie-parser";
 import session from "express-session";
 import passport from "passport";
 import "./lib/passportConfig"; // <-- Import the passportConfig
@@ -10,9 +10,9 @@ import connectDB from "./database/db";
 import authRouter from "./routes/auth/auth.routes";
 import profileRouter from "./routes/profile.routes";
 import http, { Server as HTTPServer } from "http";
-import { initSocket } from './socket';
-import classRouter from './routes/classroom.route';
-
+import { initSocket } from "./socket";
+import classRouter from "./routes/classroom.route";
+import invitationRouter from "./routes/invitation.routes";
 
 const PORT = process.env.PORT || 3000;
 
@@ -22,7 +22,7 @@ initSocket(server); // initialize socket.io
 
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL, // your frontend URL 
+    origin: process.env.CLIENT_URL, // your frontend URL
     credentials: true,
   })
 );
@@ -30,7 +30,7 @@ app.use(cookieParser());
 // Use session middleware
 app.use(
   session({
-    secret:process.env.SESSION_SECRET as string, // change this to a strong secret!
+    secret: process.env.SESSION_SECRET as string, // change this to a strong secret!
     resave: false,
     saveUninitialized: false,
     cookie: {
@@ -40,16 +40,14 @@ app.use(
   })
 );
 
-
-connectDB()
+connectDB();
 app.use(passport.initialize());
 app.use(passport.session());
 
-
 app.get("/", (_, res) => res.send("Socket.IO Server Running"));
-app.use('/api/auth', authRouter);
-app.use('/api/profile', profileRouter);
-app.use('/api/class', classRouter);
-
+app.use("/api/auth", authRouter);
+app.use("/api/profile", profileRouter);
+app.use("/api/class", classRouter);
+app.use("/api/invitations", invitationRouter);
 
 server.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));

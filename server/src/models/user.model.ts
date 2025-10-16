@@ -76,7 +76,7 @@ const userSchema = new Schema<IUser>(
   }
 );
 
-// 🔒 Compound index to enforce unique (oauthProvider, oauthId)
+// Compound index to enforce unique (oauthProvider, oauthId)
 userSchema.index({ oauthProvider: 1, oauthId: 1 }, { unique: true, sparse: true });
 
 

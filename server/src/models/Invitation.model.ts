@@ -31,6 +31,14 @@ const invitationSchema = new Schema<IClassInvitation>(
   { timestamps: true }
 );
 
+/* Automatically delete invitation 1 day (24h) after expiry
+  MongoDB TTL (Time-To-Live) index will remove documents once (expiresAt + 24 hours) has passed.  */
+
+invitationSchema.index(
+  { expiresAt: 1 },
+  { expireAfterSeconds: 60 * 60 * 24 } // 24 hours
+);
+
 const Invitation =
   models.Invitation || model<IClassInvitation>("Invitation", invitationSchema);
 export default Invitation;

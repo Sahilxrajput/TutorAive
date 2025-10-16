@@ -7,12 +7,14 @@ import {
   deleteClassroom,
   joinClassroom,
   archiveClassroom,
+  createClassSchedule,
 } from "../controllers/classroom.controller";
 import {
   createClassroomValidator,
   updateClassroomValidator,
   joinClassroomValidator,
   idParamValidator,
+  createClassScheduleValidator,
 } from "../validators/classroom.schema";
 
 import authMiddleware from "../Middlewares/authMiddleware";
@@ -21,7 +23,7 @@ import isInstructor from "../Middlewares/isInstructor";
 
 const classRouter = express.Router();
 
-classRouter.use(authMiddleware); // all routes require auth
+// classRouter.use(authMiddleware); // all routes require auth
 
 
 // Get all classrooms
@@ -30,21 +32,25 @@ classRouter.get("/", getClassrooms);
 // Get classroom by ID
 classRouter.get("/:id", idParamValidator, handleValidation, getClassroomById);
 
+// Join classroom
+classRouter.post("/join", joinClassroomValidator, handleValidation, joinClassroom);
+
+
 // isInstructor?
 classRouter.use(isInstructor)
+
 
 // Create a new classroom
 classRouter.post("/", createClassroomValidator, handleValidation,  createClassroom);
 
+// schedule class
+classRouter.post("/schedule",createClassScheduleValidator, handleValidation,  createClassSchedule)
 
 // Update classroom
 classRouter.put("/:id", updateClassroomValidator, handleValidation, updateClassroom);
 
 // Delete classroom
 classRouter.delete("/:id", idParamValidator, handleValidation, deleteClassroom);
-
-// Join classroom
-classRouter.post("/join", joinClassroomValidator, handleValidation, joinClassroom);
 
 // Archive classroom
 classRouter.put("/:id/archive", idParamValidator, handleValidation, archiveClassroom);

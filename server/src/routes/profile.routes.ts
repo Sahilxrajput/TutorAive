@@ -1,6 +1,4 @@
 import { Router } from "express";
-import User from "../models/user.model";
-import jwt from "jsonwebtoken";
 import authMiddleware from "../Middlewares/authMiddleware";
 import { getUserProfile, myProfile } from "../controllers/user.controller";
 

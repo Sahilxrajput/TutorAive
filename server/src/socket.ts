@@ -14,7 +14,7 @@ import http, { Server as HTTPServer } from "http";
 export const initSocket = (httpServer: HTTPServer) => {
   const io = new Server(httpServer, {
     cors: {
-      origin: process.env.FRONTEND_URL, // your frontend URL
+      origin: process.env.CLIENT_URL, // your frontend URL
       credentials: true,
     },
   });
@@ -52,7 +52,7 @@ export const initSocket = (httpServer: HTTPServer) => {
 
     // Join a room
     socket.on("join_room", (roomId) => {
-      console.log("user joined room : ",roomId)
+      console.log("user joined room : ", roomId);
       socket.join(roomId); // actually join the room
       socket.to(roomId).emit("user_joined", { userId: socket.id }); // notify others
       // socket.emit("joined_room", { roomId }); // optional: confirm to the user
@@ -60,7 +60,7 @@ export const initSocket = (httpServer: HTTPServer) => {
 
     // Leave a room
     socket.on("leave_room", (roomId) => {
-      console.log("user left :", roomId)
+      console.log("user left :", roomId);
       socket.leave(roomId); // actually leave the room
       socket.to(roomId).emit("user_left", { userId: socket.id }); // notify others
       socket.to(roomId).emit("user_left", { userId: socket.id }); // notify others
@@ -91,10 +91,10 @@ export const initSocket = (httpServer: HTTPServer) => {
 
     // --- Custom Chat Event ---
     socket.on("send_message", (data: { message: string; roomId: string }) => {
-      console.log("data : ", data)
+      console.log("data : ", data);
       const sender = getUserById(socket.data.userId);
-      
-      console.log("online users : ", getOnlineUsers())
+
+      console.log("online users : ", getOnlineUsers());
 
       if (!sender) {
         console.warn("Sender not found or offline");

@@ -7,6 +7,7 @@ declare global {
   namespace Express {
     interface Request {
       userId?: string;
+      userRole?: "student" | "instructor" | "admin";
     }
   }
 }
@@ -26,9 +27,13 @@ export default function authMiddleware(
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as MyJwtPayload;
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET as string
+    ) as MyJwtPayload;
     req.userId = decoded._id; // attach user ID to request
-    console.log(decoded._id);
+    req.userRole = decoded.role;
+    console.log("user role : ",decoded.role);
     next(); // user is authenticated, proceed
   } catch (err) {
     return res.status(403).json({ error: "Invalid or expired token." });
