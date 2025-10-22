@@ -9,19 +9,19 @@ import {
 import authMiddleware from "../Middlewares/authMiddleware";
 import isInstructor from "../Middlewares/isInstructor";
 
-const invitationRouter = express.Router();
+const router = express.Router();
 
 // Routes
-invitationRouter.use(authMiddleware)
+router.use(authMiddleware)
 
-invitationRouter.get("/:code", getInvitationByCode);
-invitationRouter.get("/classroom/:id", getInvitationsByClassroom);
-invitationRouter.post("/:code/use", useInvitation);
+router.get("/:code", getInvitationByCode);
+router.get("/classroom/:id", getInvitationsByClassroom);
+router.post("/:code/use", useInvitation);
 
 // Instructor Only
-invitationRouter.use(isInstructor)
+router.use(isInstructor)
 
-invitationRouter.post("/", createInvitation);
-invitationRouter.delete("/:id", deleteInvitation);
+router.post("/", createInvitation);
+router.delete("/:id", deleteInvitation);
 
-export default invitationRouter;
+export default router;

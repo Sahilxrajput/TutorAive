@@ -16,7 +16,7 @@ export interface IUser extends Document {
   email: string;
   password?: string;
   assignments?: Types.ObjectId[];
-  classrooms?: Types.ObjectId[];
+  enrolledClassrooms?: Types.ObjectId[];
   role: "student" | "instructor" | "admin";
 }
 export interface IAssignment extends Document {
@@ -26,6 +26,7 @@ export interface IAssignment extends Document {
   dueDate: Date;
   createdBy: Types.ObjectId;
   maxPoints?: number;
+  status: "pending" | "submitted";
   createdAt: Date;
   updatedAt: Date;
 }
@@ -38,15 +39,22 @@ export interface IAttendance extends Document {
 export interface IClassroom extends Document {
   title: string;
   description?: string;
+  price?: Number;
   isPublic: boolean;
   createdBy: Types.ObjectId;
   joinCode: string;
   tags: string[];
+  modules?: Number;
+  hours?: Number;
+  curriculum: Object[];
+  syllabus: Object[];
   students?: Types.ObjectId[];
+  memberships?: Types.ObjectId[];
   assignments?: Types.ObjectId[];
   schedules?: Types.ObjectId[];
   invitations?: Types.ObjectId[];
   attendance?: Types.ObjectId[];
+  overview?: {};
   status: "active" | "archived" | "deleted";
   settings?: {
     maxStudents: number;
@@ -55,6 +63,7 @@ export interface IClassroom extends Document {
     codeEditorEnabled: boolean;
     canvasEnabled: boolean;
   };
+  paid: boolean;
 }
 export interface IClassSchedule extends Document {
   classroom: Types.ObjectId;
@@ -104,4 +113,25 @@ export interface IVideoSession extends Document {
   participants?: IVideoParticipant[];
   isRecorded?: boolean;
   meta?: Record<string, any>; // or use a more specific type if known
+}
+export interface INote extends Document {
+  title: string;
+  content: string;
+  date?: Date;
+  owner: Types.ObjectId;
+  sharedWith: Types.ObjectId[];
+  isPublic: boolean;
+  classroom?: Types.ObjectId;
+  module?: string;
+  attachments?: string[]; // optional: URLs of uploaded files, if any
+  createdAt: Date;
+  updatedAt: Date;
+}
+export interface IEnrollment extends Document {
+  user: Types.ObjectId;
+  classroom?: Types.ObjectId;
+  status: "pending" | "success" | "failed";
+  paymentId?: String;
+  orderId?: String;
+  amount: Number;
 }

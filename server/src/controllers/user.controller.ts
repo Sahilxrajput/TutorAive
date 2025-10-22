@@ -22,9 +22,22 @@ export const myProfile = async (req: any, res: any) => {
     if (!user) return res.status(404).json({ error: "User not found" });
 
     // exclude password
-    const { password, ...userData } = user.toObject(); 
+    const { password, ...userData } = user.toObject();
     res.status(200).json(userData);
   } catch (err: any) {
     res.status(500).json({ error: "Server error", message: err.message });
   }
 };
+
+export async function getAllEnrolledClassrooms(req:any, res:any) {
+  try {
+    const user = await User.findById(req.userId).populate("enrolledClassrooms");
+
+    if (!user) return res.status(404).json({ message: "User not found" });
+    console.log(user)
+    res.status(200).json(user.enrolledClassrooms);
+  } catch (error) {
+    console.error("Error fetching enrolled classrooms:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+}

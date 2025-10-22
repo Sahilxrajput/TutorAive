@@ -24,7 +24,7 @@ import { useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import useAuth from "@/hooks/useAuth"
 
-export function Signup() {
+export default function Signup() {
     const [email, setEmail] = useState<string>('')
     const [password, setPassword] = useState<string>('')
     const [userName, setUserName] = useState<string>('')
@@ -130,6 +130,5 @@ export function Signup() {
 
             </Card>
         </div>
-
     )
 }

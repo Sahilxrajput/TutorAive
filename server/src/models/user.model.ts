@@ -16,6 +16,7 @@ const userSchema = new Schema<IUser>(
       type: String,
       trim: true,
       unique: true,
+      default: () => `user_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
     },
     oauthProvider: {
       type: String,
@@ -44,7 +45,7 @@ const userSchema = new Schema<IUser>(
       },
       select: false,
     },
-    classrooms: [
+    enrolledClassrooms: [
       {
         type: Types.ObjectId,
         ref: "Classroom",

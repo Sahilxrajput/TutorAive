@@ -114,8 +114,12 @@ export const updateClassroomValidator = [
   body("tags").optional().isArray(),
 ];
 
-export const joinClassroomValidator = [
+export const joinClassroomByCodeValidator = [
   body("joinCode").notEmpty().withMessage("Join code is required"),
+];
+
+export const joinClassroomValidator = [
+  body("classroomId").isMongoId().notEmpty().withMessage("classroomId is required and must be valid mongoId"),
 ];
 
 export const idParamValidator = [

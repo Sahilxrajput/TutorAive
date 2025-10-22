@@ -1,12 +1,14 @@
-// db.js
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
+import Classroom from "../models/classroom.model";
 
 const connectDB = async () => {
   try {
-    const conn = await mongoose.connect("mongodb://sahil:980980@localhost:27017/online-classroom?authSource=admin", {
-      serverSelectionTimeoutMS: 10000, // Optional: adjust timeout
-    });
-
+    const conn = await mongoose.connect(
+      "mongodb://sahil:980980@localhost:27017/online-classroom?authSource=admin",
+      {
+        serverSelectionTimeoutMS: 10000, // Optional: adjust timeout
+      }
+    );
     console.log(`MongoDB Connected: ${conn.connection.host}`);
   } catch (error) {
     console.error(`MongoDB connection error: ${error}`);
@@ -15,6 +17,3 @@ const connectDB = async () => {
 };
 
 export default connectDB;
-
-
-

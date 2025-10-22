@@ -12,7 +12,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const refreshUser = useCallback(async () => {
     try {
       setLoading(true);
-      const res = await API.get("/profile/me");
+      const res = await API.get("/users/me");
       setUser(res.data ?? null);
     } catch (err) {
       console.error("Failed to refresh user", err);

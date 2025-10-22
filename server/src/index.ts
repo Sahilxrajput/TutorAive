@@ -13,10 +13,12 @@ import { initSocket } from "./socket";
 /* --------------- routes ------------------------ */
 import authRouter from "./routes/auth.routes";
 import classRouter from "./routes/classroom.routes";
-import profileRouter from "./routes/profile.routes";
+import profileRouter from "./routes/user.routes";
 import invitationRouter from "./routes/invitation.routes";
 import assignmentRoutes from "./routes/assignment.routes";
 import submissionRoutes from "./routes/submission.routes";
+import paymentRoutes from "./routes/payment.routes";
+import genearteQrCode from "./utils/generateQrCode";
 
 const PORT = process.env.PORT || 3000;
 
@@ -54,10 +56,11 @@ app.use(passport.session());
 
 app.get("/", (_, res) => res.send("Socket.IO Server Running"));
 app.use("/api/auth", authRouter);
-app.use("/api/profile", profileRouter);
-app.use("/api/class", classRouter);
+app.use("/api/users", profileRouter);
+app.use("/api/classrooms", classRouter);
+app.use("/api/payment", paymentRoutes);
 app.use("/api/invitations", invitationRouter);
 app.use("/api/assignments", assignmentRoutes);
 app.use("/api/submissions", submissionRoutes);
 
-server.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+server.listen(PORT, () => console.log(` Server running on port http://localhost:${PORT}`));

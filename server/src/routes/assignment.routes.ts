@@ -8,18 +8,18 @@ import {
 import authMiddleware from "../Middlewares/authMiddleware";
 import isInstructor from "../Middlewares/isInstructor";
 
-const assignmentRoutes = express.Router();
+const router = express.Router();
 
-assignmentRoutes.use(authMiddleware);
+router.use(authMiddleware);
 
 /* -------------------- Students + Instructors -------------------- */
-assignmentRoutes.get("/classroom/:classroomId", getAssignments);
-assignmentRoutes.get("/:id", getAssignmentById);
+router.get("/classroom/:classroomId", getAssignments);
+router.get("/:id", getAssignmentById);
 
 /* ------------------------ Instructors Only ---------------------- */
-assignmentRoutes.use(isInstructor);
-assignmentRoutes.post("/", createAssignment);
-assignmentRoutes.delete("/:id", deleteAssignment);
+router.use(isInstructor);
+router.post("/", createAssignment);
+router.delete("/:id", deleteAssignment);
 
-export default assignmentRoutes ;
+export default router ;
 

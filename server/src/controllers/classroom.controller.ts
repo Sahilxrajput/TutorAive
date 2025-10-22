@@ -1,6 +1,8 @@
 import { Request, Response } from "express";
 import Classroom from "../models/classroom.model";
 import ClassSchedule from "../models/classSchedule.model";
+import mongoose from "mongoose";
+import User from "../models/user.model";
 
 // Create a new classroom
 export const createClassroom = async (req: Request, res: Response) => {
@@ -108,7 +110,7 @@ export const deleteClassroom = async (req: Request, res: Response) => {
 };
 
 // Join a classroom using joinCode
-export const joinClassroom = async (req: Request, res: Response) => {
+export const enrollClassroomByCode = async (req: Request, res: Response) => {
   try {
     const { joinCode } = req.body;
     const classroom = await Classroom.findOne({ joinCode });
@@ -121,6 +123,50 @@ export const joinClassroom = async (req: Request, res: Response) => {
     res.json({ message: "Joined classroom successfully", classroom });
   } catch (error) {
     res.status(500).json({ message: "Error joining classroom", error });
+  }
+};
+
+export const enrollClassroom = async (req: Request, res: Response) => {
+  try {
+    const { classroomId } = req.body;
+    const userId = req.userId; // ensure this is populated by auth middleware
+
+    const classroom = await Classroom.findById(classroomId);
+    if (!classroom) {
+      return res.status(404).json({ message: "Classroom not found" });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Enroll user if not already enrolled
+    if (!classroom.students.includes(userId)) {
+      console.log("classroom update")
+      classroom.students.push(userId);
+      await classroom.save();
+    }
+
+    // Update user's enrolledCourses
+    if (!user.enrolledClassrooms.includes(classroomId)) {
+      console.log("user update")
+      user.enrolledClassrooms.push(classroomId);
+      await user.save();
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Enrolled in classroom successfully",
+      classroom,
+    });
+  } catch (error) {
+    console.error("Error enrolling classroom:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error enrolling in classroom",
+      error: (error as Error).message,
+    });
   }
 };
 

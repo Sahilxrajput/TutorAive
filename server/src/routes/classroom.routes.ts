@@ -5,9 +5,10 @@ import {
   getClassroomById,
   updateClassroom,
   deleteClassroom,
-  joinClassroom,
   archiveClassroom,
   createClassSchedule,
+  enrollClassroom,
+  enrollClassroomByCode,
 } from "../controllers/classroom.controller";
 import {
   createClassroomValidator,
@@ -15,45 +16,65 @@ import {
   joinClassroomValidator,
   idParamValidator,
   createClassScheduleValidator,
+  joinClassroomByCodeValidator,
 } from "../validators/classroom.schema";
 
 import authMiddleware from "../Middlewares/authMiddleware";
 import { handleValidation } from "../Middlewares/validate";
 import isInstructor from "../Middlewares/isInstructor";
 
-const classRouter = express.Router();
-
-// classRouter.use(authMiddleware); // all routes require auth
-
+const router = express.Router();
 
 // Get all classrooms
-classRouter.get("/", getClassrooms);
+router.get("/", getClassrooms);
+
+router.use(authMiddleware); // all routes require auth
 
 // Get classroom by ID
-classRouter.get("/:id", idParamValidator, handleValidation, getClassroomById);
+router.get("/:id", idParamValidator, handleValidation, getClassroomById);
 
-// Join classroom
-classRouter.post("/join", joinClassroomValidator, handleValidation, joinClassroom);
+// Join classroom by code
+router.post(
+  "/:id/join",
+  joinClassroomByCodeValidator,
+  handleValidation,
+  enrollClassroomByCode
+);
 
+//TODO enroll classroom by purchase
+router.post(
+  "/enroll",
+  joinClassroomValidator,
+  handleValidation,
+  enrollClassroom
+);
 
 // isInstructor?
-classRouter.use(isInstructor)
-
+router.use(isInstructor);
 
 // Create a new classroom
-classRouter.post("/", createClassroomValidator, handleValidation,  createClassroom);
+router.post("/", createClassroomValidator, handleValidation, createClassroom);
 
 // schedule class
-classRouter.post("/schedule",createClassScheduleValidator, handleValidation,  createClassSchedule)
+router.post(
+  "/schedule",
+  createClassScheduleValidator,
+  handleValidation,
+  createClassSchedule
+);
 
 // Update classroom
-classRouter.put("/:id", updateClassroomValidator, handleValidation, updateClassroom);
+router.put("/:id", updateClassroomValidator, handleValidation, updateClassroom);
 
 // Delete classroom
-classRouter.delete("/:id", idParamValidator, handleValidation, deleteClassroom);
+router.delete("/:id", idParamValidator, handleValidation, deleteClassroom);
 
 // Archive classroom
-classRouter.put("/:id/archive", idParamValidator, handleValidation, archiveClassroom);
+router.put(
+  "/:id/archive",
+  idParamValidator,
+  handleValidation,
+  archiveClassroom
+);
 
-
-export default classRouter;
+export default router;
