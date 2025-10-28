@@ -7,7 +7,7 @@ import { Types } from "mongoose";
 const router = express.Router();
 
 // ---------------------- auth authMiddleware---------------
-router.use(authMiddleware)
+router.use(authMiddleware);
 
 // -------------------- Create a Note --------------------
 //TODO FIX requets body
@@ -39,9 +39,9 @@ router.get("/:id", async (req, res) => {
     const note = await Note.findById(req.params.id);
     if (!note) return res.status(404).json({ message: "Note not found" });
     if (
-      note.owner.toString() !== req.userId.toString() &&
+      note.owner.toString() !== req.userId &&
       !note.collaborators.some(
-        (c: ICollaborator) => c.user.toString() === req.userId.toString()
+        (c: ICollaborator) => c.user.toString() === req.userId
       )
     ) {
       return res.status(403).json({ message: "Access denied" });
@@ -59,10 +59,10 @@ router.put("/:id", async (req, res) => {
     if (!note) return res.status(404).json({ message: "Note not found" });
 
     const canEdit =
-      note.owner.toString() === req.userId.toString() ||
+      note.owner.toString() === req.userId ||
       note.collaborators.some(
         (c: ICollaborator) =>
-          c.user.toString() === req.userId.toString() && c.access === "edit"
+          c.user.toString() === req.userId && c.access === "edit"
       );
 
     if (!canEdit)
@@ -83,7 +83,7 @@ router.delete("/:id", async (req, res) => {
     const note = await Note.findById(req.params.id);
     if (!note) return res.status(404).json({ message: "Note not found" });
 
-    if (note.owner.toString() !== req.userId.toString())
+    if (note.owner.toString() !== req.userId)
       return res.status(403).json({ message: "Access denied" });
 
     note.status = "trashed";
@@ -102,7 +102,7 @@ router.delete("/:id/permanent", async (req, res) => {
   try {
     const note = await Note.findById(req.params.id);
     if (!note) return res.status(404).json({ message: "Note not found" });
-    if (note.owner.toString() !== req.userId.toString())
+    if (note.owner.toString() !== req.userId)
       return res.status(403).json({ message: "Access denied" });
 
     await note.deleteOne();
@@ -157,7 +157,7 @@ router.post("/:id/collaborators", async (req, res) => {
     const note = await Note.findById(req.params.id);
     if (!note) return res.status(404).json({ message: "Note not found" });
 
-    if (note.owner.toString() !== req.userId.toString())
+    if (note.owner.toString() !== req.userId)
       return res
         .status(403)
         .json({ message: "Only owner can add collaborators" });
@@ -178,13 +178,13 @@ router.delete("/:id/collaborators/:collabId", async (req, res) => {
     const note = await Note.findById(req.params.id);
     if (!note) return res.status(404).json({ message: "Note not found" });
 
-    if (note.owner.toString() !== req.userId.toString())
+    if (note.owner.toString() !== req.userId)
       return res
         .status(403)
         .json({ message: "Only owner can remove collaborators" });
 
     note.collaborators = note.collaborators.filter(
-      (c) => c._id.toString() !== req.params.collabId
+      (c: IUser) => c._id != req.params.collabId
     );
     await note.save();
 

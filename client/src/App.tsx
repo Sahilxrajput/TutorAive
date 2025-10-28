@@ -31,7 +31,7 @@ const App: React.FC = () => {
         <Route path="chats" element={<ChatRoom />} />
         <Route path="editor" element={<Editor />} />
         <Route path="notes" element={<Notes />} />
-        <Route path="quiz" element={<Quiz />} />
+        <Route path="quizs" element={<Quiz />} />
 
         {/* Browse all classrooms */}
         <Route path="classrooms" element={<BrowseClassroom />} />

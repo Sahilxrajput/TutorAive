@@ -6,7 +6,8 @@ export interface MyJwtPayload extends JwtPayload {
   email: string;
   profileImage?: string;
 }
-export interface IUser extends Document {
+export interface IUser  {
+  _id?:string;
   firstName: string;
   lastName?: string;
   userName?: string;
