@@ -1,5 +1,3 @@
-"use client";
-
 import React, { useEffect, useState, useRef } from "react";
 
 import { EditorState, Compartment } from "@codemirror/state";
@@ -53,7 +51,7 @@ import {
 
 import { io } from "socket.io-client";
 
-const socket = io("http://localhost:3001"); // Replace with your server URL
+const socket = io(import.meta.env.VITE_SOCKET_URL as string); // Replace with your server URL
 const userId = crypto.randomUUID();
 
 class RemoteCursorWidget extends WidgetType {

@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
 import Classroom from "../models/classroom.model";
 import ClassSchedule from "../models/classSchedule.model";
-import mongoose from "mongoose";
 import User from "../models/user.model";
 
 // Create a new classroom

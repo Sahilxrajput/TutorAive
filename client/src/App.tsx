@@ -16,6 +16,8 @@ import ClassroomOverview from "./components/classroom/ClassroomOverview";
 import Assignments from "./components/classroom/Assignments";
 import LeaderboardPage from "./components/LeaderboardPage";
 import ClassroomNotes from "./components/classroom/ClassroomNotes";
+import Quiz from "./pages/Quiz";
+import Editor from "./pages/Editor";
 
 
 
@@ -27,7 +29,9 @@ const App: React.FC = () => {
       <Route path="/" element={<Layout />}>
         <Route index element={<Home />} />
         <Route path="chats" element={<ChatRoom />} />
+        <Route path="editor" element={<Editor />} />
         <Route path="notes" element={<Notes />} />
+        <Route path="quiz" element={<Quiz />} />
 
         {/* Browse all classrooms */}
         <Route path="classrooms" element={<BrowseClassroom />} />

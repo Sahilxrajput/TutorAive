@@ -32,7 +32,6 @@ export default function BrowseClassroom() {
   const [courses, setCourses] = useState<any[]>([]);
   const [enrolledCourses, setEnrolledCourses] = useState<string[]>([]);
 
-
   useEffect(() => {
     async function getAllClassroom() {
       try {
@@ -42,6 +41,9 @@ export default function BrowseClassroom() {
         console.log(error);
       }
     }
+
+    
+
     async function getEnrolled() {
       try {
         const res = await API.get("/users/enrolled");

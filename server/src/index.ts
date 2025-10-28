@@ -18,7 +18,9 @@ import invitationRouter from "./routes/invitation.routes";
 import assignmentRoutes from "./routes/assignment.routes";
 import submissionRoutes from "./routes/submission.routes";
 import paymentRoutes from "./routes/payment.routes";
+import quizRouter from "./routes/quiz.routes";
 import genearteQrCode from "./utils/generateQrCode";
+import notesRouter from "./routes/note.routes";
 
 const PORT = process.env.PORT || 3000;
 
@@ -56,11 +58,24 @@ app.use(passport.session());
 
 app.get("/", (_, res) => res.send("Socket.IO Server Running"));
 app.use("/api/auth", authRouter);
+app.use("/api/quizs", quizRouter);
 app.use("/api/users", profileRouter);
 app.use("/api/classrooms", classRouter);
 app.use("/api/payment", paymentRoutes);
 app.use("/api/invitations", invitationRouter);
 app.use("/api/assignments", assignmentRoutes);
-app.use("/api/submissions", submissionRoutes);
-
-server.listen(PORT, () => console.log(` Server running on port http://localhost:${PORT}`));
+app.use("/api/submissions", submissionRoutes); 
+app.use("/api/notes", notesRouter); // all required auth
+app.get("/join", async (req, res) => {
+  try {
+    const r = await genearteQrCode("1234");
+    console.log(r)
+    res.json(r)
+  } catch (e) {
+    console.log(e);
+    res.status(500).json(e);
+  }
+});
+server.listen(PORT, () =>
+  console.log(` Server running on port http://localhost:${PORT}`)
+);

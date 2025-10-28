@@ -1,7 +1,8 @@
-import mongoose, { Schema, Document } from "mongoose";
+import mongoose, { model, models, Schema } from "mongoose";
 import { INote } from "../types/type";
 
-const NoteSchema = new Schema<INote>(
+// -------------------- Schema Definition --------------------
+const noteSchema = new Schema<INote>(
   {
     title: {
       type: String,
@@ -12,40 +13,76 @@ const NoteSchema = new Schema<INote>(
       type: String,
       default: "",
     },
+    color: {
+      type: String,
+      default: "#ffffff",
+    },
+    visibility: {
+      type: String,
+      enum: ["private", "public", "classroom"],
+      default: "private",
+    },
     owner: {
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
-    sharedWith: [
+    pinnedAt: {
+      type: Date,
+      default: null,
+    },
+    status: {
+      type: String,
+      enum: ["active", "archived", "trashed"],
+      default: "active",
+      required: true,
+    },
+    trashedAt: {
+      type: Date,
+      default: null,
+    },
+    collaborators: [
       {
-        type: Schema.Types.ObjectId,
-        ref: "User",
+        user: {
+          type: Schema.Types.ObjectId,
+          ref: "User",
+          required: true,
+        },
+        access: {
+          type: String,
+          enum: ["view", "edit"],
+          default: "view",
+        },
       },
     ],
-    isPublic: {
-      type: Boolean,
-      default: false,
-    },
     classroom: {
       type: Schema.Types.ObjectId,
       ref: "Classroom",
     },
-    date: {
-      type: Date,
-      default: Date.now, // captures the day of the note
-    },
-    module: {
-      type: String,
-      trim: true,
-    },
     attachments: [
       {
-        type: String, // can store file URLs if needed
+        type: String, // file URL or path
       },
     ],
   },
-  { timestamps: true }
+  {
+    timestamps: true, 
+  }
 );
 
-export default mongoose.model<INote>("Note", NoteSchema);
+// -------------------- Indexes --------------------
+noteSchema.index({ owner: 1, status: 1 });
+noteSchema.index({ title: "text", content: "text" });
+
+// -------------------- Middleware --------------------
+noteSchema.pre("save", function (next) {
+  // Automatically set trashedAt when status becomes 'trashed'
+  if (this.isModified("status") && this.status === "trashed" && !this.trashedAt) {
+    this.trashedAt = new Date();
+  }
+  next();
+});
+
+// -------------------- Model Export --------------------
+const Note = models.Note || model<INote>("Note", noteSchema);
+export default Note;

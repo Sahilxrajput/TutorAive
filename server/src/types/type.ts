@@ -114,19 +114,27 @@ export interface IVideoSession extends Document {
   isRecorded?: boolean;
   meta?: Record<string, any>; // or use a more specific type if known
 }
+export interface ICollaborator {
+  user: IUser | Types.ObjectId;
+  access: "view" | "edit";
+}
+//TODO TEST
 export interface INote extends Document {
   title: string;
   content: string;
-  date?: Date;
+  color?: string;
+  visibility: "private" | "public" | "classroom";
   owner: Types.ObjectId;
-  sharedWith: Types.ObjectId[];
-  isPublic: boolean;
-  classroom?: Types.ObjectId;
-  module?: string;
-  attachments?: string[]; // optional: URLs of uploaded files, if any
-  createdAt: Date;
-  updatedAt: Date;
+  pinnedAt?: Date | null;
+  status: "active" | "archived" | "trashed";
+  trashedAt?: Date | null;
+  collaborators: ICollaborator[];
+  classroom?: IClassroom | Types.ObjectId;
+  attachments?: string[];
+  createdAt?: Date;
+  updatedAt?: Date;
 }
+
 export interface IEnrollment extends Document {
   user: Types.ObjectId;
   classroom?: Types.ObjectId;
