@@ -19,7 +19,7 @@ const noteSchema = new Schema<INote>(
     },
     visibility: {
       type: String,
-      enum: ["private", "public", "classroom"],
+      enum: ["private", "public", "collaborative"],
       default: "private",
     },
     owner: {

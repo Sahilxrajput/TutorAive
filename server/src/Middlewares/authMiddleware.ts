@@ -32,9 +32,9 @@ export default function authMiddleware(
       process.env.JWT_SECRET as string
     ) as MyJwtPayload;
     
-    req.userId = decoded._id; // attach user ID to request
+    req.userId = decoded._id; 
     req.userRole = decoded.role;
-    next(); // user is authenticated, proceed
+    next(); 
   } catch (err) {
     return res.status(403).json({ error: "Invalid or expired token." });
   }

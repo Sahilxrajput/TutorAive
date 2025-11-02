@@ -57,6 +57,12 @@ const userSchema = new Schema<IUser>(
         ref: "Assignment",
       },
     ],
+    notes: [
+      {
+        type: Types.ObjectId,
+        ref: "AssignmenNote",
+      },
+    ],
     role: {
       type: String,
       enum: ["student", "instructor", "admin"],

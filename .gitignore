@@ -27,6 +27,9 @@ out/
 coverage/
 tmp/
 temp/
+server/src/services
+server/uploads
+
 
 # =========================
 # TypeScript

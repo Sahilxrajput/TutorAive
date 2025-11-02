@@ -1,3 +1,4 @@
+import { Request, Response } from "express";
 import Attendance from "../models/attendence.model.";
 import Classroom from "../models/classroom.model";
 import User from "../models/user.model";
@@ -19,8 +20,7 @@ const signup = async (req: any, res: any) => {
     //FIX
     firstName = "tony";
     lastName = "stark";
-    // FIX
-    email = email.toLowercase()
+  
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 12);
 
@@ -59,7 +59,7 @@ const signup = async (req: any, res: any) => {
   }
 };
 
-const signin = async (req: any, res: any) => {
+const signin = async (req: Request, res: Response) => {
   const { email, password } = req.body;
 
   try {

@@ -1,15 +1,15 @@
 export interface IUser {
   _id: string;
-  role:string;
+  role: string;
   firstName: string;
-  username?:string,
+  username?: string;
   lastName?: string;
   email: string;
-  enrolledClassrooms:string[]
+  enrolledClassrooms: string[];
   profilePicture?: string;
 }
 
-export interface IClassroom  {
+export interface IClassroom {
   title: string;
   description?: string;
   price?: number;
@@ -45,4 +45,18 @@ export interface AuthContextValue {
   refreshUser: () => Promise<void>;
   logout: () => Promise<void>;
   login: (credentials: { email: string; password: string }) => Promise<void>;
+}
+
+export interface INote {
+  _id: string;
+  title: string;
+  content: string;
+  color: string;
+  pinnedAt?: Date | null;
+  status: "active" | "archived" | "trashed";
+  visibility: "private" | "public" | "collaborative";
+  owner: string;
+  collaborators: { user: string; access: "view" | "edit" }[];
+  updatedAt: string;
+  createdAt: string;
 }

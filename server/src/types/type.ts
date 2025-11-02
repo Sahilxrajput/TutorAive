@@ -7,7 +7,8 @@ export interface MyJwtPayload extends JwtPayload {
   profileImage?: string;
 }
 export interface IUser  {
-  _id?:string;
+  // _id?:string;
+   _id: Types.ObjectId;
   firstName: string;
   lastName?: string;
   userName?: string;
@@ -17,6 +18,7 @@ export interface IUser  {
   email: string;
   password?: string;
   assignments?: Types.ObjectId[];
+  notes?: Types.ObjectId[];
   enrolledClassrooms?: Types.ObjectId[];
   role: "student" | "instructor" | "admin";
 }
@@ -121,10 +123,11 @@ export interface ICollaborator {
 }
 //TODO TEST
 export interface INote extends Document {
+  _id: Types.ObjectId;
   title: string;
   content: string;
   color?: string;
-  visibility: "private" | "public" | "classroom";
+  visibility: "private" | "public" | "collaborative";
   owner: Types.ObjectId;
   pinnedAt?: Date | null;
   status: "active" | "archived" | "trashed";
@@ -135,7 +138,6 @@ export interface INote extends Document {
   createdAt?: Date;
   updatedAt?: Date;
 }
-
 export interface IEnrollment extends Document {
   user: Types.ObjectId;
   classroom?: Types.ObjectId;
