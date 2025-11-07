@@ -12,11 +12,12 @@ const assignmentSchema = new Schema<IAssignment>(
     description: String,
     dueDate: { type: Date, required: true },
     createdBy: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    attachment: { type: String },
     status: {
       type: String,
       enum: ["pending", "submitted"],
       default: "pending",
-      required:true,
+      required: true,
     },
     maxPoints: { type: Number, default: 0 },
   },

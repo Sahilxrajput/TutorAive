@@ -1,7 +1,7 @@
-import mongoose, { Schema, model, Types, models, Document } from "mongoose";
-import { IVideoSession } from "../types/type";
+import { Schema, model, Types, models } from "mongoose";
+import { ILiveSession } from "../types/type";
 
-const VideoSessionSchema = new Schema<IVideoSession>(
+const LiveSessionSchema = new Schema<ILiveSession>(
   {
     classroom: {
       type: Types.ObjectId,
@@ -13,6 +13,7 @@ const VideoSessionSchema = new Schema<IVideoSession>(
     createdBy: { type: Types.ObjectId, ref: "User", required: true },
     startedAt: Date,
     endedAt: Date,
+    meatingCode: String,
     provider: { type: String, default: "webrtc" },
     providerRoomId: { type: String, index: true },
     participants: [
@@ -34,5 +35,5 @@ const VideoSessionSchema = new Schema<IVideoSession>(
 );
 
 const VideoSession =
-  models.VideoSession || model("VideoSession", VideoSessionSchema);
+  models.VideoSession || model("VideoSession", LiveSessionSchema);
 export default VideoSession;

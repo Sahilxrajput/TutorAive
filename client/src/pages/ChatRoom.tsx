@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
-import useAuth from "../hooks/useAuth";
-import useSocket from "../hooks/UseSocket";
+import useAuth from "@/hooks/useAuth";
+import useSocket from "@/hooks/useSocket";
 import type { IUser } from "../types/auth";
 
 
 interface Message {
   userId: string;
   username: string;
+  roomId?: string;
   message: string;
   timestamp: string;
 }
@@ -29,8 +30,8 @@ const ChatRoom: React.FC = () => {
       setMessages((prev) => [...prev, data]);
     };
 
-    socket.on("user_joined",(userId)=>{
-      console.log(userId+"joined room confirm")
+    socket.on("user_joined", (userId) => {
+      console.log(userId + "joined room confirm")
     })
 
     socket.on("receive_message", handleReceive);

@@ -1,115 +1,157 @@
 import { Server, Socket } from "socket.io";
-import jwt from "jsonwebtoken";
 import {
   addUser,
   removeUser,
+  ISocketUser,
   getOnlineUsers,
   getUserById,
+  getUsersInRoom,
 } from "./utils/users";
-import { MyJwtPayload } from "./types/type";
-import http, { Server as HTTPServer } from "http";
+import { Server as HTTPServer } from "http";
+import { socketAuthMiddleware } from "./Middlewares/socketAuth";
 
-//  Initializes Socket.IO with JWT authentication and event handlers.
+interface IMessage {
+  userId: string;
+  username: string;
+  message: string;
+  roomId: string;
+  timestamp: string;
+}
+
+const connections = new Map<string, Set<string>>(); // roomId -> set of socketIds
+const timeOnline: { [socketId: string]: Date } = {};
 
 export const initSocket = (httpServer: HTTPServer) => {
   const io = new Server(httpServer, {
     cors: {
-      origin: process.env.CLIENT_URL, // your frontend URL
+      origin: process.env.CLIENT_URL,
       credentials: true,
     },
   });
 
-  // Shared auth middleware
-  const authMiddleware = (socket: Socket, next: (err?: Error) => void) => {
-    const cookieHeader = socket.handshake.headers.cookie;
-    const token = cookieHeader
-      ?.split("; ")
-      .find((row) => row.startsWith("authToken="))
-      ?.split("=")[1];
-    if (!token) {
-      console.log("token not found in cookie: ");
-      return next(new Error("No token provided"));
-    }
-
-    try {
-      const decoded = jwt.verify(
-        token,
-        process.env.JWT_SECRET!
-      ) as MyJwtPayload;
-      socket.data.userId = decoded._id;
-      socket.data.username = decoded.email;
-      next();
-    } catch (err) {
-      console.error("JWT verification failed:", err);
-      next(new Error("Invalid or expired token"));
-    }
-  };
-
-  io.use(authMiddleware);
+  io.use(socketAuthMiddleware);
 
   io.on("connection", (socket: Socket) => {
-    console.log(`💬 Chat connected: ${socket.data.userId} (${socket.id})`);
+    console.log("Something Connected:", socket.id);
 
-    // Join a room
-    socket.on("join_room", (roomId) => {
-      console.log("user joined room : ", roomId);
-      socket.join(roomId); // actually join the room
-      socket.to(roomId).emit("user_joined", { userId: socket.id }); // notify others
-      // socket.emit("joined_room", { roomId }); // optional: confirm to the user
+    // --- JOIN ROOM ---
+    socket.on("join_room", (roomId: string) => {
+      console.log("user joined room:", roomId);
+
+      // ensure room entry exists
+      if (!connections.has(roomId)) connections.set(roomId, new Set());
+      connections.get(roomId)!.add(socket.id);
+      timeOnline[socket.id] = new Date();
+
+      // Add user to your app-level online list
+      const newUser: ISocketUser = {
+        userId: socket.data.userId,
+        username: socket.data.username,
+        roomId,
+        socketId: socket.id,
+      };
+      addUser(newUser);
+
+      // Actually join Socket.IO room
+      socket.join(roomId);
+
+      // Notify everyone in the room (including the new user if you want)
+      io.in(roomId).emit("user_joined", { userId: socket.id });
+      io.in(roomId).emit("online_users_updated", getUsersInRoom(roomId));
     });
 
-    // Leave a room
-    socket.on("leave_room", (roomId) => {
-      console.log("user left :", roomId);
-      socket.leave(roomId); // actually leave the room
-      socket.to(roomId).emit("user_left", { userId: socket.id }); // notify others
-      socket.to(roomId).emit("user_left", { userId: socket.id }); // notify others
+    // --- LEAVE ROOM ---
+    socket.on("leave_room", (roomId: string) => {
+      console.log("user left:", roomId);
+
+      // leave Socket.IO room
+      socket.leave(roomId);
+
+      // cleanup our map
+      const set = connections.get(roomId);
+      if (set) {
+        set.delete(socket.id);
+        if (set.size === 0) connections.delete(roomId);
+      }
+
+      removeUser(socket.id); // keep your app-level list consistent
+
+      io.in(roomId).emit("user_left", { userId: socket.id });
+      io.in(roomId).emit("online_users_updated", getUsersInRoom(roomId));
+      delete timeOnline[socket.id];
     });
 
-    // Add user to online list
-    addUser(socket.data.userId, socket.id, socket.data.username);
-    io.emit("online_users_updated", getOnlineUsers());
-
-    // --- Connection Events ---
+    // --- DISCONNECT (global socket disconnect) ---
     socket.on("disconnect", (reason) => {
-      console.warn(`Chat disconnected: ${socket.data.userId} (${reason})`);
-      removeUser(socket.id);
-      io.emit("online_users_updated", getOnlineUsers());
+      console.log(`Socket disconnected: ${socket.id} (${reason})`);
+
+      // compute time online if present
+      if (timeOnline[socket.id]) {
+        const durationMs = Date.now() - timeOnline[socket.id].getTime();
+        console.log(`Socket ${socket.id} was online for ${durationMs} ms`);
+        delete timeOnline[socket.id];
+      }
+
+      // remove from all room sets and notify each room
+      for (const [roomId, set] of connections.entries()) {
+        if (set.has(socket.id)) {
+          set.delete(socket.id);
+          io.in(roomId).emit("user_left", { userId: socket.id });
+          io.in(roomId).emit("online_users_updated", getUsersInRoom(roomId));
+          if (set.size === 0) connections.delete(roomId);
+        }
+      }
+
+      removeUser(socket.id); // remove from app-level online list
     });
 
-    socket.on("connect_error", (err) => {
-      console.error("Socket connection error:", err.message);
+    // --- SIGNALING EVENTS ---
+    socket.on("offer", (data: { to: string; sdp: any }) => {
+      socket.to(data.to).emit("offer", { sdp: data.sdp, from: socket.id });
     });
 
-    socket.on("reconnect_attempt", (attempt) => {
-      console.log(`Reconnection attempt ${attempt}...`);
+    socket.on("answer", (data: { to: string; sdp: any }) => {
+      socket.to(data.to).emit("answer", { sdp: data.sdp, from: socket.id });
     });
 
-    socket.on("reconnect", (attempt) => {
-      console.log(`Reconnected after ${attempt} attempts`);
+    socket.on("ice-candidate", (data: { to: string; candidate: any }) => {
+      socket.to(data.to).emit("ice-candidate", {
+        candidate: data.candidate,
+        from: socket.id,
+      });
     });
 
-    // --- Custom Chat Event ---
+    // --- MESSAGING ---
     socket.on("send_message", (data: { message: string; roomId: string }) => {
-      console.log("data : ", data);
       const sender = getUserById(socket.data.userId);
-
-      console.log("online users : ", getOnlineUsers());
-
       if (!sender) {
         console.warn("Sender not found or offline");
         return;
       }
 
-      const payload = {
+      const payload: IMessage = {
         userId: sender.userId,
         username: sender.username || "Anonymous",
         message: data.message,
+        roomId: data.roomId,
         timestamp: new Date().toISOString(),
       };
 
-      console.log("Message received:", payload);
-      io.to(data.roomId).emit("receive_message", payload);
+	console.log("rec msg", payload);
+
+      io.in(data.roomId).emit("receive_message", payload);
+    });
+
+    socket.on("connect_error", (err: any) => {
+      console.error("Socket connection error:", err.message);
+    });
+
+    socket.on("reconnect_attempt", (attempt: number) => {
+      console.log(`Reconnection attempt ${attempt}...`);
+    });
+
+    socket.on("reconnect", (attempt: number) => {
+      console.log(`Reconnected after ${attempt} attempts`);
     });
   });
 

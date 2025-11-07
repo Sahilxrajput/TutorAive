@@ -1,5 +1,5 @@
 import express, { Request, Response } from "express";
-import authMiddleware from "../Middlewares/authMiddleware";
+import authMiddleware from "../Middlewares/auth.middleware";
 import {
   addCollaboratorValidator,
   validateGetNotes,
@@ -23,42 +23,40 @@ import {
 
 const router = express.Router();
 
-// ---------------------- auth authMiddleware---------------
+// ---------------------- Auth Middleware ----------------------
 router.use(authMiddleware);
 
-//TODO FIX requets body
-router.post("/", createNote);
+// ---------------------- Routes ----------------------
 
-router.get("/", validateGetNotes, handleValidation, getNotesByStatus);
+// GET all or filtered notes / POST create a new note
+//@todo FIX requets body
+router
+  .route("/")
+  .get(validateGetNotes, handleValidation, getNotesByStatus)
+  .post(createNote);
 
-router.get("/:id", getNoteById);
+router.route("/:id").get(getNoteById).put(updateNote).delete(permanentlyDelete);
 
-router.put("/:id", updateNote);
-
+// PATCH routes for toggling note properties
 router.patch("/:id/toggle-visibility", visibilityToggler);
 
-//TODO authorization
+//@todo authorization
 router.patch("/:id/toggle-trash", trashToggler);
-
 router.patch("/:id/toggle-pin", pinToggler);
-
 router.patch("/:id/toggle-archive", archiveToggler);
 
-router.delete("/:id", permanentlyDelete);
-
-//TODO maybe notes delete for all, auth
+// DELETE all trashed notes
+//@todo maybe notes delete for all, auth
 router.delete("/clear-trash", clearTrash);
 
-// TODO Validate input
-router.post(
-  "/:id/collaborators",
-  addCollaboratorValidator,
-  handleValidation,
-  addCollaborator
-);
+// Collaborators
+//@todo Validate input
+router
+  .route("/:id/collaborators")
+  .post(addCollaboratorValidator, handleValidation, addCollaborator)
+  .delete(removeCollaborator);
 
-router.delete("/:id/collaborators", removeCollaborator);
-
+// Search route (query string-based search)
 router.get("/search/query", searchQuery);
 
 export default router;

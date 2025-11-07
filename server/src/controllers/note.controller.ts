@@ -68,7 +68,7 @@ export const updateNote = async (req: Request, res: Response) => {
     if (!canEdit)
       return res.status(403).json({ message: "You do not have edit access" });
 
-    //TODO have a look
+    //@todo have a look
     Object.assign(note, req.body);
     await note.save();
     res.json(note);

@@ -1,7 +1,7 @@
 import { Router } from "express";
 import passport from "passport";
 import generateAuthToken from "../utils/generateAuthToken";
-import authMiddleware from "../Middlewares/authMiddleware";
+import authMiddleware from "../Middlewares/auth.middleware";
 import {
   deleteAccount,
   forgotPassword,
@@ -43,10 +43,10 @@ router.get(
 // login failed
 router.get("/login/failed", loginfailed);
 
-// TODO validation
+// @todo validation
 router.post("/signup", signup);
 
-// TODO validation
+// @todo validation
 router.post("/signin", signin);
 
 router.get("/logout", authMiddleware, logout);

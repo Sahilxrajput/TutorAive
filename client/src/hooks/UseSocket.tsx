@@ -10,7 +10,7 @@ interface UseSocketReturn {
   socket: Socket | null;
   isConnected: boolean;
   onlineUsers: User[];
-  sendMessage: (message: string, roomId:string) => void;
+  sendMessage: (message: string, roomId: string) => void;
   emitCustomEvent: (event: string, payload: any) => void;
   disconnectSocket: () => void;
   reconnectSocket: () => void;
@@ -117,7 +117,7 @@ const useSocket = (user?: User): UseSocketReturn => {
 
   const reconnectSocket = useCallback(() => {
     if (socketRef.current && !socketRef.current.connected) {
-      console.log("🔁 Manually reconnecting socket...");
+      console.log(" Manually reconnecting socket...");
       socketRef.current.connect();
     }
   }, []);

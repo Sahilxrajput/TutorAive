@@ -5,8 +5,8 @@ import {
   getStudentSubmission,
   gradeSubmission,
 } from "../controllers/submission.controller";
-import authMiddleware from "../Middlewares/authMiddleware";
-import isInstructor from "../Middlewares/isInstructor";
+import authMiddleware from "../Middlewares/auth.middleware";
+import {isInstructor} from "../Middlewares/Instructor.middleware";
 
 const router = express.Router();
 

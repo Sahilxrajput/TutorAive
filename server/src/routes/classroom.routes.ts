@@ -19,9 +19,9 @@ import {
   joinClassroomByCodeValidator,
 } from "../validators/classroom.schema";
 
-import authMiddleware from "../Middlewares/authMiddleware";
+import authMiddleware from "../Middlewares/auth.middleware";
 import { handleValidation } from "../Middlewares/validate";
-import isInstructor from "../Middlewares/isInstructor";
+import {isInstructor} from "../Middlewares/Instructor.middleware";
 
 const router = express.Router();
 
@@ -41,7 +41,7 @@ router.post(
   enrollClassroomByCode
 );
 
-//TODO enroll classroom by purchase
+//@todo enroll classroom by purchase
 router.post(
   "/enroll",
   joinClassroomValidator,

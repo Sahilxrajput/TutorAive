@@ -29,6 +29,7 @@ export interface IAssignment extends Document {
   dueDate: Date;
   createdBy: Types.ObjectId;
   maxPoints?: number;
+  attachment?:string;
   status: "pending" | "submitted";
   createdAt: Date;
   updatedAt: Date;
@@ -105,9 +106,10 @@ export interface IVideoParticipant {
   leaveAt: Date;
   role: "student" | "instructor" | "admin";
 }
-export interface IVideoSession extends Document {
+export interface ILiveSession extends Document {
   classroom?: Types.ObjectId;
   title?: string;
+  meatingCode: string;
   createdBy?: Types.ObjectId;
   startedAt: Date;
   endedAt?: Date;
@@ -121,7 +123,7 @@ export interface ICollaborator {
   user: IUser | Types.ObjectId;
   access: "view" | "edit";
 }
-//TODO TEST
+//@todo TEST
 export interface INote extends Document {
   _id: Types.ObjectId;
   title: string;

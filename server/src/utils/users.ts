@@ -1,28 +1,42 @@
-interface OnlineUser {
+export interface ISocketUser {
   userId: string;
   username?: string;
   socketId: string;
+  roomId?: string;
 }
 
-const onlineUsers: OnlineUser[] = [];
+// Using a Map to ensure uniqueness by userId
+const onlineUsers = new Map<string, ISocketUser>();
 
-/** Add a user to the list of online users */
-export const addUser = (userId: string, socketId: string, username?: string) => {
-  const exists = onlineUsers.find((u) => u.userId === userId);
-  if (!exists) {
-    onlineUsers.push({ userId, socketId, username });
+/** Add or update a user */
+export const addUser = (user: ISocketUser): ISocketUser => {
+  onlineUsers.set(user.userId, user);
+  return user;
+};
+
+/** Remove a user by socketId */
+export const removeUser = (socketId: string): void => {
+  for (const [userId, u] of onlineUsers.entries()) {
+    if (u.socketId === socketId) {
+      onlineUsers.delete(userId);
+      break;
+    }
   }
 };
 
-/** Remove a user when they disconnect */
-export const removeUser = (socketId: string) => {
-  const index = onlineUsers.findIndex((u) => u.socketId === socketId);
-  if (index !== -1) onlineUsers.splice(index, 1);
-};
-
-/** Get list of all online users */
-export const getOnlineUsers = () => onlineUsers;
+/** Get all online users as an array */
+export const getOnlineUsers = (): ISocketUser[] =>
+  Array.from(onlineUsers.values());
 
 /** Find a user by their ID */
-export const getUserById = (userId: string) =>
-  onlineUsers.find((u) => u.userId === userId);
+export const getUserById = (userId: string): ISocketUser | undefined =>
+  onlineUsers.get(userId);
+
+// Get all users in a specific room
+export const getUsersInRoom = (roomId: string): ISocketUser[] =>
+  Array.from(onlineUsers.values()).filter((u) => u.roomId === roomId);
+
+/** Clear all users */
+export const removeAllUsers = (): void => {
+  onlineUsers.clear();
+};

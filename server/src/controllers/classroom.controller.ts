@@ -16,7 +16,7 @@ export const createClassroom = async (req: Request, res: Response) => {
   }
 };
 
-// TODO
+// @todo
 // Get all classrooms (with optional filtering)
 export const getClassrooms = async (req: Request, res: Response) => {
   try {
@@ -92,7 +92,7 @@ export const updateClassroom = async (req: Request, res: Response) => {
   }
 };
 
-// TODO permanent delete 
+//@todo permanent delete 
 // Delete (soft-delete or permanently remove)
 export const deleteClassroom = async (req: Request, res: Response) => {
   try {

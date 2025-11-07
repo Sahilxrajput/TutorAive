@@ -5,7 +5,7 @@ import User from "../models/user.model";
 import generateAuthToken from "../utils/generateAuthToken";
 import bcrypt from "bcrypt";
 
-//TODO add firstname, lastname default
+//@todo add firstname, lastname default
 const signup = async (req: any, res: any) => {
   try {
     let { email, firstName, lastName, userName, password, role } = req.body;
@@ -24,7 +24,7 @@ const signup = async (req: any, res: any) => {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 12);
 
-    // TODO in validation set default value of lastname and user
+    // @todo in validation set default value of lastname and user
     const newUser = new User({
       email,
       userName,
@@ -166,7 +166,7 @@ const deleteAccount = async (req: any, res: any) => {
   }
 };
 
-//TODO validation
+//@todo validation
 const resetPassword = async (req: any, res: any) => {
   const { currentPassword, newPassword } = req.body;
 

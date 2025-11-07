@@ -66,6 +66,7 @@ app.use("/api/invitations", invitationRouter);
 app.use("/api/assignments", assignmentRoutes);
 app.use("/api/submissions", submissionRoutes); 
 app.use("/api/notes", notesRouter); // all required auth
+
 app.get("/join", async (req, res) => {
   try {
     const r = await genearteQrCode("1234");
@@ -76,6 +77,7 @@ app.get("/join", async (req, res) => {
     res.status(500).json(e);
   }
 });
+
 server.listen(PORT, () =>
   console.log(` Server running on port http://localhost:${PORT}`)
 );
