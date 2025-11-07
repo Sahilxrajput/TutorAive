@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import Submission from "../models/submission.model";
 
 // Submit assignment
-export const submitAssignment = async (req: Request, res: Response) => {
+export const createSubmission = async (req: Request, res: Response) => {
   try {
     const { assignmentId, fileUrl, content } = req.body;
 
@@ -11,30 +11,61 @@ export const submitAssignment = async (req: Request, res: Response) => {
       student: req.userId,
     });
 
-    if (existing) return res.status(400).json({ message: "Already submitted" });
+    if (existing)
+      return res
+        .status(400)
+        .json({ message: "You have already submitted this assignment" });
 
     const submission = await Submission.create({
       assignment: assignmentId,
       student: req.userId,
       fileUrl,
       content,
+      status: "submitted",
     });
 
-    res.status(201).json(submission);
+    res.status(201).json({ success: true, data: submission });
   } catch (err: any) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({
+      success: false,
+      message: "Server error creating submission",
+      error: (err as Error).message,
+    });
   }
 };
 
 // Get submissions for a specific assignment (instructor)
 export const getSubmissions = async (req: Request, res: Response) => {
   try {
-    const submissions = await Submission.find({ assignment: req.params.assignmentId })
+    const submissions = await Submission.find({
+      assignment: req.params.assignmentId,
+    })
       .populate("student", "username email")
       .sort({ submittedAt: -1 });
     res.json(submissions);
   } catch (err: any) {
     res.status(500).json({ message: err.message });
+  }
+};
+
+export const getSubmissionById = async (req: Request, res: Response) => {
+  try {
+    const submission = await Submission.findById(req.params.id)
+      .populate("student", "username email")
+      .populate("assignment", "title dueDate");
+    if (
+      submission.student._id.toString() !== req.userId?.toString() ||
+      req.userRole !== "instructor"
+    ) {
+      return res
+        .status(403)
+        .json({ message: "You are not authorized to view this submission." });
+    }
+    res.status(200).json({ success: true, data: submission });
+  } catch (err: any) {
+    res
+      .status(500)
+      .json({ message: err.message || "Server error fetching submission" });
   }
 };
 
@@ -46,7 +77,8 @@ export const getStudentSubmission = async (req: Request, res: Response) => {
       student: req.userId,
     });
 
-    if (!submission) return res.status(404).json({ message: "No submission found" });
+    if (!submission)
+      return res.status(404).json({ message: "No submission found" });
     res.json(submission);
   } catch (err: any) {
     res.status(500).json({ message: err.message });
@@ -56,15 +88,16 @@ export const getStudentSubmission = async (req: Request, res: Response) => {
 // Grade a submission (instructor)
 export const gradeSubmission = async (req: Request, res: Response) => {
   try {
-    const { grade, feedback } = req.body;
+    const { marks, feedback } = req.body;
 
     const submission = await Submission.findByIdAndUpdate(
       req.params.id,
-      { grade, feedback },
+      { marks, feedback },
       { new: true }
     );
 
-    if (!submission) return res.status(404).json({ message: "Submission not found" });
+    if (!submission)
+      return res.status(404).json({ message: "Submission not found" });
 
     res.json(submission);
   } catch (err: any) {

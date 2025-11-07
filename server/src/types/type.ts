@@ -6,9 +6,9 @@ export interface MyJwtPayload extends JwtPayload {
   email: string;
   profileImage?: string;
 }
-export interface IUser  {
+export interface IUser {
   // _id?:string;
-   _id: Types.ObjectId;
+  _id: Types.ObjectId;
   firstName: string;
   lastName?: string;
   userName?: string;
@@ -29,7 +29,7 @@ export interface IAssignment extends Document {
   dueDate: Date;
   createdBy: Types.ObjectId;
   maxPoints?: number;
-  attachment?:string;
+  attachment?: string;
   status: "pending" | "submitted";
   createdAt: Date;
   updatedAt: Date;
@@ -93,11 +93,12 @@ export interface IClassInvitation extends Document {
 }
 export interface ISubmission extends Document {
   assignment: Types.ObjectId;
+  status: "submitted" | "checked";
   student: Types.ObjectId;
   files?: string[]; // array of file URLs
   content?: string;
   submittedAt: Date;
-  grade?: number; // optional grade
+  marks?: number; // optional grade
   feedback?: string;
 }
 export interface IVideoParticipant {
