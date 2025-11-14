@@ -19,6 +19,7 @@ import ClassroomNotes from "./components/classroom/ClassroomNotes";
 import Quiz from "./pages/Quiz";
 import Editor from "./pages/Editor";
 import LiveSession from "./pages/LiveSession";
+import CommunityPage from "./pages/CommunityPage";
 
 
 
@@ -34,6 +35,7 @@ const App: React.FC = () => {
         <Route path="notes" element={<Notes />} />
         <Route path="quizs" element={<Quiz />} />
         <Route path="live" element={<LiveSession />} />
+        <Route path="tweet" element={<CommunityPage />} />
 
         {/* Browse all classrooms */}
         <Route path="classrooms" element={<BrowseClassroom />} />

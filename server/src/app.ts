@@ -22,6 +22,7 @@ import quizRouter from "./routes/quiz.routes";
 import genearteQrCode from "./utils/generateQrCode";
 import notesRouter from "./routes/note.routes";
 import lectureRouter from "./routes/lecture.route";
+import tweetRouter from "./routes/tweet.routes";
 
 const PORT = process.env.PORT || 3000;
 
@@ -60,6 +61,7 @@ app.use(passport.session());
 app.get("/", (_, res) => res.send("Socket.IO Server Running"));
 app.use("/api/auth", authRouter);
 app.use("/api/quizs", quizRouter);
+app.use("/api/tweets", tweetRouter);
 app.use("/api/users", profileRouter);
 app.use("/api/classrooms", classRouter);
 app.use("/api/payment", paymentRoutes);

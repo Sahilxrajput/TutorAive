@@ -1,7 +1,7 @@
 import useAuth from "@/hooks/useAuth";
 import type { ILecture } from "@/types/auth";
 import { CalendarRangeIcon, Clock, Pencil, Trash } from "lucide-react";
-import type { Dispatch, SetStateAction } from "react";
+import { AlertConfirmDialog } from "../AlertConfirmDialog";
 
 
 interface EventCardProps {
@@ -12,7 +12,7 @@ interface EventCardProps {
 }
 
 
-const EventCard = ({ event, onOpen, onDelete, onEdit}: EventCardProps) => {
+const EventCard = ({ event, onOpen, onDelete, onEdit }: EventCardProps) => {
     const { isInstructor } = useAuth();
     return (
         <div
@@ -51,16 +51,14 @@ const EventCard = ({ event, onOpen, onDelete, onEdit}: EventCardProps) => {
                     >
                         <Pencil size={16} />
                     </button>
-                    <button
-                        aria-label="Delete event"
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            onDelete?.(event._id);
-                        }}
-                        className="text-red-500 hover:text-red-600"
-                    >
-                        <Trash size={16} />
-                    </button>
+                    <AlertConfirmDialog
+                        Icon={Trash}
+                        title="Cancle this lecture?"
+                        description="This action cannot be undone. The lecture will be permanently removed."
+                        confirmText="Delete"
+                        cancelText="Cancel"
+                        onConfirm={() => onDelete?.(event._id)}
+                    />
                 </div>
             }
         </div>

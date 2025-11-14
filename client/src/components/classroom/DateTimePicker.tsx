@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/popover";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
-import API from "@/api";
+import API from "@/lib/api";
 
 function combineDateWithTime(date: Date, time: string) {
     const [hours, minutes] = time.split(":").map(Number);
@@ -26,7 +26,7 @@ function combineDateWithTime(date: Date, time: string) {
 }
 
 interface DateTimePickerProps {
-    id?:string
+    id?: string
     showPopup: boolean;
     action?: "edit" | "create";
     setShowPopup: Dispatch<SetStateAction<boolean>>;
@@ -125,7 +125,7 @@ export function DateTimePicker({ showPopup, setShowPopup, action = "create", id 
             } else {
                 toast.error(data.message);
             }
-        } catch(e:any) {
+        } catch (e: any) {
             setError("Failed to update class. Try again.");
             console.log("error : ", e)
         } finally {

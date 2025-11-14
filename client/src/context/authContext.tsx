@@ -1,5 +1,5 @@
 import React, { createContext, useCallback, useEffect, useState } from "react";
-import API from "../api";
+import API from "../lib/api";
 import type { AuthContextValue, IUser } from "../types/auth";
 
 

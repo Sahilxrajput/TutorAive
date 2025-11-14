@@ -14,6 +14,7 @@ const router = express.Router();
 // Routes
 router.use(authMiddleware);
 
+// @remind !check lecture or classroom or both
 router.get("/:code", getInvitationByCode);
 router.get("/classroom/:id", getInvitationsByClassroom);
 router.post("/:code/use", useInvitation);

@@ -3,7 +3,7 @@ import authMiddleware from "../Middlewares/auth.middleware";
 import {
   addCollaboratorValidator,
   validateGetNotes,
-} from "../validators/note.schema";
+} from "../validators/note.validator";
 import { handleValidation } from "../Middlewares/validate";
 import {
   addCollaborator,

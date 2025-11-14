@@ -1,7 +1,7 @@
 import { CheckCircle, Clock } from "lucide-react"
 import { classroomData } from "@/data/classData"
 import { useEffect, useState } from "react"
-import API from "@/api"
+import API from "@/lib/api"
 import { PdfUploadDialog } from "../PdfUpload"
 
 export default function Assignments() {

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import API from "@/api";
+import API from "@/lib/api";
 
 type Question = {
   id?: number;
@@ -81,11 +81,10 @@ const Quiz: React.FC = () => {
                   return (
                     <li
                       key={i}
-                      className={`p-2 rounded-lg border ${
-                        isCorrect
+                      className={`p-2 rounded-lg border ${isCorrect
                           ? "border-green-500 bg-green-50 text-green-700 font-medium"
                           : "border-gray-200"
-                      }`}
+                        }`}
                     >
                       {opt}
                     </li>

@@ -26,7 +26,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { EllipsisVertical, Pin, PinOff, Globe, Lock, UserPlus, Users2, Trash, UsersRound, Archive, ArchiveRestore, Save } from "lucide-react";
 import type { INote } from "@/types/auth";
-import API from "@/api";
+import API from "@/lib/api";
 import { toast } from "sonner";
 
 interface NoteActionsDropdownProps {

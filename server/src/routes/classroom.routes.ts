@@ -16,7 +16,7 @@ import {
   idParamValidator,
   createClassScheduleValidator,
   joinClassroomByCodeValidator,
-} from "../validators/classroom.schema";
+} from "../validators/classroom.validator";
 
 import authMiddleware from "../Middlewares/auth.middleware";
 import { handleValidation } from "../Middlewares/validate";

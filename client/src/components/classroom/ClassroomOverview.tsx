@@ -1,4 +1,4 @@
-import API from "@/api";
+import API from "@/lib/api";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 

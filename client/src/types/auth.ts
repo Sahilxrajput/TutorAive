@@ -89,3 +89,22 @@ export interface ILecture {
   createdAt: Date;
   updatedAt: Date;
 }
+
+export interface ITweet {
+  _id: string;
+  title: string;
+  content: string;
+  type: "general" | "mentorship" | "news" | "problem";
+  author: {
+    _id: string;
+    firstName: string;
+    lastName: string;
+    userName: string;
+    profilePicture?: string;
+  };
+  classroom: string; // @fix
+  likes: string[];
+  createdAt: string;
+  timeStr: string;
+  dateStr: string;
+}

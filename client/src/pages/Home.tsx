@@ -1,4 +1,4 @@
-import API from '@/api';
+import API from '@/lib/api';
 import { DateTimePicker } from '@/components/classroom/DateTimePicker';
 import EventCard from '@/components/home/EventCard';
 import LearningCard from '@/components/home/LeaningCard';

@@ -1,4 +1,4 @@
-import API from "@/api"
+import API from "@/lib/api"
 import { Button } from "@/components/ui/button"
 import {
     Card,

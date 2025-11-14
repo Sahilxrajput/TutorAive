@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Progress } from "@/components/ui/progress"
 import { toast } from "sonner"
-import API from "@/api"
+import API from "@/lib/api"
 
 export function PdfUploadDialog() {
     const [open, setOpen] = useState(false)

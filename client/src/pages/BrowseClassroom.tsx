@@ -20,7 +20,7 @@ import {
 import { BookOpen, Clock, Tag } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
-import API from "@/api";
+import API from "@/lib/api";
 
 export default function BrowseClassroom() {
   const navigate = useNavigate();
@@ -51,7 +51,7 @@ export default function BrowseClassroom() {
         if (!Array.isArray(data)) {
           data = [];
         }
-        console.log("enrolled data ", data) 
+        console.log("enrolled data ", data)
         //  Use IDs, not titles, for consistent matching
         setEnrolledCourses(data.map((c: any) => c._id));
       } catch (error) {

@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import useAuth from "@/hooks/useAuth"
-import API from "@/api"
+import API from "@/lib/api"
 import { Link, useNavigate } from "react-router-dom"
 import { useState } from "react"
 

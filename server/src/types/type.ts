@@ -149,3 +149,13 @@ export interface IEnrollment extends Document {
   orderId?: String;
   amount: Number;
 }
+
+export interface ITweet extends Document {
+  author: Types.ObjectId;
+  classroom?: Types.ObjectId;
+  type: "general" | "mentorship" | "news" | "problem";
+  content: String;
+  title: String;
+  likes?: Types.ObjectId[];
+  reTweet?:Types.ObjectId[]
+}

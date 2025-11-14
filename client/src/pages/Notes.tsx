@@ -13,7 +13,7 @@ import {
   Forward,
   NotepadText,
 } from "lucide-react";
-import API from "@/api";
+import API from "@/lib/api";
 import { motion } from "framer-motion";
 import type { INote } from "@/types/auth";
 import useAuth from "@/hooks/useAuth";

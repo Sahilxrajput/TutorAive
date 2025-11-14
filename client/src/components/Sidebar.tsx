@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
-import { Baby, BellIcon, BookOpen, ChartSpline, CircleQuestionMark, Info, LucideOctagon, MessageCircle, NotepadText } from 'lucide-react'
+import { Baby, BookOpen, ChartSpline, LucideOctagon, MessageCircle, NotepadText, Twitch } from 'lucide-react'
 import useAuth from '@/hooks/useAuth'
+import { NotificationSideBar } from './notification/NotificationSidebar';
 
 
 const Sidebar = () => {
@@ -13,11 +14,13 @@ const Sidebar = () => {
                     <Link to="/classrooms" className='flex flex-col items-center justify-center'><BookOpen /> Classroom</Link>
                     <Link to="/notes" className='flex flex-col items-center justify-center'><NotepadText />Notes</Link>
                     <Link to="/chats" className='flex flex-col items-center justify-center'><MessageCircle />Chat</Link>
-                    <Link to="/quiz" className='flex flex-col items-center justify-center'><CircleQuestionMark />Quiz</Link>
+                    {/* <Link to="/quiz" className='flex flex-col items-center justify-center'><CircleQuestionMark />Quiz</Link> */}
                     <Link to="/dashboard" className='flex flex-col items-center justify-center'><ChartSpline /> dashboard</Link>
+                    <Link to="/tweet" className='flex flex-col items-center justify-center'><Twitch /> Tweets</Link>
                 </div>
                 <div className='flex items-center justify-center gap-6 flex-col'>
-                    <Link to="/profile" className='flex flex-col items-center justify-center'><BellIcon /></Link>
+                    {/* <Link to="/" className='flex flex-col items-center justify-center'><NotificationSideBar/> </Link> */}
+                    <NotificationSideBar/> 
                     {!user ?
                         <Link to="/signin" className='flex flex-col items-center justify-center'><Baby /></Link>
                         :
