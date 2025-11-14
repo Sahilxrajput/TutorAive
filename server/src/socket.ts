@@ -142,6 +142,17 @@ export const initSocket = (httpServer: HTTPServer) => {
       io.in(data.roomId).emit("receive_message", payload);
     });
 
+    // ! @todo lecture update
+    socket.on("lecture_update",(data:any)=>{
+      const sender = getUserById(socket.data.userId);
+      if (!sender) {
+        console.warn("Sender not found or offline");
+        return;
+      }
+
+      io.in(data.roomId).emit("receive_message", );
+    })
+
     socket.on("connect_error", (err: any) => {
       console.error("Socket connection error:", err.message);
     });

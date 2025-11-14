@@ -27,3 +27,10 @@ const assignmentSchema = new Schema<IAssignment>(
 const Assignment =
   models.Assignment || model<IAssignment>("Assignment", assignmentSchema);
 export default Assignment;
+
+
+
+
+
+
+

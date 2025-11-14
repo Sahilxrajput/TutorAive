@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import Classroom from "../models/classroom.model";
-import ClassSchedule from "../models/classSchedule.model";
+import ClassSchedule from "../models/lecture.model";
 import User from "../models/user.model";
 
 // Create a new classroom
@@ -8,7 +8,7 @@ export const createClassroom = async (req: Request, res: Response) => {
   try {
     const classroom = await Classroom.create({
       ...req.body,
-      createdBy: req.userId, 
+      createdBy: req.userId,
     });
     res.status(201).json(classroom);
   } catch (error) {
@@ -26,45 +26,15 @@ export const getClassrooms = async (req: Request, res: Response) => {
     if (isPublic !== undefined) filter.isPublic = isPublic === "true";
 
     const classrooms = await Classroom.find(filter)
+    //? @fix think about populated fields
       .populate("createdBy", "name email")
       .sort({ createdAt: -1 });
-    res.json(classrooms);
+
+      res
+      .status(200)
+      .json({ message: "fetch classrooms successfully", data: classrooms });
   } catch (error) {
     res.status(500).json({ message: "Error fetching classrooms", error });
-  }
-};
-
-// schedule class
-export const createClassSchedule = async (req: Request, res: Response) => {
-  try {
-    const { classroomId, title, description, startTime, endTime, recurrenceRule } = req.body;
-
-    // 1. Check if classroom exists
-    const classroom = await Classroom.findById(classroomId);
-    if (!classroom) {
-      return res.status(404).json({ message: "Classroom not found" });
-    }
-
-    // 3. Create class schedule
-    const schedule = await ClassSchedule.create({
-      classroom: classroomId,
-      title,
-      description,
-      startTime,
-      endTime,
-      recurrenceRule,
-      createdBy: req.userId,
-    });
-
-    // 4. Add schedule to classroom's schedules array
-    classroom.schedules = classroom.schedules || [];
-    classroom.schedules.push(schedule._id);
-    await classroom.save();
-
-    res.status(201).json({ message: "Class scheduled successfully", schedule });
-  } catch (error) {
-    console.error("Error creating class schedule:", error);
-    res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -74,7 +44,8 @@ export const getClassroomById = async (req: Request, res: Response) => {
     const classroom = await Classroom.findById(req.params.id)
       .populate("createdBy", "name email profilePicture")
       .populate("students", "name email profilePicture");
-    if (!classroom) return res.status(404).json({ message: "Classroom not found" });
+    if (!classroom)
+      return res.status(404).json({ message: "Classroom not found" });
     res.json(classroom);
   } catch (error) {
     res.status(500).json({ message: "Error fetching classroom", error });
@@ -84,15 +55,18 @@ export const getClassroomById = async (req: Request, res: Response) => {
 // Update classroom details
 export const updateClassroom = async (req: Request, res: Response) => {
   try {
-    const updated = await Classroom.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    if (!updated) return res.status(404).json({ message: "Classroom not found" });
+    const updated = await Classroom.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+    });
+    if (!updated)
+      return res.status(404).json({ message: "Classroom not found" });
     res.json(updated);
   } catch (error) {
     res.status(400).json({ message: "Failed to update classroom", error });
   }
 };
 
-//@todo permanent delete 
+//@todo permanent delete
 // Delete (soft-delete or permanently remove)
 export const deleteClassroom = async (req: Request, res: Response) => {
   try {
@@ -101,7 +75,8 @@ export const deleteClassroom = async (req: Request, res: Response) => {
       { status: "deleted" },
       { new: true }
     );
-    if (!classroom) return res.status(404).json({ message: "Classroom not found" });
+    if (!classroom)
+      return res.status(404).json({ message: "Classroom not found" });
     res.json({ message: "Classroom deleted", classroom });
   } catch (error) {
     res.status(500).json({ message: "Error deleting classroom", error });
@@ -113,7 +88,8 @@ export const enrollClassroomByCode = async (req: Request, res: Response) => {
   try {
     const { joinCode } = req.body;
     const classroom = await Classroom.findOne({ joinCode });
-    if (!classroom) return res.status(404).json({ message: "Invalid join code" });
+    if (!classroom)
+      return res.status(404).json({ message: "Invalid join code" });
 
     if (!classroom.students.includes(req.userId)) {
       classroom.students.push(req.userId);
@@ -142,14 +118,14 @@ export const enrollClassroom = async (req: Request, res: Response) => {
 
     // Enroll user if not already enrolled
     if (!classroom.students.includes(userId)) {
-      console.log("classroom update")
+      console.log("classroom update");
       classroom.students.push(userId);
       await classroom.save();
     }
 
     // Update user's enrolledCourses
     if (!user.enrolledClassrooms.includes(classroomId)) {
-      console.log("user update")
+      console.log("user update");
       user.enrolledClassrooms.push(classroomId);
       await user.save();
     }
@@ -177,7 +153,8 @@ export const archiveClassroom = async (req: Request, res: Response) => {
       { status: "archived" },
       { new: true }
     );
-    if (!classroom) return res.status(404).json({ message: "Classroom not found" });
+    if (!classroom)
+      return res.status(404).json({ message: "Classroom not found" });
     res.json({ message: "Classroom archived", classroom });
   } catch (error) {
     res.status(500).json({ message: "Error archiving classroom", error });

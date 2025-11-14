@@ -8,9 +8,8 @@ export default function ClassroomOverview() {
 
   useEffect(() => {
     async function classroomData() {
-      const res = await API.get("/classrooms/" + id);
-      console.log("classdata", res.data);
-      setClassroom(res.data);
+      const { data } = await API.get("/classrooms/" + id);
+      setClassroom(data);
     }
     classroomData();
   }, [id]);

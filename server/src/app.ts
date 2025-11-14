@@ -21,6 +21,7 @@ import paymentRoutes from "./routes/payment.routes";
 import quizRouter from "./routes/quiz.routes";
 import genearteQrCode from "./utils/generateQrCode";
 import notesRouter from "./routes/note.routes";
+import lectureRouter from "./routes/lecture.route";
 
 const PORT = process.env.PORT || 3000;
 
@@ -64,14 +65,15 @@ app.use("/api/classrooms", classRouter);
 app.use("/api/payment", paymentRoutes);
 app.use("/api/invitations", invitationRouter);
 app.use("/api/assignments", assignmentRoutes);
-app.use("/api/submissions", submissionRoutes); 
+app.use("/api/submissions", submissionRoutes);
 app.use("/api/notes", notesRouter); // all required auth
+app.use("/api/lectures", lectureRouter); // all required auth
 
 app.get("/join", async (req, res) => {
   try {
     const r = await genearteQrCode("1234");
-    console.log(r)
-    res.json(r)
+    console.log(r);
+    res.json(r);
   } catch (e) {
     console.log(e);
     res.status(500).json(e);

@@ -36,7 +36,6 @@ export default function Notes() {
       const { data } = await API.get("/notes", {
         params: { status: selectedStatus },
       });
-      console.log("status", data)
       setNotes(data);
     } catch (err: any) {
       console.log(err.response?.data?.message || "Failed to fetch notes");

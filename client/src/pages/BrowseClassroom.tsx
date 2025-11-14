@@ -35,24 +35,25 @@ export default function BrowseClassroom() {
   useEffect(() => {
     async function getAllClassroom() {
       try {
-        const res = await API.get("/classrooms");
-        setCourses(res.data);
+        const { data } = await API.get("/classrooms");
+        setCourses(data.data);
       } catch (error) {
         console.log(error);
       }
     }
 
-    
+
 
     async function getEnrolled() {
       try {
-        const res = await API.get("/users/enrolled");
+        let { data } = await API.get("/users/enrolled");
 
-        if (!Array.isArray(res.data)) {
-          res.data = [];
+        if (!Array.isArray(data)) {
+          data = [];
         }
+        console.log("enrolled data ", data) 
         //  Use IDs, not titles, for consistent matching
-        setEnrolledCourses(res.data.map((c: any) => c._id));
+        setEnrolledCourses(data.map((c: any) => c._id));
       } catch (error) {
         console.log(error);
       }
@@ -63,7 +64,7 @@ export default function BrowseClassroom() {
 
   // All unique tags
   const allTags = courses.flatMap((c) => c.tags || []);
-  const uniqueTag = ["All", ...Array.from(new Set(allTags)).slice(0,8)];
+  const uniqueTag = ["All", ...Array.from(new Set(allTags)).slice(0, 8)];
 
   // Filtered by search + tags
   const filteredCourses = courses.filter((classroom) => {

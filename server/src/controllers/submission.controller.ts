@@ -1,34 +1,63 @@
 import { Request, Response } from "express";
 import Submission from "../models/submission.model";
+import mongoose from "mongoose";
+import { uploadOnCloudinary } from "../lib/cloudinary";
 
 // Submit assignment
-export const createSubmission = async (req: Request, res: Response) => {
+export const createSubmission = async (
+  // req: Request & {
+  //   file?: Express.Multer.File;
+  //   userId?: string;
+  //   userRole?: string;
+  // },
+  req: Request,
+  res: Response
+) => {
   try {
-    const { assignmentId, fileUrl, content } = req.body;
+    if (!req.file) {
+      console.log("file is required");
+      return res.status(400).json({ message: "PDF file is required." });
+    }
+
+    const assignmentId = req.params.assignmentId;
+    console.log("assignment Id", assignmentId);
+
+    if (!mongoose.Types.ObjectId.isValid(assignmentId)) {
+      console.log("invalid id");
+      return res.status(400).json({ message: "Invalid assignment ID" });
+    }
 
     const existing = await Submission.findOne({
       assignment: assignmentId,
       student: req.userId,
     });
 
-    if (existing)
+    if (existing) {
+      console.log("You have already submitted this assignment");
       return res
         .status(400)
         .json({ message: "You have already submitted this assignment" });
+    }
 
+    // const pdf = await uploadOnCloudinary(req.file.path);
+    // console.log("pdf", pdf);
     const submission = await Submission.create({
       assignment: assignmentId,
       student: req.userId,
-      fileUrl,
-      content,
+      fileUrl: req.file?.path || "path",
       status: "submitted",
     });
-
-    res.status(201).json({ success: true, data: submission });
+    console.log("submission", submission);
+    res.status(201).json({
+      success: true,
+      message: "Submission uploaded successfully",
+      submission,
+    });
   } catch (err: any) {
+    console.log("err :", err);
     res.status(500).json({
       success: false,
-      message: "Server error creating submission",
+      message: "Server error uploading submission",
       error: (err as Error).message,
     });
   }

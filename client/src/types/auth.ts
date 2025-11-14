@@ -39,8 +39,21 @@ export interface IClassroom {
   paid: boolean;
 }
 
+// export interface IAssignment extends Document {
+//   classroom: Types.ObjectId;
+//   title: string;
+//   description?: string;
+//   dueDate: Date;
+//   createdBy: Types.ObjectId;
+//   maxPoints?: number;
+//   attachment?: string;
+//   status: "pending" | "submitted";
+//   createdAt: Date;
+//   updatedAt: Date;
+// }
 export interface AuthContextValue {
   user: IUser | null;
+  isInstructor: boolean;
   loading: boolean;
   refreshUser: () => Promise<void>;
   logout: () => Promise<void>;
@@ -59,4 +72,20 @@ export interface INote {
   collaborators: { user: string; access: "view" | "edit" }[];
   updatedAt: string;
   createdAt: string;
+}
+
+export interface ILecture {
+  _id: string;
+  classroom: {
+    title: string;
+    _id: string;
+  };
+  dateStr?: string;
+  startTime?: string;
+  timeStr?: string;
+  status: "scheduled" | "completed" | "cancelled";
+  title: string;
+  createdBy: string;
+  createdAt: Date;
+  updatedAt: Date;
 }

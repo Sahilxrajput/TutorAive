@@ -69,7 +69,7 @@ export interface IClassroom extends Document {
   };
   paid: boolean;
 }
-export interface IClassSchedule extends Document {
+export interface ILecture extends Document {
   classroom: Types.ObjectId;
   title: string;
   description?: string;
@@ -95,7 +95,7 @@ export interface ISubmission extends Document {
   assignment: Types.ObjectId;
   status: "submitted" | "checked";
   student: Types.ObjectId;
-  files?: string[]; // array of file URLs
+  fileUrl?: string; // array of file URLs
   content?: string;
   submittedAt: Date;
   marks?: number; // optional grade

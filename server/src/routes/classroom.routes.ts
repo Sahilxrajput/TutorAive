@@ -6,7 +6,6 @@ import {
   updateClassroom,
   deleteClassroom,
   archiveClassroom,
-  createClassSchedule,
   enrollClassroom,
   enrollClassroomByCode,
 } from "../controllers/classroom.controller";
@@ -55,13 +54,6 @@ router.use(isInstructor);
 // Create a new classroom
 router.post("/", createClassroomValidator, handleValidation, createClassroom);
 
-// schedule class
-router.post(
-  "/schedule",
-  createClassScheduleValidator,
-  handleValidation,
-  createClassSchedule
-);
 
 // Update classroom
 router.put("/:id", updateClassroomValidator, handleValidation, updateClassroom);

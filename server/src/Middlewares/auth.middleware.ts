@@ -31,7 +31,6 @@ export default function authMiddleware(
       token,
       process.env.JWT_SECRET as string
     ) as MyJwtPayload;
-    
     req.userId = decoded._id; 
     req.userRole = decoded.role;
     next(); 

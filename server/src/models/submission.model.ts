@@ -10,7 +10,7 @@ const submissionSchema = new Schema<ISubmission>(
     },
     student: { type: Schema.Types.ObjectId, ref: "User", required: true },
     submittedAt: { type: Date, default: Date.now },
-    files: [{ type: String }],
+    fileUrl: [{ type: String }],
     status: {
       type: String,
       enum: ["submitted", "checked"],

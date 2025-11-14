@@ -7,6 +7,7 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<IUser | null>(null);
+  const [isInstructor, setIsinstructor] = useState<boolean>(false);
   const [loading, setLoading] = useState(true);
 
   const refreshUser = useCallback(async () => {
@@ -14,6 +15,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setLoading(true);
       const res = await API.get("/users/me");
       setUser(res.data ?? null);
+      setIsinstructor(res?.data?.role === "instructor")
     } catch (err) {
       console.error("Failed to refresh user", err);
       setUser(null);
@@ -51,7 +53,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [refreshUser]);
 
   return (
-    <AuthContext.Provider value={{ user, loading, refreshUser, logout, login }}>
+    <AuthContext.Provider value={{ user, isInstructor, loading, refreshUser, logout, login }}>
       {children}
     </AuthContext.Provider>
   );

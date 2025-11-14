@@ -1,12 +1,32 @@
-import { CheckCircle, Clock } from "lucide-react";
-import { classroomData } from "@/data/classData";
+import { CheckCircle, Clock } from "lucide-react"
+import { classroomData } from "@/data/classData"
+import { useEffect, useState } from "react"
+import API from "@/api"
+import { PdfUploadDialog } from "../PdfUpload"
 
 export default function Assignments() {
-  const { assignments } = classroomData;
+  const { assignments } = classroomData
+  const assignmentId = "676b81b72d98f134e4b9f00a"; // dynamic later
+  // const [assignments, setAssignments] = useState([])
 
-  // Separate submitted vs pending
-  const submitted = assignments.filter((a) => a.status === "Submitted");
-  const pending = assignments.filter((a) => a.status !== "Submitted");
+
+  useEffect(() => {
+    async function fetchAssignments() {
+      const res = await API.get("/assignments")
+      // setAssignments(res.data)
+      // console.log(res.data)
+    }
+    fetchAssignments()
+  }, [])
+
+  const submitted = assignments.filter((a) => a.status === "Submitted")
+  const pending = assignments.filter((a) => a.status !== "Submitted")
+
+  const handleUpload = async (file: File) => {
+    const form = new FormData()
+    form.append("pdf", file)
+    await fetch("/api/upload", { method: "POST", body: form })
+  }
 
   return (
     <div className="p-8 w-full h-full overflow-y-auto bg-yellow-50">
@@ -19,7 +39,7 @@ export default function Assignments() {
         </h3>
 
         {pending.length === 0 ? (
-          <p className="text-gray-500 italic">No pending assignments </p>
+          <p className="text-gray-500 italic">No pending assignments</p>
         ) : (
           <div className="grid gap-4 md:grid-cols-2">
             {pending.map((item) => (
@@ -34,13 +54,13 @@ export default function Assignments() {
                   Due: {new Date(item.dueDate).toLocaleDateString()}
                 </p>
                 <p className="text-sm text-gray-600">
-                  Status: <span className="font-medium text-red-500">{item.status}</span>
+                  Status:{" "}
+                  <span className="font-medium text-red-500">{item.status}</span>
                 </p>
+
                 <div className="flex mt-2 items-center justify-between">
-                  <button className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition">
-                    Submit Now
-                  </button>
-                  <button className=" px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition">
+                  <PdfUploadDialog assignmentId={assignmentId} />
+                  <button className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition">
                     See Assignment
                   </button>
                 </div>
@@ -57,7 +77,9 @@ export default function Assignments() {
         </h3>
 
         {submitted.length === 0 ? (
-          <p className="text-gray-500 italic">You haven’t submitted any assignments yet.</p>
+          <p className="text-gray-500 italic">
+            You haven’t submitted any assignments yet.
+          </p>
         ) : (
           <div className="grid gap-4 md:grid-cols-2">
             {submitted.map((item) => (
@@ -86,10 +108,7 @@ export default function Assignments() {
                   </p>
                 </div>
                 <div className="flex mt-2 items-center justify-between">
-                  <button className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition">
-                    Your Submission
-                  </button>
-                  <button className=" px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition">
+                  <button className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition">
                     See Assignment
                   </button>
                 </div>
@@ -99,5 +118,5 @@ export default function Assignments() {
         )}
       </section>
     </div>
-  );
+  )
 }

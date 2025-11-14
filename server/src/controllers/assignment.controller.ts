@@ -36,7 +36,10 @@ export const getAssignments = async (req: Request, res: Response) => {
     if (!classrooms.length)
       return res.status(404).json({ message: "User is not in any classroom." });
 
+    // console.log("classrooms :" + classrooms);
+
     const classroomIds = classrooms.map((c) => c._id);
+    // console.log("classrooms :" + classrooms);
 
     // Fetch assignments for all those classrooms
     const assignments = await Assignment.find({
@@ -44,6 +47,8 @@ export const getAssignments = async (req: Request, res: Response) => {
     })
       // .populate("classroom", "name code") // optional //? @todo
       .sort({ dueDate: 1 });
+
+    // console.log("assignments :" + assignments);
 
     res.json({
       totalAssignments: assignments.length,

@@ -1,9 +1,17 @@
 import { useState } from "react";
 import { ChevronLeft } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
+import useAuth from "@/hooks/useAuth";
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "../ui/dialog";
+import { Label } from "../ui/label";
+import { Input } from "../ui/input";
+import { Button } from "../ui/button";
+import { DateTimePicker } from "./DateTimePicker";
 
 const ClassroomSideBar = () => {
   const [isHide, setIsHide] = useState<boolean>(false);
+  const [showPopup, setShowPopup] = useState<boolean>(false)
+  const { user } = useAuth()
 
   const pathDetector = (item: string) => {
     item = item.toLowerCase()
@@ -14,6 +22,7 @@ const ClassroomSideBar = () => {
   }
 
   const classContent = ["Overview", "Resources", "Notes", "Assignments", "Leaderboard"]
+  const teacherContent = ["create Assignment", "schedule Class"]
 
   const { id } = useParams();
 
@@ -50,7 +59,30 @@ const ClassroomSideBar = () => {
             </Link>
           )
         )}
+        <div>
+
+          <div>
+
+            {user?.role === "instructor" && <Button
+              onClick={() => setShowPopup(true)}
+              className={`hover:bg-blue-400 text-left p-4 w-full transition-all duration-200 ease-in-out ${isHide ? "opacity-0 pointer-events-none" : "opacity-100"
+                }`}
+            >
+              schedule Class
+            </Button>}
+          </div>
+        </div>
       </div>
+
+      <DateTimePicker showPopup={showPopup} setShowPopup={setShowPopup} />
+
+
+
+
+
+
+
+
     </div>
   );
 };

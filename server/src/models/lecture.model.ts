@@ -1,8 +1,7 @@
 import mongoose, { Schema, model, models, Document, Types } from "mongoose";
-import { IClassSchedule } from "../types/type";
+import { ILecture } from "../types/type";
 
-
-const classScheduleSchema = new Schema<IClassSchedule>(
+const lectureSession = new Schema<ILecture>(
   {
     classroom: {
       type: Schema.Types.ObjectId,
@@ -28,7 +27,6 @@ const classScheduleSchema = new Schema<IClassSchedule>(
   { timestamps: true }
 );
 
-const ClassSchedule =
-  models.ClassSchedule ||
-  model<IClassSchedule>("ClassSchedule", classScheduleSchema);
-export default ClassSchedule;
+const Lecture =
+  models.lectureSession || model<ILecture>("Lecture", lectureSession);
+export default Lecture;
