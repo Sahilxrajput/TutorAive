@@ -108,3 +108,17 @@ export interface ITweet {
   timeStr: string;
   dateStr: string;
 }
+
+export interface IAssignment{
+  _id: string;
+  title: string;
+  description: string;
+  dueDate: string;
+  createdBy: string;
+  maxPoints?: number;
+  attachment: string;
+  status: "pending" | "submitted";
+  createdAt: string;
+  updatedAt: string;
+  classroom: string;
+}

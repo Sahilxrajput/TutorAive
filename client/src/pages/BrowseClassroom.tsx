@@ -21,6 +21,7 @@ import { BookOpen, Clock, Tag } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
 import API from "@/lib/api";
+import { toast } from "sonner";
 
 export default function BrowseClassroom() {
   const navigate = useNavigate();
@@ -42,8 +43,6 @@ export default function BrowseClassroom() {
       }
     }
 
-
-
     async function getEnrolled() {
       try {
         let { data } = await API.get("/users/enrolled");
@@ -51,7 +50,6 @@ export default function BrowseClassroom() {
         if (!Array.isArray(data)) {
           data = [];
         }
-        console.log("enrolled data ", data)
         //  Use IDs, not titles, for consistent matching
         setEnrolledCourses(data.map((c: any) => c._id));
       } catch (error) {
@@ -97,10 +95,10 @@ export default function BrowseClassroom() {
         // Payment integration placeholder
         console.log("Redirecting to payment gateway...");
       } else {
-        const res = await API.post("/classrooms/enroll", {
+        const {data} = await API.post("/classrooms/enroll", {
           classroomId: selectedCourse._id,
         });
-        console.log(res);
+        toast.success(data.message);
         setEnrolledCourses([...enrolledCourses, selectedCourse._id]);
         navigate("/classrooms/" + selectedCourse._id)
       }

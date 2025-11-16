@@ -29,7 +29,6 @@ const userSchema = new Schema<IUser>(
     },
     profilePicture: {
       type: String,
-      default: "",
     },
     email: {
       type: String,

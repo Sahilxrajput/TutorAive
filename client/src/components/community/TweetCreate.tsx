@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type Dispatch, type SetStateAction } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,14 +13,19 @@ import {
 import { Label } from "../ui/label";
 import API from "@/lib/api";
 import { toast } from "sonner";
+import { useTweets } from "@/hooks/useTweet";
 
+interface Props {
+    setIsCreating: Dispatch<SetStateAction<boolean>>;
+}
 
-
-export default function TweetCreate() {
+export default function TweetCreate({ setIsCreating }: Props) {
     const [content, setContent] = useState<string>("");
     const [title, setTitle] = useState<string>("");
     const [type, setType] = useState("general");
     const [classroom, setClassroom] = useState<string>("");
+
+    const { createTweet } = useTweets()
 
     const submit = async () => {
         if (!title.trim() || !content.trim()) {
@@ -40,19 +45,15 @@ export default function TweetCreate() {
         }
 
         try {
-            const { data } = await API.post("/tweets", payload);
-            console.log("Tweet created:", data);
-            toast.success(data.message);
 
+            // @remind i can call fetchTweets
+            createTweet(payload)
             // Reset only after successful creation
             setTitle("");
             setContent("");
             setClassroom("");
             setType("general");
-
-            // Reload tweets if needed
-            // loadTweets();
-
+            setIsCreating(false);
         } catch (err) {
             console.error("Failed to create tweet:", err);
         }
@@ -83,7 +84,7 @@ export default function TweetCreate() {
                         value={content}
                         onChange={e => setContent(e.target.value)}
                     />
-                    <p className="font-semibold absolute right-2 bottom-2 text-xs text-red-600">{500-content.length}/500</p>
+                    <p className="font-semibold absolute right-2 bottom-2 text-xs text-red-600">{500 - content.length}/500</p>
                 </div>
 
                 {/* Type */}

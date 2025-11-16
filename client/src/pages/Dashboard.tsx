@@ -2,7 +2,6 @@
 import React from "react";
 import useAuth from "../hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import avatar from "@/assets/image/boy.png"
 
 const Dashboard: React.FC = () => {
   const { user, logout } = useAuth();
@@ -10,7 +9,10 @@ const Dashboard: React.FC = () => {
   return (
     <div>
       <h1>Welcome {user?.firstName}</h1>
-      <img src={user?.profilePicture || avatar} alt="avatar" width={80} />
+      <h1>Email {user?.email}</h1>
+      <h1>Welcome {user?.role}</h1>
+      <h1>Username {user?.username}</h1>
+      <img src={user?.profilePicture} alt="avatar" width={80} />
       <div>
         <Button onClick={() => logout()}>Logout</Button>
       </div>

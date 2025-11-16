@@ -1,6 +1,8 @@
 import React, { createContext, useCallback, useEffect, useState } from "react";
 import API from "../lib/api";
 import type { AuthContextValue, IUser } from "../types/auth";
+import defaultAvatar from "@/assets/image/avatar.png";
+
 
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -13,9 +15,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const refreshUser = useCallback(async () => {
     try {
       setLoading(true);
-      const res = await API.get("/users/me");
-      setUser(res.data ?? null);
-      setIsinstructor(res?.data?.role === "instructor")
+      const { data } = await API.get("/users/me");
+      setIsinstructor(data?.role === "instructor")
+      
+      const updatedUser = {
+        ...data,
+        profilePicture: data?.profilePicture || defaultAvatar,
+      };
+
+      setUser(updatedUser ?? null);
+
     } catch (err) {
       console.error("Failed to refresh user", err);
       setUser(null);

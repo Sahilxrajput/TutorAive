@@ -1,38 +1,46 @@
 import { CheckCircle, Clock } from "lucide-react"
-import { classroomData } from "@/data/classData"
 import { useEffect, useState } from "react"
 import API from "@/lib/api"
 import { PdfUploadDialog } from "../PdfUpload"
+import { useParams } from "react-router-dom"
+import type { IAssignment } from "@/types/auth"
 
 export default function Assignments() {
-  const { assignments } = classroomData
-  const assignmentId = "676b81b72d98f134e4b9f00a"; // dynamic later
-  // const [assignments, setAssignments] = useState([])
+  const [assignments, setAssignments] = useState<IAssignment[]>([])
+  const [submitted, setSubmitted] = useState<IAssignment[]>([])
+  const [pending, setPending] = useState<IAssignment[]>([])
+
+  const { id: classroomId } = useParams();
 
 
   useEffect(() => {
     async function fetchAssignments() {
-      const res = await API.get("/assignments")
-      // setAssignments(res.data)
-      // console.log(res.data)
+      const { data } = await API.get("/assignments/classroom/" + classroomId)
+      setAssignments(data.data)
+      console.log("asssign", data.data)
     }
     fetchAssignments()
   }, [])
 
-  const submitted = assignments.filter((a) => a.status === "Submitted")
-  const pending = assignments.filter((a) => a.status !== "Submitted")
+  useEffect(() => {
+    setSubmitted(assignments.filter(a => a.status === "submitted"))
+    setPending(assignments.filter(a => a.status !== "submitted"))
+  }, [assignments])
 
-  const handleUpload = async (file: File) => {
-    const form = new FormData()
-    form.append("pdf", file)
-    await fetch("/api/upload", { method: "POST", body: form })
+  function submissionUploaded(id: string) {
+    const item = assignments.find((a: IAssignment) => a._id === id);
+    if (!item) return; // prevent undefined push
+    console.log("submission done _")
+    setPending(prev => prev.filter(a => a._id !== id));
+    setSubmitted(prev => [...prev, item]);
   }
+
 
   return (
     <div className="p-8 w-full h-full overflow-y-auto bg-yellow-50">
       <h2 className="text-3xl font-bold mb-6 text-gray-800">Assignments</h2>
 
-      {/* Pending Assignments */}
+      Pending Assignments
       <section className="mb-10">
         <h3 className="text-2xl font-semibold text-yellow-700 mb-4 flex items-center gap-2">
           <Clock className="text-yellow-600" /> Pending Assignments
@@ -57,10 +65,13 @@ export default function Assignments() {
                   Status:{" "}
                   <span className="font-medium text-red-500">{item.status}</span>
                 </p>
-
+                <p className="text-xs font-thin text-gray-500">
+                  Post On: {new Date(item.createdAt).toLocaleDateString()}
+                </p>
                 <div className="flex mt-2 items-center justify-between">
-                  <PdfUploadDialog assignmentId={assignmentId} />
+                  <PdfUploadDialog onComplete={submissionUploaded} buttonText="Upload PDF" title="Upload Submission PDF" id={item._id} type="submission" />
                   <button className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition">
+                    {/* @todo make it publically accessable */}
                     See Assignment
                   </button>
                 </div>
@@ -119,4 +130,10 @@ export default function Assignments() {
       </section>
     </div>
   )
+
+  //   return (
+  //     <div>
+  //       hii
+  //     </div>
+  //   )
 }

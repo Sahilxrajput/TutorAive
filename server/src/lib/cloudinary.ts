@@ -1,7 +1,5 @@
 import { CloudinaryStorage } from "multer-storage-cloudinary";
 import { v2 as cloudinary } from "cloudinary";
-import path from "path";
-import fs from "fs";
 import multer from "multer";
 
 cloudinary.config({
@@ -11,45 +9,18 @@ cloudinary.config({
 });
 
 export const storage = new CloudinaryStorage({
-  cloudinary,
+  cloudinary: cloudinary,
   params: async (req, file) => {
     return {
-      folder: "submissions",
-      format: "pdf",
-      resource_type: "raw", // Important for non-image files
+      folder: "online-tutor",
+      allowed_formats: ["jpg", "png", "pdf", "docx", "pptx"],
+      resource_type: "auto",
+      // resource_type: "raw", // Important for non-image files
       public_id: `${Date.now()}-${file.originalname}`,
     };
   },
 });
 
-// Create the uploads directory if it doesn't exist
-const uploadDir = path.join(__dirname, "../uploads");
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
+const upload = multer({ storage: storage });
 
-export const localStorage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, uploadDir);
-  },
-  filename: function (req, file, cb) {
-    // Keep original name but prefix with timestamp for uniqueness
-    const ext = path.extname(file.originalname);
-    const baseName = path.basename(file.originalname, ext);
-    cb(null, `${baseName}-${Date.now()}${ext}`);
-  },
-});
-
-export const uploadOnCloudinary = async (filePath: string) => {
-  try {
-    if (!filePath) return null;
-    const res = await cloudinary.uploader.upload(filePath, {
-      resource_type: "raw",
-    });
-    console.log("file :- ", res);
-    return res;
-  } catch (error) {
-    console.log("cloudinary error ", error);
-    return null;
-  }
-};
+export default upload;

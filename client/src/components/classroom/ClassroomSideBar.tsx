@@ -2,11 +2,9 @@ import { useState } from "react";
 import { ChevronLeft } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 import useAuth from "@/hooks/useAuth";
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "../ui/dialog";
-import { Label } from "../ui/label";
-import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { DateTimePicker } from "./DateTimePicker";
+import { PdfUploadDialog } from "../PdfUpload";
 
 const ClassroomSideBar = () => {
   const [isHide, setIsHide] = useState<boolean>(false);
@@ -21,8 +19,13 @@ const ClassroomSideBar = () => {
     return "/" + item;
   }
 
+  const uploadAssignment = () => {
+    setShowPopup(true)
+  }
+
+
+
   const classContent = ["Overview", "Resources", "Notes", "Assignments", "Leaderboard"]
-  const teacherContent = ["create Assignment", "schedule Class"]
 
   const { id } = useParams();
 
@@ -60,16 +63,21 @@ const ClassroomSideBar = () => {
           )
         )}
         <div>
-
           <div>
+        {/* @todo only creator of that classroom can create assignment */}
+            {user?.role === "instructor" &&
+              <div className="flex justify-center items-center flex-col space-y-2">
+                <Button
+                  onClick={() => setShowPopup(true)}
+                  className={`hover:bg-blue-400 text-left p-4 w-full transition-all duration-200 ease-in-out ${isHide ? "opacity-0 pointer-events-none" : "opacity-100"
+                    }`}
+                >
+                  schedule Class
+                </Button>
+                <PdfUploadDialog buttonText=" Create Assignment" title="Create Assignment" id={id!} type="assignment" />
+              </div>
+            }
 
-            {user?.role === "instructor" && <Button
-              onClick={() => setShowPopup(true)}
-              className={`hover:bg-blue-400 text-left p-4 w-full transition-all duration-200 ease-in-out ${isHide ? "opacity-0 pointer-events-none" : "opacity-100"
-                }`}
-            >
-              schedule Class
-            </Button>}
           </div>
         </div>
       </div>

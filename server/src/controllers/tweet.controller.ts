@@ -38,7 +38,7 @@ export const createTweet = async (req: Request, res: Response) => {
 
     return res.status(201).json({
       success: true,
-      message: "Tweet created successfully",
+      message: "Tweet posted successfully",
       data: tweet,
     });
   } catch (error) {
@@ -94,7 +94,7 @@ export const deleteTweet = async (req: Request, res: Response) => {
 
     await tweet.deleteOne();
 
-    res.status(200).json({ success: true, message: "Tweet deleted" });
+    res.status(200).json({ success: true, message: "Tweet deleted successfully" });
   } catch (error) {
     res.status(500).json({ error: "Error deleting tweet" });
   }

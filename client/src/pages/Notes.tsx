@@ -40,7 +40,7 @@ export default function Notes() {
     } catch (err: any) {
       console.log(err.response?.data?.message || "Failed to fetch notes");
     } finally {
-      setLoading(false);
+      // setLoading(false);
     }
   }, []);
 
@@ -51,7 +51,7 @@ export default function Notes() {
       return;
     }
     try {
-      setLoading(true);
+      // setLoading(true);
       const { data } = await API.post("/notes", newNote);
       toast.success("Note created successfully");
       setNotes((prev) => [data, ...prev]);
@@ -60,7 +60,7 @@ export default function Notes() {
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Failed to create note");
     } finally {
-      setLoading(false);
+      // setLoading(false);
     }
   };
 
@@ -148,111 +148,113 @@ export default function Notes() {
     );
   };
 
-  // ---------- MAIN RETURN ----------
-  return (
-    <div className="min-h-screen bg-muted/30 py-8 px-6">
-      <div className="max-w-7xl mx-auto flex flex-col gap-8">
-        {/* Header */}
-        <div className="flex justify-between items-center flex-wrap gap-2">
-          <div className="space-x-2 flex items-center justify-center">
-            {["active", "archived", "trashed"].map((type) => {
-              const isActive = status === type;
-              const icons: Record<string, JSX.Element> = {
-                active: <></>,
-                archived: <Archive className="w-4 h-4 mr-1" />,
-                trashed: <Trash2 className="w-4 h-4 mr-1" />,
-              };
-              return (
-                <Button
-                  key={type}
-                  variant={isActive ? "default" : "outline"}
-                  onClick={() => setStatus(type as any)}
-                >
-                  {icons[type]}
-                  {type === "active"
-                    ? "All Notes"
-                    : type.charAt(0).toUpperCase() + type.slice(1)}
-                </Button>
-              );
-            })}
-          </div>
 
-          {status === "active" && (
-            <Button variant="outline" onClick={() => setIsCreating(!isCreating)}>
-              <Plus className="w-4 h-4" />
-              {isCreating ? "Cancel" : "New Note"}
-            </Button>
-          )}
 
-          {status === "trashed" && notes.length > 0 && (
-            <Button variant="destructive" onClick={handleClearAllTrashed}>
-              Clear All Trashed Notes
-            </Button>
-          )}
+// ---------- MAIN RETURN ----------
+return (
+  <div className="min-h-screen bg-muted/30 py-8 px-6">
+    <div className="max-w-7xl mx-auto flex flex-col gap-8">
+      {/* Header */}
+      <div className="flex justify-between items-center flex-wrap gap-2">
+        <div className="space-x-2 flex items-center justify-center">
+          {["active", "archived", "trashed"].map((type) => {
+            const isActive = status === type;
+            const icons: Record<string, JSX.Element> = {
+              active: <></>,
+              archived: <Archive className="w-4 h-4 mr-1" />,
+              trashed: <Trash2 className="w-4 h-4 mr-1" />,
+            };
+            return (
+              <Button
+                key={type}
+                variant={isActive ? "default" : "outline"}
+                onClick={() => setStatus(type as any)}
+              >
+                {icons[type]}
+                {type === "active"
+                  ? "All Notes"
+                  : type.charAt(0).toUpperCase() + type.slice(1)}
+              </Button>
+            );
+          })}
         </div>
 
-        {/* Create New Note */}
-        {isCreating && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.2 }}
-          >
-            <Card className="border border-border bg-card/70 shadow-sm rounded-xl">
-              <CardHeader>
-                <Input
-                  placeholder="Title"
-                  value={newNote.title || ""}
-                  onChange={(e) => setNewNote({ ...newNote, title: e.target.value })}
-                  className="border-none shadow-none focus-visible:ring-0 text-lg font-medium bg-transparent"
-                />
-              </CardHeader>
-              <CardContent>
-                <Textarea
-                  placeholder="Write your note..."
-                  value={newNote.content || ""}
-                  onChange={(e) => setNewNote({ ...newNote, content: e.target.value })}
-                  className="border-none shadow-none focus-visible:ring-0 resize-none bg-transparent"
-                  rows={4}
-                />
-                <div className="flex justify-end mt-4">
-                  <Button onClick={handleCreate}>Save</Button>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-          // <SimpleEditor />
+        {status === "active" && (
+          <Button variant="outline" onClick={() => setIsCreating(!isCreating)}>
+            <Plus className="w-4 h-4" />
+            {isCreating ? "Cancel" : "New Note"}
+          </Button>
         )}
 
-        {/* Notes Display */}
-        {loading ? (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {Array.from({ length: 9 }).map((_, i) => (
-              <Skeleton key={i} className="h-40 w-full rounded-xl" />
-            ))}
-          </div>
-        ) : notes.length === 0 ? (
-          <p className="text-center text-muted-foreground mt-10">
-            You don’t have any notes yet.
-          </p>
-        ) : (
-          <>
-            {status === "active" ? (
-              <>
-                {pinnedNotes.length > 0 && renderNotesGrid(pinnedNotes, "Pinned", <Pin className="w-4 h-5" />)}
-                {renderNotesGrid(
-                  otherNotes,
-                  pinnedNotes.length > 0 ? "Other Notes" : undefined,
-                  pinnedNotes.length > 0 ? <NotepadText className="w-4" /> : undefined
-                )}
-              </>
-            ) : (
-              renderNotesGrid(notes)
-            )}
-
-          </>
+        {status === "trashed" && notes.length > 0 && (
+          <Button variant="destructive" onClick={handleClearAllTrashed}>
+            Clear All Trashed Notes
+          </Button>
         )}
       </div>
+
+      {/* Create New Note */}
+      {isCreating && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.2 }}
+        >
+          <Card className="border border-border bg-card/70 shadow-sm rounded-xl">
+            <CardHeader>
+              <Input
+                placeholder="Title"
+                value={newNote.title || ""}
+                onChange={(e) => setNewNote({ ...newNote, title: e.target.value })}
+                className="border-none shadow-none focus-visible:ring-0 text-lg font-medium bg-transparent"
+              />
+            </CardHeader>
+            <CardContent>
+              <Textarea
+                placeholder="Write your note..."
+                value={newNote.content || ""}
+                onChange={(e) => setNewNote({ ...newNote, content: e.target.value })}
+                className="border-none shadow-none focus-visible:ring-0 resize-none bg-transparent"
+                rows={4}
+              />
+              <div className="flex justify-end mt-4">
+                <Button onClick={handleCreate}>Save</Button>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+        // <SimpleEditor />
+      )}
+
+      {/* Notes Display */}
+      {loading ? (
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {Array.from({ length: 9 }).map((_, i) => (
+            <Skeleton key={i} className="h-40 w-full rounded-xl" />
+          ))}
+        </div>
+      ) : notes.length === 0 ? (
+        <p className="text-center text-muted-foreground mt-10">
+          You don’t have any notes yet.
+        </p>
+      ) : (
+        <>
+          {status === "active" ? (
+            <>
+              {pinnedNotes.length > 0 && renderNotesGrid(pinnedNotes, "Pinned", <Pin className="w-4 h-5" />)}
+              {renderNotesGrid(
+                otherNotes,
+                pinnedNotes.length > 0 ? "Other Notes" : undefined,
+                pinnedNotes.length > 0 ? <NotepadText className="w-4" /> : undefined
+              )}
+            </>
+          ) : (
+            renderNotesGrid(notes)
+          )}
+
+        </>
+      )}
     </div>
-  );
+  </div>
+);
 }

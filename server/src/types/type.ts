@@ -28,9 +28,9 @@ export interface IAssignment extends Document {
   description?: string;
   dueDate: Date;
   createdBy: Types.ObjectId;
+  submissions:Types.ObjectId[];
   maxPoints?: number;
   attachment?: string;
-  status: "pending" | "submitted";
   createdAt: Date;
   updatedAt: Date;
 }
