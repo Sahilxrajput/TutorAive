@@ -4,6 +4,7 @@ import Classroom from "../models/classroom.model";
 import mongoose from "mongoose";
 import Submission from "../models/submission.model";
 import { ISubmission } from "../types/type";
+import { cloudinary } from "../lib/cloudinary";
 
 // Create new assignment
 export const createAssignment = async (req: Request, res: Response) => {
@@ -25,6 +26,22 @@ export const createAssignment = async (req: Request, res: Response) => {
       return res.status(403).json({ message: "Not authorized" });
     }
 
+    let uploadResult: any = null;
+
+    if (req.file) {
+      uploadResult = await new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+          { folder: "assignment files" },
+          (error, result) => {
+            if (error) reject(error);
+            else resolve(result);
+          }
+        );
+
+        stream.end(req?.file?.buffer);
+      });
+    }
+
     const assignment = await Assignment.create({
       classroom: classroomId,
       title,
@@ -32,7 +49,10 @@ export const createAssignment = async (req: Request, res: Response) => {
       dueDate,
       createdBy: req.userId,
       maxPoints,
-      attachment: req.file ? req.file.path : null, // optional file,
+      file: {
+        url: uploadResult.secure_url,
+        public_id: uploadResult.public_id,
+      },
       status: "pending",
     });
 
@@ -87,7 +107,10 @@ export const getAllAssignments = async (req: Request, res: Response) => {
 };
 
 // @remind
-export const getStudentAssignmentsForClassroom = async (req:Request, res:Response) => {
+export const getStudentAssignmentsForClassroom = async (
+  req: Request,
+  res: Response
+) => {
   try {
     const { classroomId, studentId } = req.params;
 
@@ -99,7 +122,7 @@ export const getStudentAssignmentsForClassroom = async (req:Request, res:Respons
 
     // Convert submitted assignment IDs into a Set for fast lookup
     const submittedIds = new Set(
-      submissions.map((s:ISubmission) => s.assignment.toString())
+      submissions.map((s: ISubmission) => s.assignment.toString())
     );
 
     // 3. Split into pending + submitted
@@ -116,7 +139,7 @@ export const getStudentAssignmentsForClassroom = async (req:Request, res:Respons
       submitted,
       pending,
     });
-  } catch (err:any) {
+  } catch (err: any) {
     res.status(500).json({ success: false, message: err?.message });
   }
 };
@@ -145,7 +168,7 @@ export const getAssignmentsByClassroomId = async (
 
     if (!assignments)
       return res.status(404).json({ message: "Assignment not found" });
-    
+
     res.status(200).json({ data: assignments, success: true });
   } catch (err: any) {
     res.status(500).json({ message: err.message });
@@ -153,10 +176,26 @@ export const getAssignmentsByClassroomId = async (
 };
 
 // Delete assignment (instructor only)
-//! @fix update userrole
 export const deleteAssignment = async (req: Request, res: Response) => {
   try {
     const assignment = await Assignment.findById(req.params.id);
+
+    if (assignment.createdBy.toString() !== req.userId) {
+      return res
+        .status(403)
+        .json({ error: "Not authorized to delete this assignmnet" });
+    }
+
+    // Delete Cloudinary image if exists
+    if (assignment?.file?.public_id) {
+      await cloudinary.uploader.destroy(assignment.file.public_id);
+    }
+
+    await Assignment.findByIdAndDelete(req.params.id);
+    res
+      .status(200)
+      .json({ success: true, message: "Assignment deleted successfully" });
+
     if (!assignment)
       return res.status(404).json({ message: "Assignment not found" });
 

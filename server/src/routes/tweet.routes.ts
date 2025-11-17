@@ -4,6 +4,8 @@ import {
   getAllTweets,
   getTweetById,
   deleteTweet,
+  toggleLikeTweet,
+  repostTweet,
 } from "../controllers/tweet.controller";
 
 import {
@@ -11,20 +13,27 @@ import {
   tweetIdValidator,
 } from "../validators/tweet.validator";
 import authMiddleware from "../Middlewares/auth.middleware";
+import { upload } from "../lib/cloudinary";
 
 // ? @remind retweet, likes and comment
 const router = express.Router();
 
 // All posts
-router.get("/",  getAllTweets);
+router.get("/", getAllTweets);
 
-router.use(authMiddleware)
+router.use(authMiddleware);
 
 // Create post
-router.post("/", createTweetValidator, createTweet);
+router.post("/", createTweetValidator, upload.single("image"), createTweet);
 
 // Single post
 router.get("/:id", tweetIdValidator, getTweetById);
+
+//repost
+router.get("/:id/repost", tweetIdValidator, repostTweet);
+
+//like tweet
+router.post("/:id/toggle-like", tweetIdValidator, toggleLikeTweet);
 
 // Delete post
 router.delete("/:id", tweetIdValidator, deleteTweet);

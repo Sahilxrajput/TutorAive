@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import Tweet from "../models/tweet.model";
+import { cloudinary } from "../lib/cloudinary";
 
 const handleError = (
   res: Response,
@@ -19,7 +20,6 @@ export const createTweet = async (req: Request, res: Response) => {
   try {
     const { title, content, type, classroomId } = req.body;
 
-    // Build base tweet data
     const tweetData: any = {
       title,
       content,
@@ -27,12 +27,41 @@ export const createTweet = async (req: Request, res: Response) => {
       author: req.userId,
     };
 
-    // Add classroom only if provided
     if (classroomId) {
       tweetData.classroom = classroomId;
     }
 
-    // Create and save tweet
+    // Validate file type
+    if (
+      req.file &&
+      !["image/png", "image/jpeg", "image/jpg"].includes(req.file.mimetype)
+    ) {
+      return res.status(400).json({ error: "Invalid file type" });
+    }
+
+    // Upload file if exists
+    let uploadResult: any = null;
+
+    if (req.file) {
+      uploadResult = await new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+          { folder: "tweets" },
+          (error, result) => {
+            if (error) reject(error);
+            else resolve(result);
+          }
+        );
+
+        stream.end(req?.file?.buffer);
+      });
+
+      tweetData.image = {
+        url: uploadResult.secure_url,
+        public_id: uploadResult.public_id,
+      };
+    }
+
+    // Create tweet
     const tweet = new Tweet(tweetData);
     await tweet.save();
 
@@ -89,13 +118,90 @@ export const deleteTweet = async (req: Request, res: Response) => {
     if (!tweet) return res.status(404).json({ error: "Tweet not found" });
 
     if (tweet.author.toString() !== req.userId) {
-      return res.status(403).json({ error: "Not allowed" });
+      return res
+        .status(403)
+        .json({ error: "Not authorized to delete this tweet" });
     }
 
-    await tweet.deleteOne();
+    // Delete Cloudinary image if exists
+    if (tweet?.image?.public_id) {
+      await cloudinary.uploader.destroy(tweet.image.public_id);
+    }
 
-    res.status(200).json({ success: true, message: "Tweet deleted successfully" });
+    await Tweet.findByIdAndDelete(req.params.id);
+    res
+      .status(200)
+      .json({ success: true, message: "Tweet deleted successfully" });
   } catch (error) {
     res.status(500).json({ error: "Error deleting tweet" });
+  }
+};
+
+export const toggleLikeTweet = async (req: Request, res: Response) => {
+  try {
+    const tweet = await Tweet.findById(req.params.id);
+    if (!tweet) {
+      return res.status(404).json({ error: "Tweet not found" });
+    }
+
+    const userId = req.userId;
+
+    // Convert all like IDs to string & check toggle state
+    const alreadyLiked = tweet.likes.some(
+      (id: any) => id.toString() === userId
+    );
+
+    if (alreadyLiked) {
+      // Remove like
+      tweet.likes = tweet.likes.filter((id: any) => id.toString() !== userId);
+    } else {
+      // Add like
+      tweet.likes.push(userId);
+    }
+
+    await tweet.save();
+
+    return res.status(200).json({
+      success: true,
+      liked: !alreadyLiked,
+      likesCount: tweet.likes.length,
+      message: alreadyLiked ? "Tweet unliked" : "Tweet liked",
+    });
+  } catch (error: any) {
+    console.error(error);
+    return handleError(res, error, "Failed to like/unlike tweet");
+  }
+};
+
+export const repostTweet = async (req: Request, res: Response) => {
+  try {
+    const originalTweet = await Tweet.findById(req.params.id);
+    if (!originalTweet) {
+      return res.status(404).json({ error: "Tweet not found" });
+    }
+
+    const { content } = req.body;
+
+    const repost = await Tweet.create({
+      title: content, 
+      type: "repost",
+      author: req.userId,
+      parentTweet: originalTweet._id, // link to original
+    });
+    // const repost = await Tweet.create({
+    //   title: originalTweet.title, 
+    //   content: content || "", // optional commentary
+    //   type: "repost",
+    //   author: req.userId,
+    //   parentTweet: originalTweet._id, // link to original
+    // });
+
+    return res.status(201).json({
+      success: true,
+      message: "Tweet reposted successfully",
+      data: repost,
+    });
+  } catch (error) {
+    return res.status(500).json({ error: "Failed to repost tweet" });
   }
 };

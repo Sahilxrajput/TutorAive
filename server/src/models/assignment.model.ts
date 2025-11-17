@@ -12,7 +12,10 @@ const assignmentSchema = new Schema<IAssignment>(
     description: String,
     dueDate: { type: Date, required: true },
     createdBy: { type: Schema.Types.ObjectId, ref: "User", required: true },
-    attachment: { type: String },
+    file: {
+      url: String,
+      public_id: String,
+    },
     submissions: [{ type: Schema.Types.ObjectId, ref: "Submission" }],
     maxPoints: { type: Number, default: 0 },
   },
@@ -22,10 +25,3 @@ const assignmentSchema = new Schema<IAssignment>(
 const Assignment =
   models.Assignment || model<IAssignment>("Assignment", assignmentSchema);
 export default Assignment;
-
-
-
-
-
-
-

@@ -8,7 +8,7 @@ import {
 } from "../controllers/submission.controller";
 import authMiddleware from "../Middlewares/auth.middleware";
 import { isInstructor } from "../Middlewares/Instructor.middleware";
-import upload from "../lib/cloudinary";
+import { upload } from "../lib/cloudinary";
 
 
 const router = express.Router();
@@ -18,7 +18,7 @@ router.use(authMiddleware);
 /* ---------------------- Students ---------------------- */
 router.post(
   "/upload/:assignmentId",
-  upload.single("assignmentFile"),
+  upload.single("submissionFile"),
   createSubmission
 );
 

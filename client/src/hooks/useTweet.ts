@@ -18,6 +18,7 @@ export function useTweets() {
         ...formatDateTime(tweet.createdAt),
       }));
       setTweets(formattedTweets);
+      console.log("tweets", formattedTweets);
       setFilteredTweets(formattedTweets);
     } catch {
       toast.error("Something went wrong");
@@ -26,21 +27,6 @@ export function useTweets() {
     }
   };
 
-  // @issue tweet doesnot update automatically
-  const createTweet = async (payload: any) => {
-    try {
-      const { data } = await API.post("/tweets", payload);
-
-      // The API should return the newly created tweet
-      const newTweet = data.data || data;
-
-      setTweets((prev) => [newTweet, ...prev]);
-      setFilteredTweets((prev) => [newTweet, ...prev]);
-      toast.success(data.message);
-    } catch {
-      toast.error("Something went wrong");
-    }
-  };
 
   const deleteTweet = async (id: string) => {
     try {

@@ -49,7 +49,7 @@ export function PdfUploadDialog({ buttonText, title, cn, id, type, onComplete }:
 
   const handleUpload = async () => {
     if (!file) {
-      toast.info("No file selected")
+      toast.warning("No file selected")
       return
     }
 
@@ -57,13 +57,15 @@ export function PdfUploadDialog({ buttonText, title, cn, id, type, onComplete }:
 
     try {
       const formData = new FormData()
-      formData.append("assignmentFile", file)
-
+      
       if (type === "assignment") {
+        formData.append("assignmentFile", file)
         formData.append("title", inputTitle)
         formData.append("description", description)
         formData.append("dueDate", dueDate)
         formData.append("maxPoints", maxPoints)
+      }else{
+        formData.append("submissionFile", file)
       }
 
       await API.post(detectPath(id), formData, {

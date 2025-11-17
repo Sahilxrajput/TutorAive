@@ -28,9 +28,12 @@ export interface IAssignment extends Document {
   description?: string;
   dueDate: Date;
   createdBy: Types.ObjectId;
-  submissions:Types.ObjectId[];
+  submissions: Types.ObjectId[];
   maxPoints?: number;
-  attachment?: string;
+  file?: {
+    url: string;
+    public_id: string;
+  };
   createdAt: Date;
   updatedAt: Date;
 }
@@ -95,7 +98,10 @@ export interface ISubmission extends Document {
   assignment: Types.ObjectId;
   status: "submitted" | "checked";
   student: Types.ObjectId;
-  fileUrl?: string; // array of file URLs
+  file: {
+    url: string;
+    public_id: string;
+  };
   content?: string;
   submittedAt: Date;
   marks?: number; // optional grade
@@ -156,6 +162,10 @@ export interface ITweet extends Document {
   type: "general" | "mentorship" | "news" | "problem";
   content: String;
   title: String;
+  image?: {
+    url: string;
+    public_id: string;
+  };
   likes?: Types.ObjectId[];
-  reTweet?:Types.ObjectId[]
+  parentTweet?: Types.ObjectId;
 }

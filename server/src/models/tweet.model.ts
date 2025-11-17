@@ -1,7 +1,7 @@
 import mongoose, { models, Schema } from "mongoose";
 import { ITweet } from "../types/type";
 
-const tweetSchema = new Schema(
+const tweetSchema = new Schema<ITweet>(
   {
     title: {
       type: String,
@@ -16,7 +16,7 @@ const tweetSchema = new Schema(
     },
     type: {
       type: String,
-      enum: ["general", "mentorship", "news", "problem"],
+      enum: ["general", "mentorship", "news", "problem", "repost"],
       default: "general",
     },
     author: {
@@ -24,12 +24,16 @@ const tweetSchema = new Schema(
       ref: "User",
       required: true,
     },
+    image: {
+      url: String,
+      public_id: String,
+    },
     classroom: {
       type: Schema.Types.ObjectId,
       ref: "Classroom",
     },
     likes: [{ type: Schema.Types.ObjectId, ref: "User" }],
-    reTweet: [{ type: Schema.Types.ObjectId, ref: "Tweet" }], //? @info
+    parentTweet: { type: Schema.Types.ObjectId, ref: "Tweet" }, //? @info
   },
   { timestamps: true }
 );

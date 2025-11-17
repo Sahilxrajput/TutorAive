@@ -7,19 +7,16 @@ import {
 import type { ComponentType } from "react"
 
 interface Props {
-    title?: string,
     Icon?: ComponentType<any>,
     content: string,
     cn?: string
 }
 
-export function TooltipDemo({ title, Icon, content, cn }: Props) {
+export function TooltipDemo({ Icon, content, cn }: Props) {
     return (
         <Tooltip>
             <TooltipTrigger>
-                {<Icon className={cn} />}
-                {/* {title && <Button variant="outline" className={cn}>{title}</Button>} */}
-                {/* {Icon && <Button variant="outline" className={cn}>{<Icon />}</Button>} */}
+                {Icon && <Icon size={16} className={`aspect-square ${cn}`} />}
             </TooltipTrigger>
             <TooltipContent>
                 <p>{content}</p>

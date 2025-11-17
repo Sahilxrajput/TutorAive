@@ -30,7 +30,6 @@ export default function Assignments() {
   function submissionUploaded(id: string) {
     const item = assignments.find((a: IAssignment) => a._id === id);
     if (!item) return; // prevent undefined push
-    console.log("submission done _")
     setPending(prev => prev.filter(a => a._id !== id));
     setSubmitted(prev => [...prev, item]);
   }

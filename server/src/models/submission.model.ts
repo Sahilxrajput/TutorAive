@@ -10,9 +10,9 @@ const submissionSchema = new Schema<ISubmission>(
     },
     student: { type: Schema.Types.ObjectId, ref: "User", required: true },
     submittedAt: { type: Date, default: Date.now },
-    fileUrl: {
-      type: String,
-      required: true,
+    file: {
+      url: String,
+      public_id: String,
     },
     status: {
       type: String,

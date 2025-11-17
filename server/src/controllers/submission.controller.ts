@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import Submission from "../models/submission.model";
 import mongoose from "mongoose";
 import Assignment from "../models/assignment.model";
+import { cloudinary } from "../lib/cloudinary";
 
 // Submit assignment
 export const createSubmission = async (req: Request, res: Response) => {
@@ -27,17 +28,35 @@ export const createSubmission = async (req: Request, res: Response) => {
         .json({ message: "You have already submitted this assignment" });
     }
 
+    let uploadResult: any = null;
+
+    if (req.file) {
+      uploadResult = await new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+          { folder: "assignment submission" },
+          (error, result) => {
+            if (error) reject(error);
+            else resolve(result);
+          }
+        );
+
+        stream.end(req?.file?.buffer);
+      });
+    }
+
     const submission = await Submission.create({
       assignment: assignmentId,
       student: req.userId,
-      fileUrl: req.file?.path || "path",
+      file: {
+        url: uploadResult.secure_url,
+        public_id: uploadResult.public_id,
+      },
       status: "submitted",
     });
 
     await Assignment.findByIdAndUpdate(assignmentId, {
       $push: { submissions: submission._id },
     });
-
 
     res.status(201).json({
       success: true,

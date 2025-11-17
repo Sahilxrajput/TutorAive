@@ -95,12 +95,17 @@ export interface ITweet {
   title: string;
   content: string;
   type: "general" | "mentorship" | "news" | "problem";
+  image?: {
+    url: string;
+    public_id: string;
+  };
   author: {
     _id: string;
     firstName: string;
     lastName: string;
     userName: string;
     profilePicture?: string;
+    role?: "instructor" | "student"
   };
   classroom: string; // @fix
   likes: string[];

@@ -35,7 +35,7 @@ const App: React.FC = () => {
         <Route path="notes" element={<Notes />} />
         <Route path="quizs" element={<Quiz />} />
         <Route path="live" element={<LiveSession />} />
-        <Route path="tweet" element={<CommunityPage />} />
+        <Route path="community" element={<CommunityPage />} />
 
         {/* Browse all classrooms */}
         <Route path="classrooms" element={<BrowseClassroom />} />

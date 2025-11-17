@@ -16,7 +16,7 @@ const Sidebar = () => {
                     <Link to="/chats" className='flex flex-col items-center justify-center'><MessageCircle />Chat</Link>
                     {/* <Link to="/quiz" className='flex flex-col items-center justify-center'><CircleQuestionMark />Quiz</Link> */}
                     <Link to="/dashboard" className='flex flex-col items-center justify-center'><ChartSpline /> dashboard</Link>
-                    <Link to="/tweet" className='flex flex-col items-center justify-center'><Twitch /> Tweets</Link>
+                    <Link to="/community" className='flex flex-col items-center justify-center'><Twitch /> Tweets</Link>
                 </div>
                 <div className='flex items-center justify-center gap-6 flex-col'>
                     {/* <Link to="/" className='flex flex-col items-center justify-center'><NotificationSideBar/> </Link> */}
