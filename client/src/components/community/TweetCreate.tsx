@@ -7,133 +7,156 @@ import {
     SelectItem,
     SelectTrigger,
     SelectContent,
-    SelectValue
+    SelectValue,
 } from "@/components/ui/select";
 import { Label } from "../ui/label";
 import API from "@/lib/api";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
-import  { Spinner } from "../ui/spinner";
+import { Spinner } from "../ui/spinner";
+import type { ITweet } from "@/types/auth";
+import TweetCard from "./TweetCard";
 
 interface Props {
-    isCreating: boolean
-    setIsCreating: Dispatch<SetStateAction<boolean>>;
+    parentTweet?: ITweet;
+    isOpen: boolean;
+    setIsOpen: Dispatch<SetStateAction<boolean>>;
 }
 
-export default function TweetCreate({ isCreating, setIsCreating }: Props) {
+export default function TweetCreateDialog({
+    isOpen,
+    setIsOpen,
+    parentTweet,
+}: Props) {
     const [content, setContent] = useState<string>("");
-    const [title, setTitle] = useState<string>("");
     const [type, setType] = useState("general");
-    const [classroom, setClassroom] = useState<string>("");
     const [image, setImage] = useState<File | null>(null);
-    const [loading, setLoading] = useState(false)
+    const [preview, setPreview] = useState<string | null>(null);
+    const [loading, setLoading] = useState(false);
+
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setPreview(URL.createObjectURL(file));
+        setImage(file);
+    };
 
     const submit = async () => {
-        if (!title.trim() || !content.trim()) {
-            toast.info("Title and content are required");
+        if (!parentTweet && !content.trim()) {
+            toast.info("content are required");
             return;
         }
-        setLoading(true)
+
+        setLoading(true);
         const form = new FormData();
-        form.append("title", title.trim());
         form.append("content", content.trim());
         form.append("type", type);
 
-        if (classroom.trim()) form.append("classroom", classroom.trim());
-        if (image) form.append("image", image);
+        if (!parentTweet && image) {
+            form.append("image", image);
+        }
 
         try {
-            // @remind i can call fetchTweets
-            const { data } = await API.post("/tweets", form)
 
-            toast.success(data.message)
-            // Reset only after successful creation
-            setTitle("");
+            if (parentTweet) {
+                await toast.promise(
+                    API.post(`/tweets/${parentTweet?._id}/repost`, { content, type }),
+                    {
+                        loading: 'Reposting...',
+                        success: "Tweet reposted successfully",
+                        error: "Something went wrong"
+                    }
+                )
+            } else {
+                const { data } = await API.post("/tweets", form);
+                toast.success(data.message);
+            }
+
             setContent("");
             setType("general");
-            setClassroom("");
             setImage(null);
-            setIsCreating(false);
-            setLoading(true);
-            // @remind doesn't update tweets -> it successfully fetch but not update state
+            setPreview(null);
+
+            setIsOpen(false);
         } catch (err) {
+            toast.error("Something went wrong");
             console.error("Failed to create tweet:", err);
+        } finally {
+            setLoading(false);
         }
-    }
+    };
 
     return (
-        <Dialog open={isCreating} onOpenChange={setIsCreating} >
-            <DialogContent className="sm:max-w-lg">
-                <DialogHeader>
-                    <DialogTitle>Create Post</DialogTitle>
+        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+            <DialogContent className="sm:max-w-lg max-h-[80vh] p-0 flex flex-col">
+                {/* HEADER */}
+                <DialogHeader className="p-4 pb-2">
+                    <DialogTitle>{parentTweet ? "Repost" : "Create Post"}</DialogTitle>
                 </DialogHeader>
-                <div className="flex flex-col items-start justify-center space-y-2">
-                    <Label htmlFor="Input">Title</Label>
-                    <Input
-                        maxLength={30}
-                        placeholder="Enter a title..."
-                        value={title}
-                        onChange={e => setTitle(e.target.value)}
-                    />
+
+                {/* SCROLLABLE BODY */}
+                <div className="px-4 flex-1 overflow-y-auto space-y-4 pb-4">
+
+                    <div className="flex flex-col space-y-2 relative">
+                        <Label>Content</Label>
+                        <Textarea
+                            maxLength={500}
+                            placeholder="Share something with the community..."
+                            value={content}
+                            onChange={(e) => setContent(e.target.value)}
+                        />
+                        <p className="text-xs text-red-600 absolute right-2 bottom-2">
+                            {500 - content.length}/500
+                        </p>
+                    </div>
+
+                    {parentTweet && (
+                        <TweetCard  isCreating={true} tweet={parentTweet} />
+                    )}
+
+                    <div className="flex flex-col space-y-2">
+                        <Label>Type</Label>
+                        <Select value={type} onValueChange={setType}>
+                            <SelectTrigger className="w-full">
+                                <SelectValue placeholder="Select type" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="general">General</SelectItem>
+                                <SelectItem value="mentorship">Mentorship</SelectItem>
+                                <SelectItem value="problem">Problem Reference</SelectItem>
+                                <SelectItem value="news">News</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    {!parentTweet && (
+                        <div className="flex flex-col space-y-2">
+                            <Label>Image</Label>
+                            <Input
+                                type="file"
+                                accept="image/*"
+                                onChange={handleImageChange}
+                            />
+                        </div>
+                    )}
+
+                    {preview && (
+                        <img
+                            className="mx-auto w-48 h-auto mt-2 rounded-md"
+                            src={preview}
+                            alt="preview"
+                        />
+                    )}
                 </div>
 
-                <div className="flex flex-col items-start justify-center space-y-2 relative">
-                    <Label htmlFor="Textarea">Content</Label>
-                    <Textarea
-                        maxLength={500}
-                        placeholder="Share something with the community..."
-                        value={content}
-                        onChange={e => setContent(e.target.value)}
-                    />
-                    <p className="font-semibold absolute right-2 bottom-2 text-xs text-red-600">{500 - content.length}/500</p>
+                {/* FOOTER */}
+                <div className="p-4 border-t">
+                    <Button className="w-full" disabled={loading} onClick={submit}>
+                        {loading ? <Spinner /> : "Post"}
+                    </Button>
                 </div>
-
-                <div className="flex flex-col items-start justify-center space-y-2">
-                    <Label htmlFor="Select">Type</Label>
-                    <Select value={type} onValueChange={setType}>
-                        <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Select type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="general">General</SelectItem>
-                            <SelectItem value="mentorship">Mentorship</SelectItem>
-                            <SelectItem value="problem">Problem Reference</SelectItem>
-                            <SelectItem value="news">News</SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
-
-                <div className="flex flex-col items-start justify-center space-y-2">
-                    <Label htmlFor="Classroom">Classroom</Label>
-                    <Input
-                        placeholder="Classroom ID (optional)"
-                        value={classroom}
-                        onChange={e => setClassroom(e.target.value)}
-                    />
-                </div>
-                <div className="flex flex-col items-start justify-center space-y-2">
-                    <Label htmlFor="image">Image</Label>
-                    <Input
-                        id="image"
-                        type="file"
-                        accept="image/*"
-                        onChange={e => {
-                            const file = e.target.files?.[0];
-                            if (file) setImage(file);
-                        }}
-                    />
-                </div>
-
-
-                <Button className="w-full"
-                    disabled={loading}
-                    onClick={submit}
-                >
-                    {loading ? <Spinner/> : "Post"}
-                </Button>
             </DialogContent>
         </Dialog>
     );
 }
-
-

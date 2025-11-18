@@ -92,9 +92,23 @@ export interface ILecture {
 
 export interface ITweet {
   _id: string;
-  title: string;
   content: string;
   type: "general" | "mentorship" | "news" | "problem";
+  parentTweet: {
+    author: {
+      _id: string;
+      firstName: string;
+      lastName: string;
+      userName: string;
+      profilePicture?: string;
+      role: "instructor" | "student";
+    };
+    content: string;
+    image?: {
+      url: string;
+      public_id: string;
+    };
+  };
   image?: {
     url: string;
     public_id: string;
@@ -105,7 +119,7 @@ export interface ITweet {
     lastName: string;
     userName: string;
     profilePicture?: string;
-    role?: "instructor" | "student"
+    role: "instructor" | "student";
   };
   classroom: string; // @fix
   likes: string[];

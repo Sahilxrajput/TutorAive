@@ -18,18 +18,13 @@ const handleError = (
 
 export const createTweet = async (req: Request, res: Response) => {
   try {
-    const { title, content, type, classroomId } = req.body;
+    const {  content, type } = req.body;
 
     const tweetData: any = {
-      title,
       content,
       type,
       author: req.userId,
     };
-
-    if (classroomId) {
-      tweetData.classroom = classroomId;
-    }
 
     // Validate file type
     if (
@@ -85,7 +80,13 @@ export const getAllTweets = async (req: Request, res: Response) => {
         lastName: 1,
         role: 1,
       })
-      .populate("classroom", "title")
+      .populate({
+        path: "parentTweet",
+        populate: {
+          path: "author",
+          select: "userName firstName lastName profilePicture role",
+        },
+      })
       .sort({ createdAt: -1 });
 
     res
@@ -176,25 +177,19 @@ export const toggleLikeTweet = async (req: Request, res: Response) => {
 export const repostTweet = async (req: Request, res: Response) => {
   try {
     const originalTweet = await Tweet.findById(req.params.id);
+
     if (!originalTweet) {
       return res.status(404).json({ error: "Tweet not found" });
     }
 
-    const { content } = req.body;
+    const userContent = req.body.content?.trim();
 
     const repost = await Tweet.create({
-      title: content, 
       type: "repost",
       author: req.userId,
-      parentTweet: originalTweet._id, // link to original
+      parentTweet: originalTweet._id,
+      content: userContent || undefined, 
     });
-    // const repost = await Tweet.create({
-    //   title: originalTweet.title, 
-    //   content: content || "", // optional commentary
-    //   type: "repost",
-    //   author: req.userId,
-    //   parentTweet: originalTweet._id, // link to original
-    // });
 
     return res.status(201).json({
       success: true,
@@ -202,6 +197,8 @@ export const repostTweet = async (req: Request, res: Response) => {
       data: repost,
     });
   } catch (error) {
+    console.log(error);
     return res.status(500).json({ error: "Failed to repost tweet" });
   }
 };
+

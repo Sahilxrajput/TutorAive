@@ -15,7 +15,6 @@ import {
 import authMiddleware from "../Middlewares/auth.middleware";
 import { upload } from "../lib/cloudinary";
 
-// ? @remind retweet, likes and comment
 const router = express.Router();
 
 // All posts
@@ -30,7 +29,7 @@ router.post("/", createTweetValidator, upload.single("image"), createTweet);
 router.get("/:id", tweetIdValidator, getTweetById);
 
 //repost
-router.get("/:id/repost", tweetIdValidator, repostTweet);
+router.post("/:id/repost", tweetIdValidator, repostTweet);
 
 //like tweet
 router.post("/:id/toggle-like", tweetIdValidator, toggleLikeTweet);

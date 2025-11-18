@@ -3,16 +3,13 @@ import { ITweet } from "../types/type";
 
 const tweetSchema = new Schema<ITweet>(
   {
-    title: {
-      type: String,
-      required: true,
-      max: [30, "can not post have more than 30 lettre letters in title"],
-    },
     content: {
       type: String,
-      required: true,
       trim: true,
       max: [500, "can not have more than 500 letters in content"],
+      required: function (this: ITweet) {
+        return !this.parentTweet;
+      },
     },
     type: {
       type: String,
@@ -27,10 +24,6 @@ const tweetSchema = new Schema<ITweet>(
     image: {
       url: String,
       public_id: String,
-    },
-    classroom: {
-      type: Schema.Types.ObjectId,
-      ref: "Classroom",
     },
     likes: [{ type: Schema.Types.ObjectId, ref: "User" }],
     parentTweet: { type: Schema.Types.ObjectId, ref: "Tweet" }, //? @info

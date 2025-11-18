@@ -158,10 +158,8 @@ export interface IEnrollment extends Document {
 
 export interface ITweet extends Document {
   author: Types.ObjectId;
-  classroom?: Types.ObjectId;
   type: "general" | "mentorship" | "news" | "problem";
   content: String;
-  title: String;
   image?: {
     url: string;
     public_id: string;
