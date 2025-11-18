@@ -1,6 +1,5 @@
 import { Router } from "express";
 import passport from "passport";
-import generateAuthToken from "../utils/generateAuthToken";
 import authMiddleware from "../Middlewares/auth.middleware";
 import {
   deleteAccount,
@@ -10,6 +9,7 @@ import {
   logout,
   resetPassword,
   signup,
+  googleCallback,
 } from "../controllers/auth.controller";
 
 const router = Router();
@@ -24,20 +24,7 @@ router.get(
 router.get(
   "/callback/google",
   passport.authenticate("google", { failureRedirect: "/login/failed" }),
-  (req, res) => {
-    const user = req.user as any;
-    const token = generateAuthToken(user);
-
-    // Set token in HTTP-only cookie
-    res.cookie("authToken", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-    });
-
-    res.redirect(`${process.env.CLIENT_URL}/auth/success`);
-  }
+  googleCallback
 );
 
 // login failed

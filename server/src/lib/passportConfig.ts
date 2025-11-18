@@ -13,7 +13,6 @@ passport.serializeUser((user: IUser, done) => done(null, user._id));
 passport.deserializeUser(async (id: string, done) => {
   try {
     const user = await User.findById(id);
-    console.log(user);
     done(null, user || null);
   } catch (err) {
     console.log(err);
@@ -26,7 +25,7 @@ passport.use(
     {
       clientID: process.env.GOOGLE_CLIENT_ID as string,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
-      callbackURL: "http://localhost:3000/api/auth/callback/google",
+      callbackURL: `${process.env.SERVER_URL}/api/auth/callback/google`,
     },
     async (authToken, refreshToken, profile: Profile, done) => {
       try {
@@ -41,7 +40,6 @@ passport.use(
             email: profile.emails?.[0].value,
           });
         }
-        console.log("authToken:" + authToken);
         done(null, user);
       } catch (err) {
         done(err as Error, false);

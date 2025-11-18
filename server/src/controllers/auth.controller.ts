@@ -5,8 +5,23 @@ import User from "../models/user.model";
 import generateAuthToken from "../utils/generateAuthToken";
 import bcrypt from "bcrypt";
 
+const googleCallback = (req: Request, res: Response) => {
+  const user = req.user as any;
+  const token = generateAuthToken(user);
+
+  // Set token in HTTP-only cookie
+  res.cookie("authToken", token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+  });
+
+  res.redirect(`${process.env.CLIENT_URL}/auth/success`);
+};
+
 //@todo add firstname, lastname default
-const signup = async (req: any, res: any) => {
+const signup = async (req: Request, res: Response) => {
   try {
     let { email, firstName, lastName, userName, password, role } = req.body;
 
@@ -16,11 +31,10 @@ const signup = async (req: any, res: any) => {
       return res.status(400).json({ message: "User already exists" });
     }
 
-
     //FIX
     firstName = "tony";
     lastName = "stark";
-  
+
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 12);
 
@@ -101,11 +115,11 @@ const signin = async (req: Request, res: Response) => {
   }
 };
 
-const loginfailed = (req: any, res: any) => {
+const loginfailed = (req: Request, res: Response) => {
   return res.status(401).json({ success: false, message: "Login failed" });
 };
 
-const logout = (req: any, res: any) => {
+const logout = (req: Request, res: Response) => {
   req.session.destroy((err: Error) => {
     if (err) {
       console.error("Session destruction error:", err);
@@ -120,7 +134,7 @@ const logout = (req: any, res: any) => {
   });
 };
 
-const deleteAccount = async (req: any, res: any) => {
+const deleteAccount = async (req: Request, res: Response) => {
   const { password } = req.body;
 
   try {
@@ -133,12 +147,12 @@ const deleteAccount = async (req: any, res: any) => {
 
     // 1. Delete all related data
     await Classroom.updateMany(
-      { students: req.userdId },
+      { students: req.userId },
       { $pull: { students: req.userId } }
     );
 
     await Attendance.updateMany(
-      { students: req.userdId },
+      { students: req.userId },
       { $pull: { students: req.userId } }
     );
 
@@ -167,7 +181,7 @@ const deleteAccount = async (req: any, res: any) => {
 };
 
 //@todo validation
-const resetPassword = async (req: any, res: any) => {
+const resetPassword = async (req: Request, res: Response) => {
   const { currentPassword, newPassword } = req.body;
 
   try {
@@ -190,7 +204,7 @@ const resetPassword = async (req: any, res: any) => {
   }
 };
 
-const forgotPassword = async (req: any, res: any) => {
+const forgotPassword = async (req: Request, res: Response) => {
   const { email } = req.body;
 
   // try {
@@ -233,6 +247,7 @@ const forgotPassword = async (req: any, res: any) => {
 };
 
 export {
+  googleCallback,
   signup,
   signin,
   loginfailed,

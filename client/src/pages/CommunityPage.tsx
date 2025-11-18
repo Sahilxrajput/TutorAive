@@ -26,13 +26,12 @@ export default function CommunityPage() {
                 ...tweet,
                 ...formatDateTime(tweet.createdAt),
             }));
-            // console.log("tweets -> ", formattedTweets)
+            console.log("tweets -> ", formattedTweets)
             setTweets(formattedTweets);
             setFilteredTweets(formattedTweets);
         } catch {
             toast.error("Something went wrong");
         } finally {
-            console.log("finally called")
             setLoading(false);
         }
     };
@@ -65,6 +64,7 @@ export default function CommunityPage() {
         }
         setFilteredTweets(tweets.filter((t: ITweet) => t.type === filter));
     }, [filter, tweets]);
+    //  @remind
 
     useEffect(() => {
         fetchTweets()
