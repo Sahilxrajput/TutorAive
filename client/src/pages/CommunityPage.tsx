@@ -15,6 +15,8 @@ export default function CommunityPage() {
     const [loading, setLoading] = useState(false);
     const [filter, setFilter] = useState("all");
     const [isCreating, setIsCreating] = useState<boolean>(false)
+    const [repostDialog, setRepostDialog] = useState<boolean>(false)
+
 
     // const { fetchTweets, filteredTweets, setFilteredTweets, deleteTweet, tweets, loading } = useTweets()
 

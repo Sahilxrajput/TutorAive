@@ -153,9 +153,9 @@ export default function Notes() {
 // ---------- MAIN RETURN ----------
 return (
   <div className="min-h-screen bg-muted/30 py-8 px-6">
-    <div className="max-w-7xl mx-auto flex flex-col gap-8">
+    <div className="max-w-full mx-auto flex flex-col gap-8">
       {/* Header */}
-      <div className="flex justify-between items-center flex-wrap gap-2">
+      <div className="flex w-full justify-between items-center flex-wrap gap-2">
         <div className="space-x-2 flex items-center justify-center">
           {["active", "archived", "trashed"].map((type) => {
             const isActive = status === type;

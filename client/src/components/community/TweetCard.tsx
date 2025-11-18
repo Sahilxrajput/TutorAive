@@ -94,7 +94,7 @@ export default function TweetCard({ tweet, onDelete, onLike, cn }: Props) {
                     </div>
                 </CardFooter>
             </Card>
-            <TweetRepost tweet={tweet}  />
-        </>
+            {repostDialog && <TweetRepost open={repostDialog} setOpen={setRepostDialog} tweet={tweet} />
+            }        </>
     );
 }

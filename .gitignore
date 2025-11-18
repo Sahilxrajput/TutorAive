@@ -39,11 +39,11 @@ server/uploads
 # =========================
 # Environment / Secrets
 # =========================
-# .env
-# .env.*
-# server/.env.*
-# client/.env.*
-# readme.md
+.env
+.env.*
+server/.env.*
+client/.env.*
+readme.md
 # =========================
 # Logs & Cache
 # =========================
@@ -81,3 +81,7 @@ jest-stare/
 *.bak
 *.old
 *.tmp
+
+
+# extra
+index.java

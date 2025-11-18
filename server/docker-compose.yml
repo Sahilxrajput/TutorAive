@@ -8,7 +8,7 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: sahil
       MONGO_INITDB_ROOT_PASSWORD: 980980
-      MONGO_INITDB_DATABASE: online-classroom
+      MONGO_INITDB_DATABASE: online-tutor
     ports:
       - "27017:27017"
     volumes:
