@@ -12,3 +12,5 @@ selecet a word => ctrl + shift + l (automatically selct all occuring)
 
 <!-- component -->
 empty component -> shadcn
+
+

@@ -134,7 +134,7 @@ const LiveSession = () => {
                     {messages.map((msg, idx) => (
                         <div key={idx} className="mb-2">
                             <span className="font-semibold text-green-400">
-                                {msg.username || msg.userId}:
+                                {msg.userName || msg.userId}:
                             </span>{" "}
                             {msg.message}
                             <div className="text-xs text-gray-500">
@@ -150,7 +150,7 @@ const LiveSession = () => {
                     <ul className="text-sm space-y-1">
                         {onlineUsers.map((u) => (
                             <li key={u._id}>
-                                {u.username || "Unknown"}
+                                {u.userName || "Unknown"}
                             </li>
                         ))}
                     </ul>

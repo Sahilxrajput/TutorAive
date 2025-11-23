@@ -1,4 +1,4 @@
-import type { ITweet } from "@/types/auth";
+import type { ITweet } from "@/types/type";
 import { BadgeTurkishLira } from "lucide-react";
 import { TooltipDemo } from "../TooltipDemo";
 import defaultAvatar from "@/assets/image/avatar.png";

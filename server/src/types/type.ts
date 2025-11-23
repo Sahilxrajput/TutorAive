@@ -133,9 +133,8 @@ export interface ICollaborator {
 //@todo TEST
 export interface INote extends Document {
   _id: Types.ObjectId;
-  title: string;
-  content: string;
-  color?: string;
+  content: object;
+  title: String;
   visibility: "private" | "public" | "collaborative";
   owner: Types.ObjectId;
   pinnedAt?: Date | null;
@@ -143,7 +142,6 @@ export interface INote extends Document {
   trashedAt?: Date | null;
   collaborators: ICollaborator[];
   classroom?: IClassroom | Types.ObjectId;
-  attachments?: string[];
   createdAt?: Date;
   updatedAt?: Date;
 }

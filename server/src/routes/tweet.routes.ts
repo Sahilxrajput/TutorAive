@@ -32,7 +32,7 @@ router.get("/:id", tweetIdValidator, getTweetById);
 router.post("/:id/repost", tweetIdValidator, repostTweet);
 
 //like tweet
-router.post("/:id/toggle-like", tweetIdValidator, toggleLikeTweet);
+router.put("/:id/toggle-like", tweetIdValidator, toggleLikeTweet);
 
 // Delete post
 router.delete("/:id", tweetIdValidator, deleteTweet);

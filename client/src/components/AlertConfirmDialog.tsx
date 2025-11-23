@@ -15,11 +15,14 @@ import type { ComponentType } from "react"
 export interface AlertConfirmDialogProps {
     Icon: ComponentType<any>
     title?: string
+    cn?: string
     description?: string
     iconColor?: string
     confirmText?: string
     cancelText?: string
     onConfirm?: () => void
+    open?: boolean
+    onOpenChange?: (val: boolean) => void
 }
 
 export function AlertConfirmDialog({
@@ -30,16 +33,19 @@ export function AlertConfirmDialog({
     confirmText = "Continue",
     cancelText = "Cancel",
     onConfirm,
-}) {
+    open,
+    onOpenChange,
+    cn
+}: AlertConfirmDialogProps) {
     return (
-        <AlertDialog>
-            <AlertDialogTrigger asChild>
+        <AlertDialog open={open} onOpenChange={onOpenChange}>
+            {!onOpenChange && <AlertDialogTrigger asChild>
                 <Button variant="outline">{<Icon className={iconColor} />}</Button>
-            </AlertDialogTrigger>
+            </AlertDialogTrigger>}
             <AlertDialogContent>
                 <AlertDialogHeader>
                     <AlertDialogTitle>{title}</AlertDialogTitle>
-                    <AlertDialogDescription>{description}</AlertDialogDescription>
+                    <AlertDialogDescription className={`${cn}`} >{description}</AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                     <AlertDialogCancel>{cancelText}</AlertDialogCancel>

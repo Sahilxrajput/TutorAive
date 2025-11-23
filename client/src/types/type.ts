@@ -2,7 +2,7 @@ export interface IUser {
   _id: string;
   role: string;
   firstName: string;
-  username?: string;
+  userName?: string;
   lastName?: string;
   email: string;
   enrolledClassrooms: string[];
@@ -60,18 +60,40 @@ export interface AuthContextValue {
   login: (credentials: { email: string; password: string }) => Promise<void>;
 }
 
+export interface ISaveNote{
+  title: string;
+  content: string;
+  classroom?: string;
+}
+
 export interface INote {
   _id: string;
   title: string;
   content: string;
-  color: string;
+  // color?: string;
+  pinnedAt?: Date | null;
+  status: "active" | "archived" | "trashed";
+  visibility: "private" | "public" | "collaborative"; //@remind
+  owner: string;
+  trashedAt?: Date | null;
+  collaborators: { user: string; access: "view" | "edit" }[];
+  classroom?: string;
+  updatedAt: string;
+  createdAt: string;
+}
+
+export interface IDocs {
+  _id: string;
+  content: object;
   pinnedAt?: Date | null;
   status: "active" | "archived" | "trashed";
   visibility: "private" | "public" | "collaborative";
   owner: string;
+  trashedAt?: Date | null;
   collaborators: { user: string; access: "view" | "edit" }[];
-  updatedAt: string;
-  createdAt: string;
+  classroom?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export interface ILecture {
@@ -90,19 +112,16 @@ export interface ILecture {
   updatedAt: Date;
 }
 
+export interface IAddTweetContext {
+  previousTweets: ITweet[];
+}
+
 export interface ITweet {
   _id: string;
   content: string;
-  type: "general" | "mentorship" | "news" | "problem";
-  parentTweet: {
-    author: {
-      _id: string;
-      firstName: string;
-      lastName: string;
-      userName: string;
-      profilePicture?: string;
-      role: "instructor" | "student";
-    };
+  type: "general" | "mentorship" | "news" | "problem" | "repost";
+  parentTweet?: {
+    author: IUser;
     content: string;
     image?: {
       url: string;
@@ -113,22 +132,15 @@ export interface ITweet {
     url: string;
     public_id: string;
   };
-  author: {
-    _id: string;
-    firstName: string;
-    lastName: string;
-    userName: string;
-    profilePicture?: string;
-    role: "instructor" | "student";
-  };
-  classroom: string; // @fix
-  likes: string[];
+  author: IUser;
+  // classroom?: string; // @fix
+  likes?: string[];
   createdAt: string;
-  timeStr: string;
-  dateStr: string;
+  // timeStr: string;
+  // dateStr: string;
 }
 
-export interface IAssignment{
+export interface IAssignment {
   _id: string;
   title: string;
   description: string;

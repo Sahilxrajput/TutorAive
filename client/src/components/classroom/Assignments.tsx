@@ -3,7 +3,7 @@ import { useEffect, useState } from "react"
 import API from "@/lib/api"
 import { PdfUploadDialog } from "../PdfUpload"
 import { useParams } from "react-router-dom"
-import type { IAssignment } from "@/types/auth"
+import type { IAssignment } from "@/types/type"
 
 export default function Assignments() {
   const [assignments, setAssignments] = useState<IAssignment[]>([])

@@ -2,7 +2,10 @@ import jwt from "jsonwebtoken";
 import { Socket } from "socket.io";
 import { MyJwtPayload } from "../types/type";
 
-export const socketAuthMiddleware = (socket: Socket, next: (err?: Error) => void) => {
+export const socketAuthMiddleware = (
+  socket: Socket,
+  next: (err?: Error) => void
+) => {
   const cookieHeader = socket.handshake.headers.cookie;
   const token = cookieHeader
     ?.split("; ")
@@ -17,7 +20,7 @@ export const socketAuthMiddleware = (socket: Socket, next: (err?: Error) => void
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as MyJwtPayload;
     socket.data.userId = decoded._id;
-    socket.data.username = decoded.email;
+    socket.data.userName = decoded.email;
     next();
   } catch (err) {
     console.error("JWT verification failed:", err);

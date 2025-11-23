@@ -11,7 +11,7 @@ const Dashboard: React.FC = () => {
       <h1>Welcome {user?.firstName}</h1>
       <h1>Email {user?.email}</h1>
       <h1>Welcome {user?.role}</h1>
-      <h1>Username {user?.username}</h1>
+      <h1>Username {user?.userName}</h1>
       <img src={user?.profilePicture} alt="avatar" width={80} />
       <div>
         <Button onClick={() => logout()}>Logout</Button>

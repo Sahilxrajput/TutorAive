@@ -1,19 +1,19 @@
 import React, { useState, useEffect } from "react";
 import useAuth from "@/hooks/useAuth";
 import useSocket from "@/hooks/useSocket";
-import type { IUser } from "../types/auth";
+import type { IUser } from "../types/type";
 
 
 interface Message {
   userId: string;
-  username: string;
+  userName: string;
   roomId?: string;
   message: string;
   timestamp: string;
 }
 
 const ChatRoom: React.FC = () => {
-  const { user } = useAuth(); // { token, username, userId }
+  const { user } = useAuth(); // { token, userName, userId }
   const { socket, isConnected, onlineUsers, sendMessage, emitCustomEvent } = useSocket(user || undefined);
   const [classroomId, setClassroomId] = useState('')
   const [messages, setMessages] = useState<Message[]>([]);
@@ -67,7 +67,7 @@ const ChatRoom: React.FC = () => {
         <strong>Online Users:</strong>{" "}
         <ul>
           {onlineUsers.map((u: IUser) => (
-            <li key={u._id}>{u.username || u.email}</li>
+            <li key={u._id}>{u.userName || u.email}</li>
           ))}
         </ul>
 
@@ -76,7 +76,7 @@ const ChatRoom: React.FC = () => {
       <div className="messages" style={{ maxHeight: 300, overflowY: "auto" }}>
         {messages.map((msg, idx) => (
           <div key={idx}>
-            <strong>{msg.username || msg.userId}:</strong> {msg.message}
+            <strong>{msg.userName || msg.userId}:</strong> {msg.message}
             <small> ({new Date(msg.timestamp).toLocaleTimeString()})</small>
           </div>
         ))}

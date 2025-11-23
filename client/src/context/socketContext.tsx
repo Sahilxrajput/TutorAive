@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useMemo } from "react";
 import useSocket from "../hooks/useSocket";
-import type { IUser } from "../types/auth";
+import type { IUser } from "../types/type";
 
 interface SocketContextValue {
   socket: ReturnType<typeof useSocket>["socket"];

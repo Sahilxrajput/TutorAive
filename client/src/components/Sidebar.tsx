@@ -7,7 +7,7 @@ import { NotificationSideBar } from './notification/NotificationSidebar';
 const Sidebar = () => {
     const { user } = useAuth();
     return (
-        <aside className='flex flex-col fixed h-full bg-gray-600 items-center-safe justify-between py-6'>
+        <aside className='flex flex-col fixed h-full bg-gray-600 items-center-safe justify-between py-6 z-50'>
             <div className='flex flex-col justify-center gap-6 items-center'>
                 <Link to="/" className='flex flex-col items-center justify-center'><LucideOctagon /> logo</Link>
                 <Link to="/classrooms" className='flex flex-col items-center justify-center'><BookOpen /> Classroom</Link>

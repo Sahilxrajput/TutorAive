@@ -36,7 +36,7 @@ export const getInvitationsByClassroom = async (
 ) => {
   try {
     const invitations = await Invitation.find({ classroom: req.params.id })
-      .populate("createdBy", "username email")
+      .populate("createdBy", "userName email")
       .sort({ createdAt: -1 });
 
     res.json(invitations);

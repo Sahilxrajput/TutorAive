@@ -9,7 +9,7 @@ import {
   addCollaborator,
   archiveToggler,
   clearTrash,
-  createNote,
+  saveNote,
   getNoteById,
   getNotesByStatus,
   permanentlyDelete,
@@ -30,10 +30,8 @@ router.use(authMiddleware);
 
 // GET all or filtered notes / POST create a new note
 //@todo FIX requets body
-router
-  .route("/")
-  .get(validateGetNotes, handleValidation, getNotesByStatus)
-  .post(createNote);
+router.post("/", saveNote);
+router.get("/:status", validateGetNotes, handleValidation, getNotesByStatus);
 
 router.route("/:id").get(getNoteById).put(updateNote).delete(permanentlyDelete);
 

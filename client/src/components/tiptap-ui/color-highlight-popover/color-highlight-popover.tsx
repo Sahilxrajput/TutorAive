@@ -3,7 +3,7 @@ import { type Editor } from "@tiptap/react"
 
 // --- Hooks ---
 import { useMenuNavigation } from "@/hooks/use-menu-navigation"
-import { useIsMobile } from "@/hooks/use-mobile"
+import { useIsBreakpoint } from "@/hooks/use-is-breakpoint"
 import { useTiptapEditor } from "@/hooks/use-tiptap-editor"
 
 // --- Icons ---
@@ -94,7 +94,7 @@ export function ColorHighlightPopoverContent({
   ]),
 }: ColorHighlightPopoverContentProps) {
   const { handleRemoveHighlight } = useColorHighlight({ editor })
-  const isMobile = useIsMobile()
+  const isMobile = useIsBreakpoint()
   const containerRef = useRef<HTMLDivElement>(null)
 
   const menuItems = useMemo(

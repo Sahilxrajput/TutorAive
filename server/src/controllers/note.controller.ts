@@ -3,10 +3,21 @@ import Note from "../models/note.model";
 import { ICollaborator, INote, IUser } from "../types/type";
 import User from "../models/user.model";
 
-export const createNote = async (req: Request, res: Response) => {
+export const saveNote = async (req: Request, res: Response) => {
   try {
-    const note = await Note.create({ ...req.body, owner: req.userId });
-    res.status(201).json(note);
+    const { content, title, classroom } = req.body;
+
+    if (!content || !title)
+      return res.status(400).json({ error: "Content and title are required." });
+
+    const note = await Note.create({
+      content,
+      title,
+      owner: req.userId,
+      classroom: classroom || null,
+    });
+    console.log(note);
+    res.status(201).json({ message: "Note saved successfully." });
   } catch (error) {
     res.status(400).json({ message: "Failed to create note", error });
   }
@@ -15,16 +26,16 @@ export const createNote = async (req: Request, res: Response) => {
 export const getNotesByStatus = async (req: Request, res: Response) => {
   try {
     const userId = req.userId as string;
-    const { status } = req.query;
+    const { status } = req.params;
 
     const filter = {
-      $or: [{ owner: userId }, { "collaborators.user": userId }],
+      $or: [{ owner: userId }, { "collaborators.user": userId }], //!@fix if note is publicallly visible
       status: status ?? "active",
     };
 
     const notes = await Note.find(filter).sort({ updatedAt: -1 });
 
-    res.status(200).json(notes);
+    res.status(200).json({ data: notes, success: true });
   } catch (error: any) {
     console.error("Error fetching notes:", error);
     res.status(500).json({
@@ -47,7 +58,7 @@ export const getNoteById = async (req: Request, res: Response) => {
     ) {
       return res.status(403).json({ message: "Access denied" });
     }
-    res.json(note);
+    res.status(200).json({ data: note, message: "fetch note successfully" });
   } catch (error) {
     res.status(500).json({ message: "Failed to fetch note", error });
   }

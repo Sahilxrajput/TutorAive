@@ -1,6 +1,6 @@
 import React, { createContext, useCallback, useEffect, useState } from "react";
 import API from "../lib/api";
-import type { AuthContextValue, IUser } from "../types/auth";
+import type { AuthContextValue, IUser } from "../types/type";
 import defaultAvatar from "@/assets/image/avatar.png";
 
 
@@ -17,7 +17,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setLoading(true);
       const { data } = await API.get("/users/me");
       setIsinstructor(data?.role === "instructor")
-      
+
       const updatedUser = {
         ...data,
         profilePicture: data?.profilePicture || defaultAvatar,

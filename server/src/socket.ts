@@ -12,7 +12,7 @@ import { socketAuthMiddleware } from "./Middlewares/socketAuth";
 
 interface IMessage {
   userId: string;
-  username: string;
+  userName: string;
   message: string;
   roomId: string;
   timestamp: string;
@@ -46,7 +46,7 @@ export const initSocket = (httpServer: HTTPServer) => {
       // Add user to your app-level online list
       const newUser: ISocketUser = {
         userId: socket.data.userId,
-        username: socket.data.username,
+        userName: socket.data.userName,
         roomId,
         socketId: socket.id,
       };
@@ -131,27 +131,27 @@ export const initSocket = (httpServer: HTTPServer) => {
 
       const payload: IMessage = {
         userId: sender.userId,
-        username: sender.username || "Anonymous",
+        userName: sender.userName || "Anonymous",
         message: data.message,
         roomId: data.roomId,
         timestamp: new Date().toISOString(),
       };
 
-	console.log("rec msg", payload);
+      console.log("rec msg", payload);
 
       io.in(data.roomId).emit("receive_message", payload);
     });
 
     // ! @todo lecture update
-    socket.on("lecture_update",(data:any)=>{
+    socket.on("lecture_update", (data: any) => {
       const sender = getUserById(socket.data.userId);
       if (!sender) {
         console.warn("Sender not found or offline");
         return;
       }
 
-      io.in(data.roomId).emit("receive_message", );
-    })
+      io.in(data.roomId).emit("receive_message");
+    });
 
     socket.on("connect_error", (err: any) => {
       console.error("Socket connection error:", err.message);

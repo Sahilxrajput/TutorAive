@@ -18,7 +18,7 @@ const handleError = (
 
 export const createTweet = async (req: Request, res: Response) => {
   try {
-    const {  content, type } = req.body;
+    const { content, type } = req.body;
 
     const tweetData: any = {
       content,
@@ -100,7 +100,7 @@ export const getAllTweets = async (req: Request, res: Response) => {
 export const getTweetById = async (req: Request, res: Response) => {
   try {
     const tweet = await Tweet.findById(req.params.id)
-      .populate("author", "username")
+      .populate("author", "userName")
       .populate("classroom", "title");
     //   .populate("book", "title")
     //   .populate("problemId", "title");
@@ -160,12 +160,11 @@ export const toggleLikeTweet = async (req: Request, res: Response) => {
       tweet.likes.push(userId);
     }
 
-    await tweet.save();
+    const updatedTweets = await tweet.save();
 
     return res.status(200).json({
       success: true,
-      liked: !alreadyLiked,
-      likesCount: tweet.likes.length,
+      data: updatedTweets,
       message: alreadyLiked ? "Tweet unliked" : "Tweet liked",
     });
   } catch (error: any) {
@@ -183,12 +182,13 @@ export const repostTweet = async (req: Request, res: Response) => {
     }
 
     const userContent = req.body.content?.trim();
+    const userType = req.body.type?.trim();
 
     const repost = await Tweet.create({
-      type: "repost",
+      type: userType || "general",
       author: req.userId,
       parentTweet: originalTweet._id,
-      content: userContent || undefined, 
+      content: userContent || undefined,
     });
 
     return res.status(201).json({
@@ -201,4 +201,3 @@ export const repostTweet = async (req: Request, res: Response) => {
     return res.status(500).json({ error: "Failed to repost tweet" });
   }
 };
-

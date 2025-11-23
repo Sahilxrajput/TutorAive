@@ -1,6 +1,6 @@
 export interface ISocketUser {
   userId: string;
-  username?: string;
+  userName?: string;
   socketId: string;
   roomId?: string;
 }

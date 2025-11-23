@@ -16,7 +16,7 @@ const LoadingSkeltons = () => {
                             <Skeleton className="rounded-full w-full flex items-start justify-between flex-col space-y-2">
                                 {/* title */}
                                 <Skeleton className="h-4 w-6/10 bg-neutral-300" />
-                                {/* username */}
+                                {/* userName */}
                                 <Skeleton className="w-8/10 bg-neutral-300 h-2" />
                             </Skeleton>
 

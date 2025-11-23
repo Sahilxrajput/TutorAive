@@ -10,29 +10,34 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Label } from "../ui/label";
-import API from "@/lib/api";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
 import { Spinner } from "../ui/spinner";
-import type { ITweet } from "@/types/auth";
+import type { ITweet } from "@/types/type";
 import TweetCard from "./TweetCard";
+import { useCreateTweet, useRepostTweet } from "@/tanStack/hooks/useTweets";
 
 interface Props {
+    _id: string;
     parentTweet?: ITweet;
     isOpen: boolean;
     setIsOpen: Dispatch<SetStateAction<boolean>>;
 }
 
 export default function TweetCreateDialog({
+    _id,
     isOpen,
     setIsOpen,
     parentTweet,
 }: Props) {
     const [content, setContent] = useState<string>("");
-    const [type, setType] = useState("general");
+    const [type, setType] = useState<"general" | "mentorship" | "news" | "problem">("general");
     const [image, setImage] = useState<File | null>(null);
     const [preview, setPreview] = useState<string | null>(null);
-    const [loading, setLoading] = useState(false);
+    // const [loading, setLoading] = useState(false);
+
+    const createTweet = useCreateTweet();
+    const repostTweet = useRepostTweet();
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -48,44 +53,32 @@ export default function TweetCreateDialog({
             return;
         }
 
-        setLoading(true);
         const form = new FormData();
         form.append("content", content.trim());
         form.append("type", type);
-
-        if (!parentTweet && image) {
-            form.append("image", image);
-        }
-
+        if (image) form.append("image", image);
+        
         try {
-
             if (parentTweet) {
-                await toast.promise(
-                    API.post(`/tweets/${parentTweet?._id}/repost`, { content, type }),
-                    {
-                        loading: 'Reposting...',
-                        success: "Tweet reposted successfully",
-                        error: "Something went wrong"
-                    }
-                )
+                form.append("parentTweetId", parentTweet._id);
+                form.append("_id", _id);
+                repostTweet.mutate(form)
             } else {
-                const { data } = await API.post("/tweets", form);
-                toast.success(data.message);
+                createTweet.mutate(form);
             }
 
             setContent("");
             setType("general");
             setImage(null);
             setPreview(null);
-
             setIsOpen(false);
         } catch (err) {
-            toast.error("Something went wrong");
             console.error("Failed to create tweet:", err);
-        } finally {
-            setLoading(false);
         }
     };
+
+    const loading = createTweet.isPending || repostTweet.isPending;
+
 
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -97,7 +90,6 @@ export default function TweetCreateDialog({
 
                 {/* SCROLLABLE BODY */}
                 <div className="px-4 flex-1 overflow-y-auto space-y-4 pb-4">
-
                     <div className="flex flex-col space-y-2 relative">
                         <Label>Content</Label>
                         <Textarea
@@ -112,12 +104,12 @@ export default function TweetCreateDialog({
                     </div>
 
                     {parentTweet && (
-                        <TweetCard  isCreating={true} tweet={parentTweet} />
+                        <TweetCard isCreating={true} tweet={parentTweet} />
                     )}
 
                     <div className="flex flex-col space-y-2">
                         <Label>Type</Label>
-                        <Select value={type} onValueChange={setType}>
+                        <Select value={type} onValueChange={() => setType}>
                             <SelectTrigger className="w-full">
                                 <SelectValue placeholder="Select type" />
                             </SelectTrigger>

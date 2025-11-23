@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { io, Socket } from "socket.io-client";
-import type { IUser } from "../types/auth";
+import type { IUser } from "../types/type";
 
 interface User extends IUser {
   token?: string;

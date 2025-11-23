@@ -10,12 +10,8 @@ const noteSchema = new Schema<INote>(
       trim: true,
     },
     content: {
-      type: String,
-      default: "",
-    },
-    color: {
-      type: String,
-      default: "#ffffff",
+      type: Object,
+      required: true,
     },
     visibility: {
       type: String,
@@ -35,38 +31,35 @@ const noteSchema = new Schema<INote>(
       type: String,
       enum: ["active", "archived", "trashed"],
       default: "active",
-      required: true,
     },
     trashedAt: {
       type: Date,
       default: null,
     },
-    collaborators: [
-      {
-        user: {
-          type: Schema.Types.ObjectId,
-          ref: "User",
-          required: true,
+    collaborators: {
+      type: [
+        {
+          user: {
+            type: Schema.Types.ObjectId,
+            ref: "User",
+            required: true,
+          },
+          access: {
+            type: String,
+            enum: ["view", "edit"],
+            default: "view",
+          },
         },
-        access: {
-          type: String,
-          enum: ["view", "edit"],
-          default: "view",
-        },
-      },
-    ],
+      ],
+      default: [],
+    },
     classroom: {
       type: Schema.Types.ObjectId,
       ref: "Classroom",
     },
-    attachments: [
-      {
-        type: String, // file URL or path
-      },
-    ],
   },
   {
-    timestamps: true, 
+    timestamps: true,
   }
 );
 
@@ -77,7 +70,11 @@ noteSchema.index({ title: "text", content: "text" });
 // -------------------- Middleware --------------------
 noteSchema.pre("save", function (next) {
   // Automatically set trashedAt when status becomes 'trashed'
-  if (this.isModified("status") && this.status === "trashed" && !this.trashedAt) {
+  if (
+    this.isModified("status") &&
+    this.status === "trashed" &&
+    !this.trashedAt
+  ) {
     this.trashedAt = new Date();
   }
   next();

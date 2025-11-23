@@ -32,8 +32,8 @@ export function NotificationSideBar() {
                         <Input id="sheet-demo-name" defaultValue="Pedro Duarte" />
                     </div>
                     <div className="grid gap-3">
-                        <Label htmlFor="sheet-demo-username">Username</Label>
-                        <Input id="sheet-demo-username" defaultValue="@peduarte" />
+                        <Label htmlFor="sheet-demo-userName">Username</Label>
+                        <Input id="sheet-demo-userName" defaultValue="@peduarte" />
                     </div>
                 </div>
                 <SheetFooter>

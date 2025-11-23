@@ -78,7 +78,7 @@ export const getSubmissions = async (req: Request, res: Response) => {
     const submissions = await Submission.find({
       assignment: req.params.assignmentId,
     })
-      .populate("student", "username email")
+      .populate("student", "userName email")
       .sort({ submittedAt: -1 });
     res.json(submissions);
   } catch (err: any) {
@@ -89,7 +89,7 @@ export const getSubmissions = async (req: Request, res: Response) => {
 export const getSubmissionById = async (req: Request, res: Response) => {
   try {
     const submission = await Submission.findById(req.params.id)
-      .populate("student", "username email")
+      .populate("student", "userName email")
       .populate("assignment", "title dueDate");
     if (
       submission.student._id.toString() !== req.userId?.toString() ||

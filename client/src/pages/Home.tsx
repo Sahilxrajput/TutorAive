@@ -6,7 +6,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import useAuth from '@/hooks/useAuth';
-import type { ILecture } from '@/types/auth';
+import type { ILecture } from '@/types/type';
 import { formatDateTime } from '@/utils/splitDateTime';
 import { BookHeartIcon, Bookmark, Clock, Rocket } from 'lucide-react';
 import { useEffect, useState } from 'react';
