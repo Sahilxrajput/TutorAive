@@ -60,40 +60,51 @@ export interface AuthContextValue {
   login: (credentials: { email: string; password: string }) => Promise<void>;
 }
 
-export interface ISaveNote{
-  title: string;
-  content: string;
-  classroom?: string;
+export interface ISaveNote {
+  prevNotes: INote[];
 }
 
 export interface INote {
   _id: string;
   title: string;
-  content: string;
-  // color?: string;
-  pinnedAt?: Date | null;
+  content: INoteContent[];
+  owner: {
+    _id: string;
+    userName: string;
+    profilePicture?: string;
+    email: string;
+  };
   status: "active" | "archived" | "trashed";
-  visibility: "private" | "public" | "collaborative"; //@remind
-  owner: string;
-  trashedAt?: Date | null;
-  collaborators: { user: string; access: "view" | "edit" }[];
-  classroom?: string;
-  updatedAt: string;
+  isPublic: boolean;
+  collaborators: {
+    user: {
+      _id: string;
+      userName: string;
+      profilePicture?: string;
+      email: string;
+    };
+    access: "view" | "edit";
+  }[];
+  pinnedBy: IUser[];
+  isPinned?: boolean;
+  trashedAt?: string | null;
   createdAt: string;
+  updatedAt?: string;
 }
 
-export interface IDocs {
-  _id: string;
-  content: object;
-  pinnedAt?: Date | null;
-  status: "active" | "archived" | "trashed";
-  visibility: "private" | "public" | "collaborative";
-  owner: string;
-  trashedAt?: Date | null;
-  collaborators: { user: string; access: "view" | "edit" }[];
-  classroom?: string;
-  createdAt?: Date;
-  updatedAt?: Date;
+export interface INoteContent {
+  type: string;
+  attrs?: {
+    textAlign?: string | null;
+    level?: number;
+    [key: string]: any;
+  };
+  content?: Array<{
+    type?: string;
+    text?: string;
+    attrs?: any;
+    [key: string]: any;
+  }>;
 }
 
 export interface ILecture {
@@ -121,7 +132,7 @@ export interface ITweet {
   content: string;
   type: "general" | "mentorship" | "news" | "problem" | "repost";
   parentTweet?: {
-    author: IUser;
+    author: IUser; //! @fix make it only string
     content: string;
     image?: {
       url: string;

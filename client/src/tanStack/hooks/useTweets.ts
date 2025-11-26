@@ -34,16 +34,16 @@ export const useCreateTweet = () => {
     mutationFn: (formData) => createTweet(formData),
 
     onMutate: async (formData) => {
-      await qc.cancelQueries({ queryKey: CACHE_KEY_TWEETS });
+      await qc.cancelQueries({ queryKey: CACHE_KEY_TWEETS }); //@remind
 
       const previousTweets = qc.getQueryData<ITweet[]>(CACHE_KEY_TWEETS) ?? [];
 
-       const content = formData.get("content") as string;
-       const type = formData.get("type") as
-         | "general"
-         | "mentorship"
-         | "news"
-         | "problem";
+      const content = formData.get("content") as string;
+      const type = formData.get("type") as
+        | "general"
+        | "mentorship"
+        | "news"
+        | "problem";
 
       const optimisticTweet: ITweet = {
         _id: "temp-" + Date.now(),

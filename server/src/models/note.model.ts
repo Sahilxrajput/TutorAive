@@ -13,20 +13,16 @@ const noteSchema = new Schema<INote>(
       type: Object,
       required: true,
     },
-    visibility: {
-      type: String,
-      enum: ["private", "public", "collaborative"],
-      default: "private",
+    isPublic: {
+      type: Boolean,
+      default: false,
     },
     owner: {
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
-    pinnedAt: {
-      type: Date,
-      default: null,
-    },
+    pinnedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
     status: {
       type: String,
       enum: ["active", "archived", "trashed"],

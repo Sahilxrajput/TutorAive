@@ -46,6 +46,7 @@ import { Save } from "lucide-react"
 import { AlertConfirmDialog } from "@/components/AlertConfirmDialog"
 import MobileToolbarContent from "./main-toolbar"
 import MainToolbarContent from "./main-toolbar-content"
+import { useSaveNote } from "@/tanStack/hooks/useNotes"
 
 
 
@@ -56,7 +57,7 @@ export function SimpleEditor() {
   const [mobileView, setMobileView] = useState<"main" | "highlighter" | "link">("main")
   const toolbarRef = useRef<HTMLDivElement>(null)
 
-  
+
   const editor = useEditor({
     immediatelyRender: false,
     editorProps: {
@@ -101,12 +102,15 @@ export function SimpleEditor() {
     editor,
     overlayHeight: toolbarRef.current?.getBoundingClientRect().height ?? 0,
   })
+  const saveNote = useSaveNote();
 
+  //@issue
   const saveNotesHandler = async () => {
-    const content = editor?.getJSON();
-    const res = await API.post("/notes", { ...content, title: noteTitle });
-    console.log(res)
-    toast.success(res.data.message);
+    const content = editor?.getJSON()
+    const formData = new FormData()
+    formData.append("content", JSON.stringify(content ?? {}))
+    formData.append("title", title)
+    saveNote.mutate(formData)
   }
 
   useEffect(() => {
@@ -115,7 +119,7 @@ export function SimpleEditor() {
     }
   }, [isMobile, mobileView])
 
-  const [noteTitle, setNoteTitle] = useState("New Document")
+  const [title, setTitle] = useState("New Document")
 
   return (
     // <div className="simple-editor-wrapper">
@@ -133,8 +137,8 @@ export function SimpleEditor() {
         >
           {mobileView === "main" ? (
             <MainToolbarContent
-              setNoteTitle={setNoteTitle}
-              noteTitle={noteTitle}
+              setNoteTitle={setTitle}
+              noteTitle={title}
               onHighlighterClick={() => setMobileView("highlighter")}
               onLinkClick={() => setMobileView("link")}
               isMobile={isMobile}

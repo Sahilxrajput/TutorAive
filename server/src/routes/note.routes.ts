@@ -18,7 +18,7 @@ import {
   searchQuery,
   trashToggler,
   updateNote,
-  visibilityToggler,
+  changeAccess,
 } from "../controllers/note.controller";
 
 const router = express.Router();
@@ -36,7 +36,7 @@ router.get("/:status", validateGetNotes, handleValidation, getNotesByStatus);
 router.route("/:id").get(getNoteById).put(updateNote).delete(permanentlyDelete);
 
 // PATCH routes for toggling note properties
-router.patch("/:id/toggle-visibility", visibilityToggler);
+router.patch("/:id/toggle-visibility", changeAccess);
 
 //@todo authorization
 router.patch("/:id/toggle-trash", trashToggler);

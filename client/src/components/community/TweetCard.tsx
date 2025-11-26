@@ -4,7 +4,6 @@ import useAuth from "@/hooks/useAuth";
 import type { ITweet } from "@/types/type";
 import { AlertConfirmDialog } from "../AlertConfirmDialog";
 import { TooltipDemo } from "../TooltipDemo";
-import defaultAvatar from "@/assets/image/avatar.png";
 import { useEffect, useState } from "react";
 import TweetCreateDialog from "./TweetCreate";
 import AuthorInfo from "./AuthorInfo";

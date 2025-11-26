@@ -6,7 +6,6 @@ import User from "../models/user.model";
 export const saveNote = async (req: Request, res: Response) => {
   try {
     const { content, title, classroom } = req.body;
-
     if (!content || !title)
       return res.status(400).json({ error: "Content and title are required." });
 
@@ -17,9 +16,10 @@ export const saveNote = async (req: Request, res: Response) => {
       classroom: classroom || null,
     });
     console.log(note);
-    res.status(201).json({ message: "Note saved successfully." });
+    res.status(201).json({ data: note, message: "Note saved successfully." });
   } catch (error) {
-    res.status(400).json({ message: "Failed to create note", error });
+    console.log(error);
+    res.status(400).json({ message: "Failed to save note", error });
   }
 };
 
@@ -29,11 +29,22 @@ export const getNotesByStatus = async (req: Request, res: Response) => {
     const { status } = req.params;
 
     const filter = {
-      $or: [{ owner: userId }, { "collaborators.user": userId }], //!@fix if note is publicallly visible
-      status: status ?? "active",
+      $and: [
+        { status: status ?? "active" },
+        {
+          $or: [
+            { owner: userId },
+            { "collaborators.user": userId },
+            { isPublic: true },
+          ],
+        },
+      ],
     };
 
-    const notes = await Note.find(filter).sort({ updatedAt: -1 });
+    const notes = await Note.find(filter)
+      .populate("owner", "email profilePicture userName")
+      .populate("collaborators.user", "profilePicture userName")
+      .sort({ updatedAt: -1 });
 
     res.status(200).json({ data: notes, success: true });
   } catch (error: any) {
@@ -54,7 +65,7 @@ export const getNoteById = async (req: Request, res: Response) => {
       !note.collaborators.some(
         (c: ICollaborator) => c.user.toString() === req.userId
       ) &&
-      note.visibility === "private"
+      !note.isPublic
     ) {
       return res.status(403).json({ message: "Access denied" });
     }
@@ -88,29 +99,38 @@ export const updateNote = async (req: Request, res: Response) => {
   }
 };
 
-export const visibilityToggler = async (req: Request, res: Response) => {
+export const changeAccess = async (req: Request, res: Response) => {
   try {
     const noteId = req.params.id;
     const note = await Note.findById(noteId);
-    if (!note) return res.status(404).json({ message: "Note not found" });
 
-    // Only owner can change visibility
-    if (note.owner.toString() !== req.userId) {
-      return res
-        .status(403)
-        .json({ message: "You are not allowed to change visibility" });
+    if (!note) {
+      return res.status(404).json({ message: "Note not found" });
     }
 
-    const newVisibility = note.visibility === "private" ? "public" : "private";
-    const updatedNote = await Note.findByIdAndUpdate(
-      noteId,
-      { visibility: newVisibility },
-      { new: true }
-    );
+    // only owner can update access
+    if (note.owner.toString() !== req.userId) {
+      return res.status(403).json({
+        message: "You are not allowed to change access",
+      });
+    }
 
-    res.json({ message: `Note made ${newVisibility}`, updatedNote });
+    // toggle
+    note.isPublic = !note.isPublic;
+
+    const msg = note.isPublic ? "Note made public" : "Note made private";
+
+    await note.save();
+
+    res.json({
+      message: msg,
+      updatedNote: note,
+    });
   } catch (error) {
-    res.status(400).json({ message: "Failed to update visibility", error });
+    res.status(400).json({
+      message: "Failed to update access",
+      error,
+    });
   }
 };
 
@@ -133,10 +153,10 @@ export const trashToggler = async (req: Request, res: Response) => {
 
     res.json({
       message: actionMessage,
-      note,
+      data: note,
     });
 
-    res.json({ message: "Note moved to trash", note });
+    res.json({ message: "Note moved to trash", data: note });
   } catch (error) {
     res.status(500).json({ message: "Failed to delete note", error });
   }
@@ -144,17 +164,31 @@ export const trashToggler = async (req: Request, res: Response) => {
 
 export const pinToggler = async (req: Request, res: Response) => {
   try {
+    const userId = req.userId;
     const note = await Note.findById(req.params.id);
     if (!note) return res.status(404).json({ message: "Note not found" });
 
-    note.pinnedAt = note.pinnedAt ? null : new Date();
+    const alreadyPinned = note.pinnedBy.some(
+      (u: string) => u.toString() === userId
+    );
+
+    if (alreadyPinned) {
+      // Unpin
+      note.pinnedBy = note.pinnedBy.filter(
+        (u: string) => u.toString() !== userId
+      );
+    } else {
+      // Pin
+      note.pinnedBy.push(userId);
+    }
+
     await note.save();
-    res.json({
-      message: note.pinnedAt ? "Note pinned" : "Note unpinned",
-      note,
+    res.status(200).json({
+      success: true,
+      message: alreadyPinned ? "Note Unpinned" : "Note Pinned",
     });
   } catch (error) {
-    res.status(500).json({ message: "Failed to toggle pin", error });
+    res.status(500).json({ message: "Failed to toggle pin" });
   }
 };
 
@@ -167,7 +201,7 @@ export const archiveToggler = async (req: Request, res: Response) => {
     await note.save();
     res.json({
       message: note.status === "archived" ? "Note archived" : "Note unarchive",
-      note,
+      data: note,
     });
   } catch (error) {
     res
@@ -226,6 +260,7 @@ export const clearTrash = async (req: Request, res: Response) => {
       }
     }
 
+    // @remind
     res.status(200).json({
       message: `Trash cleared successfully`,
       deletedNotes: deletedCount,
@@ -258,7 +293,7 @@ export const addCollaborator = async (req: Request, res: Response) => {
 
     // Check if user already exists as collaborator
     const alreadyExists = note.collaborators.some(
-      (c) => c.user.toString() === user._id.toString()
+      (c) => c.user._id.toString() === user._id.toString()
     );
 
     if (alreadyExists)
@@ -270,7 +305,7 @@ export const addCollaborator = async (req: Request, res: Response) => {
     note.collaborators.push({ user: user._id, access });
     await note.save();
 
-    res.json({ message: `Collaborator ${userEmail} added`, note });
+    res.json({ message: `Collaborator ${userEmail} added`, data: note });
   } catch (error) {
     console.error(error);
     res.status(400).json({ message: "Failed to add collaborator", error });
@@ -310,7 +345,10 @@ export const removeCollaborator = async (req: Request, res: Response) => {
       { new: true }
     ).orFail();
 
-    res.json({ message: `${userEmail}, Collaborator removed`, updatedNote });
+    res.json({
+      message: `${userEmail}, Collaborator removed`,
+      data: updatedNote,
+    });
   } catch (error) {
     console.error(error);
     res.status(400).json({ message: "Failed to remove collaborator", error });

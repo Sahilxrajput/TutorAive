@@ -13,9 +13,9 @@ export const addCollaboratorValidator = [
     .isMongoId()
     .withMessage("Invalid note ID"),
 
-  body("userEmail")
-    .isEmail()
-    .withMessage("A valid user email is required"),
+  // body("userEmail") @fix kmc.du.ac.in not accessable
+  //   .isEmail()
+  //   .withMessage("A valid user email is required"),
 
   body("access")
     .isIn(["view", "edit"])

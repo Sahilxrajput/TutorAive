@@ -135,9 +135,9 @@ export interface INote extends Document {
   _id: Types.ObjectId;
   content: object;
   title: String;
-  visibility: "private" | "public" | "collaborative";
+  isPublic: boolean;
   owner: Types.ObjectId;
-  pinnedAt?: Date | null;
+  pinnedBy: IUser[];
   status: "active" | "archived" | "trashed";
   trashedAt?: Date | null;
   collaborators: ICollaborator[];

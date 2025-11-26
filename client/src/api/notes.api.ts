@@ -1,5 +1,6 @@
 import API from "@/lib/api";
-import type { INote, ISaveNote } from "@/types/type";
+import type { ISaveNote } from "@/types/type";
+import { toast } from "sonner";
 
 interface IAddCollaborator {
   id: string;
@@ -13,8 +14,7 @@ interface IRemoveCollaborator {
 }
 
 export const fetchNotes = async (status: string | undefined) => {
-  //@remind
-  const { data } = await API.get("/notes" + status);
+  const { data } = await API.get("/notes/" + status);
   return data.data;
 };
 
@@ -23,16 +23,21 @@ export const fetchNote = async (id: string) => {
   return data.data;
 };
 
-export async function saveNote(newNote: ISaveNote) {
-  await API.post("/notes", newNote);
+export async function saveNote(newNote: FormData) {
+  const { data } = await API.post("/notes", newNote);
+  console.log("data :", data.data)
+  toast.success(data.message);
+  return data.data;
 }
 
 export const clearTrash = async () => {
-  await API.delete("/notes/clear-trash");
+  const { data } = await API.delete("/notes/clear-trash");
+  toast.success(data.message);
 };
 
 export const changeAccess = async (id: string) => {
-  await API.patch(`/notes/${id}/toggle-visibility`);
+  const { data } = await API.patch(`/notes/${id}/toggle-visibility`);
+  toast.success(data.message);
 };
 
 export const addCollaborator = async ({
@@ -40,27 +45,43 @@ export const addCollaborator = async ({
   email,
   access,
 }: IAddCollaborator) => {
-  await API.post(`/notes/${id}/collaborators`, {
+  const { data } = await API.post(`/notes/${id}/collaborators`, {
     userEmail: email,
     access,
   });
+  toast.success(data.message);
+  return data.data;
 };
 
 export const removeCollaborator = async ({
   noteId,
   collabId,
 }: IRemoveCollaborator) => {
-  await API.delete(`/notes/${noteId}/collaborators?userEmail=${collabId}`);
+  const { data } = await API.delete(
+    `/notes/${noteId}/collaborators?userEmail=${collabId}`
+  );
+  toast.success(data.message);
+  return data.data;
 };
 
 export const toggleArchive = async (id: string) => {
-  await API.patch(`/notes/${id}/toggle-archive`);
+  const { data } = await API.patch(`/notes/${id}/toggle-archive`);
+  toast.success(data.message);
+  return data.data;
 };
 
 export const toggleTrash = async (id: string) => {
-  await API.patch(`/notes/${id}/toggle-trash`);
+  const { data } = await API.patch(`/notes/${id}/toggle-trash`);
+  toast.success(data.message);
+  return data.data;
+};
+
+export const togglePin = async (id: string) => {
+  const { data } = await API.patch(`/notes/${id}/toggle-pin`);
+  toast.success(data.message);
 };
 
 export const deleteNote = async (id: string) => {
-  await API.delete(`/notes/${id}`);
+  const { data } = await API.delete(`/notes/${id}`);
+  toast.success(data.message);
 };
