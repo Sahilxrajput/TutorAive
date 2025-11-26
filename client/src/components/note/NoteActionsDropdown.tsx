@@ -25,9 +25,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { EllipsisVertical, Pin, PinOff, Globe, Lock, UserPlus, Users2, Trash, UsersRound, Archive, ArchiveRestore, Save } from "lucide-react";
-import type {  INote } from "@/types/type";
+import type { INote } from "@/types/type";
 import API from "@/lib/api";
 import { toast } from "sonner";
+import { useAccessChange, useAddCollaborator, useArchiveToggle, useDeleteNote, usePinToggle, useRemoveCollaborator, useTrashToggle } from "@/tanStack/hooks/useNotes";
 
 interface NoteActionsDropdownProps {
   note: INote;
@@ -40,10 +41,9 @@ const NoteActionsDropdown: React.FC<NoteActionsDropdownProps> = ({ note, onActio
   const [showCollaboratorDialog, setShowCollaboratorDialog] = useState(false);
   const [showRemoveCollabDialog, setShowRemoveCollabDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [visibility, setVisibility] = useState(note.visibility);
   const [email, setEmail] = useState("");
   const [access, setAccess] = useState("view");
-  const [collabId, setCollabId] = useState("");
+  const [userId, setUserId] = useState("");
 
 
   // ---------- HANDLERS ----------
@@ -60,79 +60,29 @@ const NoteActionsDropdown: React.FC<NoteActionsDropdownProps> = ({ note, onActio
     }
   }
 
-  async function handleAddCollaborator() {
-    try {
-      const { data } = await API.post(`/notes/${note._id}/collaborators`, {
-        userEmail: email,
-        access,
-      });
-      console.log(data)
-      toast.success(data.message);
-      setShowCollaboratorDialog(false);
-      setEmail("");
-      onActionComplete?.();
-    } catch (err: any) {
-      console.error(err);
-      const errorMessage =
-        err.response?.data?.message || "Failed to add collaborator";
-      toast.error(errorMessage);
-    }
+  const changeAccess = useAccessChange();
+  const pinToggle = usePinToggle();
+  const archiveToggle = useArchiveToggle();
+  const trashToggle = useTrashToggle();
+  const deleteNote = useDeleteNote();
+  const addCollaborator = useAddCollaborator();
+  const removeCollaborator = useRemoveCollaborator();
+
+  
+  function handleAddCollaborator() {
+    addCollaborator.mutate({
+      noteId: note._id,
+      userEmail: email,
+      access
+    })
   }
 
-  async function handleRemoveCollaborator() {
-    try {
-      const { data } = await API.delete(`/notes/${note._id}/collaborators?userEmail=${collabId}`);
-      toast.success(data.message);
-      console.log("remove", data)
-      setShowRemoveCollabDialog(false);
-      setCollabId("");
-      onActionComplete?.();
-    } catch (err: any) {
-      console.error(err);
-      const errorMessage =
-        err.response?.data?.message || "Failed to remove collaborator";
-      toast.error(errorMessage);
-    }
+  function handleRemoveCollaborator() {
+      removeCollaborator.mutate({
+      noteId: note._id,
+      userId: userId
+    })
   }
-
-  async function handlePinToggle() {
-    try {
-      const { data } = await API.patch(`/notes/${note._id}/toggle-pin`);
-      console.log(data)
-      toast.success(data.message);
-      onActionComplete?.();
-    } catch {
-      toast.error("Failed to toggle pin");
-    }
-  };
-
-  async function handleTrash(permanent = false) {
-    try {
-      if (permanent) {
-        const { data } = await API.delete(`/notes/${note._id}`);
-        console.log("delete", data)
-        toast.success(data.message);
-      } else {
-        const { data } = await API.patch(`/notes/${note._id}/toggle-trash`);
-        console.log("trash", data)
-        toast.info(data.message);
-      }
-      onActionComplete?.();
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to delete note");
-    }
-  };
-
-  async function handleArchiveToggle() {
-    try {
-      const { data } = await API.patch(`/notes/${note._id}/toggle-archive`);
-      toast.success(data.message);
-      onActionComplete?.();
-    } catch {
-      toast.error("Failed to archive/unarchive note");
-    }
-  };
 
 
   return (
@@ -148,8 +98,8 @@ const NoteActionsDropdown: React.FC<NoteActionsDropdownProps> = ({ note, onActio
         <DropdownMenuContent className="w-44" align="end">
           <DropdownMenuGroup>
             {note.status === "active" && (
-              <DropdownMenuItem onClick={() => handlePinToggle()}>
-                {note.pinnedAt ? (
+              <DropdownMenuItem onClick={() => pinToggle.mutate(note._id)}>
+                {note.isPinned ? (
                   <>
                     <PinOff className="w-4 h-4 mr-2" /> Unpin
                   </>
@@ -164,21 +114,20 @@ const NoteActionsDropdown: React.FC<NoteActionsDropdownProps> = ({ note, onActio
             {note.status !== "trashed" && (
               <>
                 {/* Access Control */}
-                <DropdownMenuItem onClick={() => handleAccessChange()}>
-                  {visibility === "private" ? (
+                <DropdownMenuItem onClick={() => changeAccess.mutate(note._id)}>
+                  {note.isPublic ? (
                     <>
                       <Lock className="w-4 h-4 mr-2" /> Private
                     </>
                   ) : (
                     <>
-                      <Globe className="w-4 h-4 mr-2" />
-                      {visibility.charAt(0).toUpperCase() + visibility.slice(1)}
+                      <Globe className="w-4 h-4 mr-2" /> Public
                     </>
                   )}
                 </DropdownMenuItem>
 
                 {/* Archive / Unarchive */}
-                <DropdownMenuItem onClick={() => handleArchiveToggle()}>
+                <DropdownMenuItem onClick={() => archiveToggle.mutate(note._id)}>
                   {note.status === "archived" ? (
                     <>
                       <ArchiveRestore className="w-4 h-4 mr-2" /> Unarchive
@@ -210,7 +159,7 @@ const NoteActionsDropdown: React.FC<NoteActionsDropdownProps> = ({ note, onActio
             )}
 
             {note.status === "trashed" && (
-              <DropdownMenuItem onClick={() => handleTrash()}>
+              <DropdownMenuItem>
 
                 <Save className="w-4 h-4 mr-2" /> Restore
               </DropdownMenuItem>
@@ -300,8 +249,8 @@ const NoteActionsDropdown: React.FC<NoteActionsDropdownProps> = ({ note, onActio
           <div className="py-4 space-y-3">
             <Label>Collaborator Email</Label>
             <Input
-              value={collabId}
-              onChange={(e) => setCollabId(e.target.value)}
+              value={userId}
+              onChange={(e) => setUserId(e.target.value)}
               placeholder="Enter collaborator Email"
             />
           </div>
@@ -336,13 +285,13 @@ const NoteActionsDropdown: React.FC<NoteActionsDropdownProps> = ({ note, onActio
             </DialogClose>
             <Button
               variant="outline"
-              onClick={() => handleTrash()}
+              onClick={() => trashToggle.mutate(note._id)}
             >
               Move to Trash
             </Button>
             <Button
               variant="destructive"
-              onClick={() => handleTrash(true)}
+              onClick={() => deleteNote.mutate(note._id)}
             >
               Delete Permanently
             </Button>

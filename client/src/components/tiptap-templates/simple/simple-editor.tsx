@@ -40,8 +40,6 @@ import { handleImageUpload, MAX_FILE_SIZE } from "@/lib/tiptap-utils"
 // --- Styles ---
 import "@/components/tiptap-templates/simple/simple-editor.scss"
 
-import API from "@/lib/api"
-import { toast } from "sonner"
 import { Save } from "lucide-react"
 import { AlertConfirmDialog } from "@/components/AlertConfirmDialog"
 import MobileToolbarContent from "./main-toolbar"
@@ -50,12 +48,13 @@ import { useSaveNote } from "@/tanStack/hooks/useNotes"
 
 
 
-export function SimpleEditor() {
+export function SimpleEditor({ content = null, noteTitle = "New Document" }: { content?: any, noteTitle: string }) {
   const isMobile = useIsBreakpoint()
   const { height } = useWindowSize()
   const [alertOpen, setAlertOpen] = useState<boolean>(false)
   const [mobileView, setMobileView] = useState<"main" | "highlighter" | "link">("main")
   const toolbarRef = useRef<HTMLDivElement>(null)
+
 
 
   const editor = useEditor({
@@ -95,20 +94,21 @@ export function SimpleEditor() {
         onError: (error) => console.error("Upload failed:", error),
       }),
     ],
-    // content,
+    content
   })
 
   const rect = useCursorVisibility({
     editor,
     overlayHeight: toolbarRef.current?.getBoundingClientRect().height ?? 0,
   })
+
   const saveNote = useSaveNote();
 
   //@issue
   const saveNotesHandler = async () => {
     const content = editor?.getJSON()
     const formData = new FormData()
-    formData.append("content", JSON.stringify(content ?? {}))
+    formData.append("content", JSON.stringify(content ?? null))
     formData.append("title", title)
     saveNote.mutate(formData)
   }
@@ -119,7 +119,22 @@ export function SimpleEditor() {
     }
   }, [isMobile, mobileView])
 
-  const [title, setTitle] = useState("New Document")
+  const [title, setTitle] = useState(noteTitle)
+
+  useEffect(() => {
+    setTitle(noteTitle)
+  }, [noteTitle])
+
+  useEffect(() => {
+    if (!editor) return;
+
+    if (content) {
+      editor.commands.setContent(content);
+    } else {
+      editor.commands.clearContent();
+    }
+  }, [editor, content]);
+
 
   return (
     // <div className="simple-editor-wrapper">

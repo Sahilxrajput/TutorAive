@@ -64,6 +64,17 @@ export interface ISaveNote {
   prevNotes: INote[];
 }
 
+export interface IAddCollaborator {
+  noteId: string;
+  userEmail: string;
+  access: string;
+}
+
+export interface IRemoveCollaborator {
+  noteId: string;
+  userId: string;
+}
+
 export interface INote {
   _id: string;
   title: string;
@@ -85,7 +96,7 @@ export interface INote {
     };
     access: "view" | "edit";
   }[];
-  pinnedBy: IUser[];
+  pinnedBy: string[];
   isPinned?: boolean;
   trashedAt?: string | null;
   createdAt: string;

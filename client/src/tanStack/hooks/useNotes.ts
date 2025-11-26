@@ -10,13 +10,16 @@ import {
   togglePin,
   toggleTrash,
   clearTrash,
+  updateNote,
 } from "@/api/notes.api";
-import type { INote, ISaveNote } from "@/types/type";
+import type { INote, ISaveNote, IAddCollaborator, IRemoveCollaborator } from "@/types/type";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { CACHE_KEY_NOTES } from "../constants";
 import { toast } from "sonner";
 import useAuth from "@/hooks/useAuth";
 
+
+//@ok
 export function useNotes(status: string | undefined) {
   return useQuery<INote[], Error>({
     queryKey: status ? [CACHE_KEY_NOTES, status] : CACHE_KEY_NOTES,
@@ -24,6 +27,7 @@ export function useNotes(status: string | undefined) {
   });
 }
 
+//@ok
 export function useNote(id: string) {
   return useQuery<INote, Error>({
     queryKey: ["note", id],
@@ -31,14 +35,15 @@ export function useNote(id: string) {
   });
 }
 
-export function useDeleteTweet(noteId: string) {
+//@check
+export function useDeleteNote() {
   const qc = useQueryClient();
 
-  return useMutation<void, Error>({
-    mutationFn: () => deleteNote(noteId),
-    onSuccess: () => {
+  return useMutation<INote, Error, string, { prevNotes: INote[] }>({
+    mutationFn: (id) => deleteNote(id),
+    onSuccess: (deleted) => {
       qc.setQueryData(CACHE_KEY_NOTES, (prev: INote[] = []) =>
-        prev.filter((n) => n._id !== noteId)
+        prev.filter((n) => n._id !== deleted._id)
       );
     },
     onError() {
@@ -46,7 +51,7 @@ export function useDeleteTweet(noteId: string) {
     },
   });
 }
-
+//@todo
 export function useSaveNote() {
   const qc = useQueryClient();
   const { user } = useAuth();
@@ -71,10 +76,12 @@ export function useSaveNote() {
           userName: user?.userName || "",
           _id: user?._id || "",
           profilePicture: user?.profilePicture,
-          email:user?.email || ""
+          email: user?.email || "",
         },
+        pinnedBy:[],
         status: "active",
-        visibility: "private",
+        collaborators:[],
+        isPublic: true,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -103,6 +110,26 @@ export function useSaveNote() {
   });
 }
 
+//@todo
+export function useUpdateNote() {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: updateNote,
+
+    onSuccess: (updatedNote) => {
+      // Update single note
+      qc.setQueryData(["note", updatedNote._id], updatedNote);
+
+      // Update list of notes
+      qc.setQueryData<INote[]>(["notes"], (prev = []) =>
+        prev.map((note) => (note._id === updatedNote._id ? updatedNote : note))
+      );
+    },
+  });
+}
+
+//@todo
 export function useClearTrash() {
   const qc = useQueryClient();
 
@@ -132,7 +159,8 @@ export function useClearTrash() {
   });
 }
 
-export function useChangeAccess() {
+// @ok
+export function useAccessChange() {
   const qc = useQueryClient();
 
   return useMutation<INote, Error, string, { prevNotes: INote[] }>({
@@ -148,7 +176,7 @@ export function useChangeAccess() {
           n._id === id
             ? {
                 ...n,
-                visibility: n.visibility === "private" ? "public" : "private",
+                isPublic: n.isPublic ? false : true,
               }
             : n
         )
@@ -169,23 +197,34 @@ export function useChangeAccess() {
   });
 }
 
+// @ok
 export function useAddCollaborator() {
   const qc = useQueryClient();
 
   return useMutation<INote, Error, IAddCollaborator, { prevNotes: INote[] }>({
     mutationFn: (payload) => addCollaborator(payload),
 
-    onMutate: async ({ id, email, access }) => {
+    onMutate: async ({ noteId, userEmail, access }) => {
       await qc.cancelQueries({ queryKey: CACHE_KEY_NOTES });
 
       const prevNotes = qc.getQueryData<INote[]>(CACHE_KEY_NOTES) ?? [];
 
       qc.setQueryData<INote[]>(CACHE_KEY_NOTES, (prev = []) =>
         prev.map((n) =>
-          n._id === id
+          n._id === noteId
             ? {
                 ...n,
-                collaborators: [...(n.collaborators ?? []), { email, access }],
+                collaborators: [
+                  ...(n.collaborators ?? []),
+                  {
+                    user: {
+                      _id: "temp", // temporary placeholder until server returns real ID
+                      userName: userEmail.split("@")[0], // fallback
+                      email: userEmail,
+                    },
+                    access: access as "view" | "edit",
+                  },
+                ],
               }
             : n
         )
@@ -206,6 +245,7 @@ export function useAddCollaborator() {
   });
 }
 
+// @ok
 export function useRemoveCollaborator() {
   const qc = useQueryClient();
 
@@ -213,7 +253,7 @@ export function useRemoveCollaborator() {
     {
       mutationFn: (payload) => removeCollaborator(payload),
 
-      onMutate: async ({ noteId, collabId }) => {
+      onMutate: async ({ noteId, userId }) => {
         await qc.cancelQueries({ queryKey: CACHE_KEY_NOTES });
 
         const prevNotes = qc.getQueryData<INote[]>(CACHE_KEY_NOTES) ?? [];
@@ -224,7 +264,7 @@ export function useRemoveCollaborator() {
               ? {
                   ...n,
                   collaborators: n.collaborators?.filter(
-                    (c) => c.email !== collabId
+                    (c) => c.user.email !== userId
                   ),
                 }
               : n
@@ -247,7 +287,8 @@ export function useRemoveCollaborator() {
   );
 }
 
-export function useToggleArchive() {
+// @ok
+export function useArchiveToggle() {
   const qc = useQueryClient();
 
   return useMutation<INote, Error, string, { prevNotes: INote[] }>({
@@ -281,7 +322,8 @@ export function useToggleArchive() {
   });
 }
 
-export function useToggleTrash() {
+// @ok
+export function useTrashToggle() {
   const qc = useQueryClient();
 
   return useMutation<INote, Error, string, { prevNotes: INote[] }>({
@@ -295,7 +337,7 @@ export function useToggleTrash() {
       qc.setQueryData<INote[]>(CACHE_KEY_NOTES, (prev = []) =>
         prev.map((n) =>
           n._id === id
-            ? { ...n, status: n.status === "trash" ? "active" : "trash" }
+            ? { ...n, status: n.status === "trashed" ? "active" : "trashed" }
             : n
         )
       );
@@ -315,8 +357,10 @@ export function useToggleTrash() {
   });
 }
 
-export function useTogglePin() {
+// @ok
+export function usePinToggle() {
   const qc = useQueryClient();
+  const { user } = useAuth();
 
   return useMutation<INote, Error, string, { prevNotes: INote[] }>({
     mutationFn: (id) => togglePin(id),
@@ -332,7 +376,12 @@ export function useTogglePin() {
           note._id === id
             ? {
                 ...note,
-                pinnedAt: note.pinnedAt ? null : new Date().toISOString(),
+                pinnedBy:
+                  user?._id && note.pinnedBy.includes(user._id)
+                    ? note.pinnedBy.filter((uid) => uid !== user._id)
+                    : user?._id
+                    ? [...note.pinnedBy, user._id]
+                    : note.pinnedBy,
               }
             : note
         )

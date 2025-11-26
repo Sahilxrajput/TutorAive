@@ -20,7 +20,8 @@ import Quiz from "./pages/Quiz";
 import Editor from "./pages/Editor";
 import LiveSession from "./pages/LiveSession";
 import CommunityPage from "./pages/CommunityPage";
-import CreateNotes from "./pages/CreateNotes";
+import SaveNotes from "./pages/SaveNotes";
+import Note from "./pages/Note";
 
 
 
@@ -34,7 +35,8 @@ const App: React.FC = () => {
         <Route path="chats" element={<ChatRoom />} />
         <Route path="editor" element={<Editor />} />
         <Route path="notes" element={<Notes />} />
-        <Route path="notes/new" element={<CreateNotes />} />
+        <Route path="notes/:id" element={<Note />} />
+        <Route path="notes/new" element={<SaveNotes />} />
         <Route path="quizs" element={<Quiz />} />
         <Route path="live" element={<LiveSession />} />
         <Route path="community" element={<CommunityPage />} />

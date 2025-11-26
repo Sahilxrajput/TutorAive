@@ -1,14 +1,15 @@
 import type { INote } from '@/types/type';
 import { motion } from "framer-motion";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '../ui/card';
 import NoteActionsDropdown from './NoteActionsDropdown';
 import { Forward, Globe, Pin } from 'lucide-react';
 import useAuth from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
 import { formatLastUpdated } from '@/utils/splitDateTime';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import { Button } from '../ui/button';
+import { useNavigate } from 'react-router-dom';
 
-const NoteCard = (note: INote) => {
+const NoteCard = ({ note }: { note: INote }) => {
     const { user } = useAuth();
 
     const isCollaborative = note.collaborators.some(
@@ -18,13 +19,15 @@ const NoteCard = (note: INote) => {
     const noCollaborators = note.collaborators.length === 0;
     const avatars = [...note.collaborators.map(c => c.user), note.owner];
 
+    const navigate = useNavigate();
+
     return (
         <motion.div
             key={note._id}
             whileHover={{ scale: 1.03 }}
             transition={{ duration: 0.2 }}
             className={cn(
-                "border rounded-xl flex flex-col justify-between p-6 shadow-md hover:shadow-lg transition-all duration-200 group relative w-full min-h-[360px]",
+                "border relative rounded-xl flex flex-col justify-between p-6 shadow-md hover:shadow-lg transition-all duration-200 group relative w-full min-h-[360px]",
                 isCollaborative ? "ring-2 ring-blue-200 bg-blue-50/40" : "bg-card/90",
                 note.isPinned && "ring-2 ring-amber-400"
             )}
@@ -59,9 +62,13 @@ const NoteCard = (note: INote) => {
                     ))}
                 </div>
 
-                <h3 className="text-lg font-medium">{noCollaborators ? "Owner" : "Collaborators"}</h3>
+                <Button
+                    onClick={() => navigate(`/notes/${note._id}`)}
+                    className="text-lg font-medium"
+                    variant={"ghost"}
+                >{noCollaborators ? "Owner" : "Collaborators"}
+                </Button>
             </div>
-
             <div className="flex items-center justify-between text-muted-foreground">
                 <p className="text-xs italic">
                     Last Update: {formatLastUpdated(note.updatedAt!)}
