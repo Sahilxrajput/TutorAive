@@ -6,6 +6,11 @@ import User from "../models/user.model";
 export const saveNote = async (req: Request, res: Response) => {
   try {
     const { content, title, classroom } = req.body;
+
+    console.log("content", content)
+    console.log("title", title)
+
+
     if (!content || !title)
       return res.status(400).json({ error: "Content and title are required." });
 
@@ -58,20 +63,29 @@ export const getNotesByStatus = async (req: Request, res: Response) => {
 
 export const getNoteById = async (req: Request, res: Response) => {
   try {
-    const note = await Note.findById(req.params.id);
+    const noteId = req.params.id;
+    const note = await Note.findById(noteId);
+
     if (!note) return res.status(404).json({ message: "Note not found" });
-    if (
-      note.owner.toString() !== req.userId &&
-      !note.collaborators.some(
-        (c: ICollaborator) => c.user.toString() === req.userId
-      ) &&
-      !note.isPublic
-    ) {
+
+    const isOwner = note.owner.toString() === req.userId;
+
+    const isCollaborator = note.collaborators.some(
+      (c: ICollaborator) => c.user.toString() === req.userId
+    );
+
+    const isPublic = note.isPublic;
+
+    if (!isOwner && !isCollaborator && !isPublic) {
       return res.status(403).json({ message: "Access denied" });
     }
-    res.status(200).json({ data: note, message: "fetch note successfully" });
+
+    return res
+      .status(200)
+      .json({ data: note, message: "Fetched note successfully" });
   } catch (error) {
-    res.status(500).json({ message: "Failed to fetch note", error });
+    console.error("Error fetching note:", error);
+    return res.status(500).json({ message: "Failed to fetch note", error });
   }
 };
 
@@ -124,7 +138,7 @@ export const changeAccess = async (req: Request, res: Response) => {
 
     res.json({
       message: msg,
-      updatedNote: note,
+      data: note,
     });
   } catch (error) {
     res.status(400).json({
@@ -182,9 +196,10 @@ export const pinToggler = async (req: Request, res: Response) => {
       note.pinnedBy.push(userId);
     }
 
-    await note.save();
+    const updatedNote = await note.save();
     res.status(200).json({
       success: true,
+      data: updatedNote,
       message: alreadyPinned ? "Note Unpinned" : "Note Pinned",
     });
   } catch (error) {

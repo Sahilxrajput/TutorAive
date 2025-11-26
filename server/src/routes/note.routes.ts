@@ -31,12 +31,17 @@ router.use(authMiddleware);
 // GET all or filtered notes / POST create a new note
 //@todo FIX requets body
 router.post("/", saveNote);
-router.get("/:status", validateGetNotes, handleValidation, getNotesByStatus);
+router.get(
+  "/status/:status",
+  validateGetNotes,
+  handleValidation,
+  getNotesByStatus
+);
 
 router.route("/:id").get(getNoteById).put(updateNote).delete(permanentlyDelete);
 
 // PATCH routes for toggling note properties
-router.patch("/:id/toggle-visibility", changeAccess);
+router.patch("/:id/toggle-access", changeAccess);
 
 //@todo authorization
 router.patch("/:id/toggle-trash", trashToggler);
