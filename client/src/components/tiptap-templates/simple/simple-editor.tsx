@@ -41,17 +41,15 @@ import { handleImageUpload, MAX_FILE_SIZE } from "@/lib/tiptap-utils"
 import "@/components/tiptap-templates/simple/simple-editor.scss"
 
 import { Save } from "lucide-react"
-import { AlertConfirmDialog } from "@/components/AlertConfirmDialog"
 import MobileToolbarContent from "./main-toolbar"
 import MainToolbarContent from "./main-toolbar-content"
-import { useSaveNote } from "@/tanStack/hooks/useNotes"
+import { useSaveNote, useUpdateNote } from "@/tanStack/hooks/useNotes"
 
 
 
-export function SimpleEditor({ content = null, noteTitle = "New Document" }: { content?: any, noteTitle: string }) {
+export function SimpleEditor({ content = null, noteId = "1", noteTitle = "New Document" }: { content?: any, noteId?: string, noteTitle: string }) {
   const isMobile = useIsBreakpoint()
   const { height } = useWindowSize()
-  const [alertOpen, setAlertOpen] = useState<boolean>(false)
   const [mobileView, setMobileView] = useState<"main" | "highlighter" | "link">("main")
   const toolbarRef = useRef<HTMLDivElement>(null)
 
@@ -103,14 +101,17 @@ export function SimpleEditor({ content = null, noteTitle = "New Document" }: { c
   })
 
   const saveNote = useSaveNote();
+  const updateNote = useUpdateNote(noteId || "")
 
-  //@issue
-  const saveNotesHandler = async () => {
+  const saveNoteHandler = async () => {
     const content = editor?.getJSON()
-    const formData = new FormData()
-    formData.append("content", JSON.stringify(content ?? null))
-    formData.append("title", title)
-    saveNote.mutate(formData)
+
+    if (noteId !== "1") {
+      updateNote.mutate({ content, title })
+    } else {
+      saveNote.mutate({ content, title })
+      
+    }
   }
 
   useEffect(() => {
@@ -138,7 +139,7 @@ export function SimpleEditor({ content = null, noteTitle = "New Document" }: { c
 
   return (
     // <div className="simple-editor-wrapper">
-    <div>
+    <>
       <EditorContext.Provider value={{ editor }}>
         <Toolbar
           ref={toolbarRef}
@@ -157,7 +158,7 @@ export function SimpleEditor({ content = null, noteTitle = "New Document" }: { c
               onHighlighterClick={() => setMobileView("highlighter")}
               onLinkClick={() => setMobileView("link")}
               isMobile={isMobile}
-              openAlert={() => setAlertOpen(true)}
+              onComplete={saveNoteHandler}
             />
           ) : (
             <MobileToolbarContent
@@ -167,25 +168,14 @@ export function SimpleEditor({ content = null, noteTitle = "New Document" }: { c
           )}
         </Toolbar>
 
-
-
         <EditorContent
           editor={editor}
           role="presentation"
           className="simple-editor-content"
         />
       </EditorContext.Provider>
-      <AlertConfirmDialog
-        Icon={Save}
-        open={alertOpen}
-        onOpenChange={setAlertOpen}
-        confirmText="save"
-        cancelText="cancel"
-        description=" &#9888; only save once, as many times you save this note as many copies will be created"
-        onConfirm={saveNotesHandler}
-        cn="text-red-600"
-      />
 
-    </div>
+
+    </>
   )
 }

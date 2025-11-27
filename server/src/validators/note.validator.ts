@@ -3,8 +3,10 @@ import { query, param, body } from "express-validator";
 export const validateGetNotes = [
   query("status")
     .optional()
-    .isIn(["active", "archived", "trashed", "all"])
-    .withMessage("Invalid status. Must be 'active', 'archived', 'trashed' or 'all"),
+    .isIn(["active", "archived", "trashed", "other"])
+    .withMessage(
+      "Invalid status. Must be 'active', 'archived', 'trashed' or 'other"
+    ),
 ];
 
 

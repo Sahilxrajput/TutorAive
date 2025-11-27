@@ -13,4 +13,5 @@ selecet a word => ctrl + shift + l (automatically selct all occuring)
 <!-- component -->
 empty component -> shadcn
 
-
+<!-- note model -->
+trashedAt, ArchievedAt doesn't work as expected --> trashedBy, ArcheivedBy

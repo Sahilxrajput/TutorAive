@@ -16,7 +16,7 @@ export const fetchNote = async (id: string) => {
   return data.data;
 };
 
-export async function saveNote(newNote: FormData) {
+export async function saveNote(newNote: {content:any, title:string}) {
   const { data } = await API.post("/notes", newNote);
   console.log("data :", data);
   toast.success(data.message);
@@ -28,7 +28,7 @@ export const updateNote = async ({
   payload,
 }: {
   noteId: string;
-  payload: FormData;
+  payload: { content: any; title: string };
 }) => {
   const { data } = await API.put(`/notes/${noteId}`, payload);
   toast.success(data.message);
@@ -37,6 +37,7 @@ export const updateNote = async ({
 
 export const clearTrash = async () => {
   const { data } = await API.delete("/notes/clear-trash");
+  console.log("data",data)
   toast.success(data.message);
 };
 

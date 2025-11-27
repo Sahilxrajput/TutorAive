@@ -9,7 +9,7 @@ const Layout = () => {
         <div className="flex min-h-screen transition-colors duration-500">
             <Sidebar />
 
-            <main className="flex-1 ml-[75px] border-black border-l-2">
+            <main className="flex-1 ml-[75px] border-l-2">
                 <motion.div
                     key={location.pathname}
                     initial={{ opacity: 0, y: 10 }}

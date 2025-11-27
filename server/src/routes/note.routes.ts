@@ -31,6 +31,7 @@ router.use(authMiddleware);
 // GET all or filtered notes / POST create a new note
 //@todo FIX requets body
 router.post("/", saveNote);
+
 router.get(
   "/status/:status",
   validateGetNotes,

@@ -5,15 +5,11 @@ import {
   fetchTweets,
   toggleLike,
 } from "@/api/tweets.api";
-import type {
-  IAddTweetContext,
-  ITweet,
-} from "@/types/type";
+import type { IAddTweetContext, ITweet } from "@/types/type";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CACHE_KEY_TWEETS } from "../constants";
-import { toast } from "sonner";
 import useAuth from "@/hooks/useAuth";
-
+import { notifyError } from "@/utils/notifyError";
 
 // <----------------- bug------------------->
 //@fix ui behaviour on creating a new post and repost
@@ -72,13 +68,12 @@ export const useCreateTweet = () => {
       });
     },
 
-    onError: (_err, _vars, context) => {
-      if (context?.previousTweets) {
+    onError: (err, _vars, context) => {
+      notifyError(err);
+      if (context?.previousTweets)
         qc.setQueryData(CACHE_KEY_TWEETS, context.previousTweets);
-      }
-      toast.error("Failed to post tweet.");
     },
-
+    // @remind
     // onSettled: () => {
     //   qc.invalidateQueries({ queryKey: CACHE_KEY_TWEETS });
     // },
@@ -97,8 +92,7 @@ export const useDeleteTweet = (tweetId: string) => {
       );
     },
     onError: (err) => {
-      toast.error("Something goes Wrong");
-      console.log(err);
+      notifyError(err);
     },
   });
 };
@@ -108,7 +102,6 @@ export const useLikeTweet = () => {
 
   return useMutation<ITweet, Error, string>({
     mutationFn: (tweetId) => toggleLike(tweetId),
-    
 
     onSuccess: (updatedTweet) => {
       qc.setQueryData(CACHE_KEY_TWEETS, (prev: ITweet[] = []) =>
@@ -116,6 +109,9 @@ export const useLikeTweet = () => {
           tweet._id === updatedTweet._id ? updatedTweet : tweet
         )
       );
+    },
+    onError: (err) => {
+      notifyError(err);
     },
   });
 };
@@ -164,9 +160,9 @@ export const useRepostTweet = () => {
       });
     },
 
-    onError: (_err, _vars, context) => {
+    onError: (err, _vars, context) => {
       qc.setQueryData(CACHE_KEY_TWEETS, context?.previousTweets ?? []);
-      toast.error("Failed to repost tweet.");
+      notifyError(err);
     },
   });
 };

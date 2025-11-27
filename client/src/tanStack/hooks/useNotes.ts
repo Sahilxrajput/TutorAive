@@ -12,14 +12,18 @@ import {
   clearTrash,
   updateNote,
 } from "@/api/notes.api";
-import type { INote, ISaveNote, IAddCollaborator, IRemoveCollaborator } from "@/types/type";
+import type {
+  INote,
+  ISaveNote,
+  IAddCollaborator,
+  IRemoveCollaborator,
+} from "@/types/type";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { CACHE_KEY_NOTES } from "../constants";
-import { toast } from "sonner";
 import useAuth from "@/hooks/useAuth";
+import { useNavigate } from "react-router-dom";
+import { notifyError } from "@/utils/notifyError";
 
-
-//@ok
 export function useNotes(status: string | undefined) {
   return useQuery<INote[], Error>({
     queryKey: status ? [CACHE_KEY_NOTES, status] : CACHE_KEY_NOTES,
@@ -27,7 +31,6 @@ export function useNotes(status: string | undefined) {
   });
 }
 
-//@ok
 export function useNote(id: string) {
   return useQuery<INote, Error>({
     queryKey: ["note", id],
@@ -35,7 +38,6 @@ export function useNote(id: string) {
   });
 }
 
-//@check
 export function useDeleteNote() {
   const qc = useQueryClient();
 
@@ -46,27 +48,28 @@ export function useDeleteNote() {
         prev.filter((n) => n._id !== deleted._id)
       );
     },
-    onError() {
-      toast.error("Something goes Wrong");
+    onError(err) {
+      notifyError(err)
     },
   });
 }
-//@todo
+
 export function useSaveNote() {
   const qc = useQueryClient();
   const { user } = useAuth();
+  const navigate = useNavigate();
 
-  return useMutation<INote, Error, FormData, ISaveNote>({
-    mutationFn: (formData) => saveNote(formData),
+  return useMutation<INote, Error, { content: any; title: string }, ISaveNote>({
+    mutationFn: (payload) => saveNote(payload),
 
-    onMutate: async (FormData) => {
+    onMutate: async (payload) => {
       await qc.cancelQueries({
         queryKey: CACHE_KEY_NOTES, //@remind
       });
 
       const prevNotes = qc.getQueryData<INote[]>(CACHE_KEY_NOTES) ?? [];
-      const content = FormData.get("content") as any;
-      const title = FormData.get("title") as string;
+      const content = payload.content;
+      const title = payload.title;
 
       const optimisticNote: INote = {
         _id: "temp-" + Date.now(),
@@ -78,9 +81,9 @@ export function useSaveNote() {
           profilePicture: user?.profilePicture,
           email: user?.email || "",
         },
-        pinnedBy:[],
+        pinnedBy: [],
         status: "active",
-        collaborators:[],
+        collaborators: [],
         isPublic: true,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
@@ -99,23 +102,21 @@ export function useSaveNote() {
           note._id.startsWith("temp") ? savedNote : note
         );
       });
+      navigate("/notes/" + savedNote._id);
     },
     onError: (err, _vars, context) => {
-      console.log(err);
-      if (context?.prevNotes) {
+      notifyError(err);
+      if (context?.prevNotes)
         qc.setQueryData(CACHE_KEY_NOTES, context.prevNotes);
-      }
-      toast.error("Failed to save note.");
     },
   });
 }
 
-//@todo
-export function useUpdateNote() {
+export function useUpdateNote(noteId: string) {
   const qc = useQueryClient();
 
-  return useMutation({
-    mutationFn: updateNote,
+  return useMutation<INote, Error, { content: any; title: string }, ISaveNote>({
+    mutationFn: (payload) => updateNote({ noteId, payload }),
 
     onSuccess: (updatedNote) => {
       // Update single note
@@ -125,6 +126,9 @@ export function useUpdateNote() {
       qc.setQueryData<INote[]>(["notes"], (prev = []) =>
         prev.map((note) => (note._id === updatedNote._id ? updatedNote : note))
       );
+    },
+    onError: (err) => {
+      notifyError(err);
     },
   });
 }
@@ -143,13 +147,14 @@ export function useClearTrash() {
 
       // optimistic: remove trash locally
       qc.setQueryData<INote[]>(CACHE_KEY_NOTES, (prev) =>
-        prev?.filter((n) => n.status !== "trash")
+        prev?.filter((n) => n.status !== "trashed")
       );
 
       return { prevNotes };
     },
 
-    onError: (_err, _vars, ctx) => {
+    onError: (err, _vars, ctx) => {
+      notifyError(err);
       if (ctx?.prevNotes) qc.setQueryData(CACHE_KEY_NOTES, ctx.prevNotes);
     },
 
@@ -159,7 +164,6 @@ export function useClearTrash() {
   });
 }
 
-// @ok
 export function useAccessChange() {
   const qc = useQueryClient();
 
@@ -185,7 +189,8 @@ export function useAccessChange() {
       return { prevNotes };
     },
 
-    onError: (_err, _vars, ctx) => {
+    onError: (err, _vars, ctx) => {
+      notifyError(err);
       if (ctx?.prevNotes) qc.setQueryData(CACHE_KEY_NOTES, ctx.prevNotes);
     },
 
@@ -197,7 +202,6 @@ export function useAccessChange() {
   });
 }
 
-// @ok
 export function useAddCollaborator() {
   const qc = useQueryClient();
 
@@ -233,7 +237,8 @@ export function useAddCollaborator() {
       return { prevNotes };
     },
 
-    onError: (_err, _vars, ctx) => {
+    onError: (err, _vars, ctx) => {
+      notifyError(err);
       if (ctx?.prevNotes) qc.setQueryData(CACHE_KEY_NOTES, ctx.prevNotes);
     },
 
@@ -245,7 +250,6 @@ export function useAddCollaborator() {
   });
 }
 
-// @ok
 export function useRemoveCollaborator() {
   const qc = useQueryClient();
 
@@ -274,7 +278,8 @@ export function useRemoveCollaborator() {
         return { prevNotes };
       },
 
-      onError: (_err, _vars, ctx) => {
+      onError: (err, _vars, ctx) => {
+        notifyError(err);
         if (ctx?.prevNotes) qc.setQueryData(CACHE_KEY_NOTES, ctx.prevNotes);
       },
 
@@ -287,7 +292,6 @@ export function useRemoveCollaborator() {
   );
 }
 
-// @ok
 export function useArchiveToggle() {
   const qc = useQueryClient();
 
@@ -310,7 +314,8 @@ export function useArchiveToggle() {
       return { prevNotes };
     },
 
-    onError: (_err, _vars, ctx) => {
+    onError: (err, _vars, ctx) => {
+      notifyError(err);
       if (ctx?.prevNotes) qc.setQueryData(CACHE_KEY_NOTES, ctx.prevNotes);
     },
 
@@ -322,7 +327,6 @@ export function useArchiveToggle() {
   });
 }
 
-// @ok
 export function useTrashToggle() {
   const qc = useQueryClient();
 
@@ -345,7 +349,8 @@ export function useTrashToggle() {
       return { prevNotes };
     },
 
-    onError: (_e, _v, ctx) => {
+    onError: (err, _vars, ctx) => {
+      notifyError(err);
       if (ctx?.prevNotes) qc.setQueryData(CACHE_KEY_NOTES, ctx.prevNotes);
     },
 
@@ -357,7 +362,6 @@ export function useTrashToggle() {
   });
 }
 
-// @ok
 export function usePinToggle() {
   const qc = useQueryClient();
   const { user } = useAuth();
@@ -390,7 +394,8 @@ export function usePinToggle() {
       return { prevNotes };
     },
 
-    onError: (_err, _vars, ctx) => {
+    onError: (err, _vars, ctx) => {
+      notifyError(err);
       if (ctx?.prevNotes) qc.setQueryData(CACHE_KEY_NOTES, ctx.prevNotes);
     },
 

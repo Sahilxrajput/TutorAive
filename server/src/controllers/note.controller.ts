@@ -5,11 +5,11 @@ import User from "../models/user.model";
 
 export const saveNote = async (req: Request, res: Response) => {
   try {
+    console.log("body", req.body);
     const { content, title, classroom } = req.body;
 
-    console.log("content", content)
-    console.log("title", title)
-
+    console.log("content", content);
+    console.log("title", title);
 
     if (!content || !title)
       return res.status(400).json({ error: "Content and title are required." });
@@ -33,18 +33,29 @@ export const getNotesByStatus = async (req: Request, res: Response) => {
     const userId = req.userId as string;
     const { status } = req.params;
 
-    const filter = {
-      $and: [
-        { status: status ?? "active" },
-        {
-          $or: [
-            { owner: userId },
-            { "collaborators.user": userId },
-            { isPublic: true },
-          ],
-        },
-      ],
-    };
+    let filter: any = {};
+
+    if (status === "other") {
+      filter = {
+        status : "active",
+        isPublic: true,
+        owner: { $ne: userId },
+        "collaborators.user": { $ne: userId },
+      };
+    } else {
+      filter = {
+        $and: [
+          { status: status ?? "active" },
+          {
+            $or: [
+              { owner: userId },
+              { "collaborators.user": userId },
+              { isPublic: true },
+            ],
+          },
+        ],
+      };
+    }
 
     const notes = await Note.find(filter)
       .populate("owner", "email profilePicture userName")
@@ -107,7 +118,7 @@ export const updateNote = async (req: Request, res: Response) => {
     //@todo have a look
     Object.assign(note, req.body);
     await note.save();
-    res.json(note);
+    res.json({ message: "note updated succesfully", data: note });
   } catch (error) {
     res.status(400).json({ message: "Failed to update note", error });
   }

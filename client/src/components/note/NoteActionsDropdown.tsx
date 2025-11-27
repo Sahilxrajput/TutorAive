@@ -26,18 +26,14 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { EllipsisVertical, Pin, PinOff, Globe, Lock, UserPlus, Users2, Trash, UsersRound, Archive, ArchiveRestore, Save } from "lucide-react";
 import type { INote } from "@/types/type";
-import API from "@/lib/api";
-import { toast } from "sonner";
 import { useAccessChange, useAddCollaborator, useArchiveToggle, useDeleteNote, usePinToggle, useRemoveCollaborator, useTrashToggle } from "@/tanStack/hooks/useNotes";
 
 interface NoteActionsDropdownProps {
   note: INote;
-  onActionComplete?: () => void;
 }
 
-const NoteActionsDropdown: React.FC<NoteActionsDropdownProps> = ({ note, onActionComplete }) => {
+const NoteActionsDropdown: React.FC<NoteActionsDropdownProps> = ({ note }) => {
 
-  const [showAccessDialog, setShowAccessDialog] = useState(false);
   const [showCollaboratorDialog, setShowCollaboratorDialog] = useState(false);
   const [showRemoveCollabDialog, setShowRemoveCollabDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -47,19 +43,6 @@ const NoteActionsDropdown: React.FC<NoteActionsDropdownProps> = ({ note, onActio
 
 
   // ---------- HANDLERS ----------
-  async function handleAccessChange() {
-    try {
-      const { data } = await API.patch(`/notes/${note._id}/toggle-visibility`);
-      setShowAccessDialog(false);
-      toast.success(data.message);
-      onActionComplete?.();
-    } catch (err: any) {
-      const errorMessage =
-        err.response?.data?.message || "Failed to update access";
-      toast.error(errorMessage);
-    }
-  }
-
   const changeAccess = useAccessChange();
   const pinToggle = usePinToggle();
   const archiveToggle = useArchiveToggle();
@@ -68,20 +51,30 @@ const NoteActionsDropdown: React.FC<NoteActionsDropdownProps> = ({ note, onActio
   const addCollaborator = useAddCollaborator();
   const removeCollaborator = useRemoveCollaborator();
 
-  
+
   function handleAddCollaborator() {
     addCollaborator.mutate({
       noteId: note._id,
       userEmail: email,
       access
+    }, {
+      onSuccess: () => {
+        setShowCollaboratorDialog(false)
+      }
     })
   }
 
   function handleRemoveCollaborator() {
-      removeCollaborator.mutate({
+    removeCollaborator.mutate({
       noteId: note._id,
       userId: userId
-    })
+    },
+      {
+        onSuccess: () => {
+          setShowRemoveCollabDialog(false)
+        }
+      }
+    )
   }
 
 
@@ -159,47 +152,31 @@ const NoteActionsDropdown: React.FC<NoteActionsDropdownProps> = ({ note, onActio
             )}
 
             {note.status === "trashed" && (
-              <DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => {
+                  trashToggle.mutate(note._id)
+                  setShowDeleteDialog(false)
+                }}
+              >
 
                 <Save className="w-4 h-4 mr-2" /> Restore
               </DropdownMenuItem>
             )}
 
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => setShowDeleteDialog(true)} className="text-red-600!">
+            <DropdownMenuItem
+              className="text-red-600!"
+              onClick={() => {
+                deleteNote.mutate(note._id)
+                setShowDeleteDialog(false)
+              }}
+            >
               <Trash className="w-4 h-4 mr-2 text-red-600" /> Delete
             </DropdownMenuItem>
           </DropdownMenuGroup>
         </DropdownMenuContent>
       </DropdownMenu>
 
-      {/* Access Dialog */}
-      {/* <Dialog open={showAccessDialog} onOpenChange={setShowAccessDialog}>
-        <DialogContent className="sm:max-w-[400px]">
-          <DialogHeader>
-            <DialogTitle>Change Access</DialogTitle>
-            <DialogDescription>Choose who can view or edit this note.</DialogDescription>
-          </DialogHeader>
-          <div className="py-4 space-y-3">
-            <Label>Visibility</Label>
-            <Select value={visibility} onValueChange={setVisibility}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select visibility" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="private">Private</SelectItem>
-                <SelectItem value="public">Public</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button variant="outline">Cancel</Button>
-            </DialogClose>
-            <Button onClick={() => handleAccessChange(note)}>Save</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog> */}
 
       {/* Add Collaborator Dialog */}
       <Dialog open={showCollaboratorDialog} onOpenChange={setShowCollaboratorDialog}>
@@ -265,33 +242,36 @@ const NoteActionsDropdown: React.FC<NoteActionsDropdownProps> = ({ note, onActio
 
       {/* Delete confirm Dialog */}
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <DialogContent className="sm:max-w-[400px]">
-          <DialogHeader>
-            <DialogTitle>Delete Note</DialogTitle>
+        <DialogContent className="sm:max-w-[450px] space-y-4">
+          <DialogHeader className="space-y-4" >
+            <DialogTitle className="font-bold ">Delete Note</DialogTitle>
             <DialogDescription>
               Are you sure you want to delete this note? You can move it to trash or permanently delete it.
             </DialogDescription>
+            <DialogDescription className="text-sm text-muted-foreground">
+              Once permanently deleted, this note cannot be recovered.
+            </DialogDescription>
           </DialogHeader>
 
-          <div className="py-4 space-y-3">
-            <p className="text-sm text-muted-foreground">
-              Once permanently deleted, this note cannot be recovered.
-            </p>
-          </div>
-
-          <DialogFooter className="flex justify-between gap-2 sm:justify-end">
+          <DialogFooter className="flex justify-between gap-4 sm:justify-end">
             <DialogClose asChild>
               <Button variant="outline">Cancel</Button>
             </DialogClose>
             <Button
-              variant="outline"
-              onClick={() => trashToggle.mutate(note._id)}
+              variant="default"
+              onClick={() => {
+                trashToggle.mutate(note._id)
+                setShowDeleteDialog(false)
+              }}
             >
               Move to Trash
             </Button>
             <Button
               variant="destructive"
-              onClick={() => deleteNote.mutate(note._id)}
+              onClick={() => {
+                deleteNote.mutate(note._id)
+                setShowDeleteDialog(false)
+              }}
             >
               Delete Permanently
             </Button>

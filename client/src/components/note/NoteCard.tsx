@@ -8,6 +8,7 @@ import { formatLastUpdated } from '@/utils/splitDateTime';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Button } from '../ui/button';
 import { useNavigate } from 'react-router-dom';
+import defaultAvtar from "@/assets/image/avatar.png"
 
 const NoteCard = ({ note }: { note: INote }) => {
     const { user } = useAuth();
@@ -17,7 +18,7 @@ const NoteCard = ({ note }: { note: INote }) => {
     ) && note.owner._id.toString() !== user?._id;
 
     const noCollaborators = note.collaborators.length === 0;
-    const avatars = [...note.collaborators.map(c => c.user), note.owner];
+    const avatars = [note.owner,...note.collaborators.map(c => c.user)].slice(0, 4);
 
     const navigate = useNavigate();
 
@@ -50,12 +51,12 @@ const NoteCard = ({ note }: { note: INote }) => {
                             key={u?._id || i}
                             className="relative"
                             style={{
-                                marginLeft: i === 0 ? 0 : -14,
+                                marginLeft: i === 0 ? 0 : -30,
                                 zIndex: i
                             }}
                         >
-                            <Avatar className="h-10 w-10 border-2 border-white shadow-md">
-                                <AvatarImage src={u?.profilePicture} />
+                            <Avatar className="w-16 h-16 border-2 border-white shadow-md">
+                                <AvatarImage src={u?.profilePicture || defaultAvtar} />
                                 <AvatarFallback>{u?.userName?.slice(0, 2)?.toUpperCase()}</AvatarFallback>
                             </Avatar>
                         </div>

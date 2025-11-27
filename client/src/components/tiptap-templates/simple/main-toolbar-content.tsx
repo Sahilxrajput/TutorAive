@@ -19,8 +19,8 @@ interface Props {
     onHighlighterClick: () => void
     onLinkClick: () => void
     isMobile: boolean,
-    openAlert: () => void,
     noteTitle: string,
+    onComplete?: () => void
     setNoteTitle: Dispatch<SetStateAction<string>>,
 }
 
@@ -28,14 +28,14 @@ export default function MainToolbarContent({
     onHighlighterClick,
     onLinkClick,
     isMobile,
-    openAlert,
     setNoteTitle,
-    noteTitle
+    noteTitle,
+    onComplete
 }: Props) {
     return (
-        <>
+        <div className={"fixed flex items-center bg-background w-full top-0"}>
             <Input
-            className="w-2xs font-semibold "
+                className="w-2xs font-semibold "
                 placeholder="Enter Note Title"
                 value={noteTitle}
                 onChange={(e) => setNoteTitle(e.target.value)}
@@ -99,10 +99,10 @@ export default function MainToolbarContent({
             <ToolbarSeparator />
 
             <button
-                onClick={openAlert}
-                className="rounded-full aspect-square w-16 flex items-center justify-center bg-red-500"
-            >
-                <Save className="text-muted-foreground" />
+                onClick={() => onComplete?.()}
+                className="rounded-full aspect-square w-16 flex items-center justify-center text-blue-500">
+
+                <Save />
             </button>
 
             <Spacer />
@@ -114,6 +114,6 @@ export default function MainToolbarContent({
             {/* <ToolbarGroup>
         <ThemeToggle />
       </ToolbarGroup> */}
-        </>
+        </div>
     )
 }
