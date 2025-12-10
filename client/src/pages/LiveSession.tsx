@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import useSocket from "@/hooks/useSocket";
+import useSocket from "@/hooks/useSocketHandler";
 
 const LiveSession = () => {
     const { socket, isConnected, onlineUsers } = useSocket();

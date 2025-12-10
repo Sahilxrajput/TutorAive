@@ -7,6 +7,7 @@ import { AuthProvider } from './context/authContext.tsx'
 import { Toaster } from 'sonner'
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query"
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
+import { SocketProvider } from './context/socketProvider.tsx'
 
 
 const queryClient = new QueryClient()
@@ -27,15 +28,17 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <BrowserRouter>
-          <App />
-          <Toaster
-            position='top-center'
-            richColors
-            closeButton
-          />
-        </BrowserRouter>
-        <ReactQueryDevtools />
+        <SocketProvider>
+          <BrowserRouter>
+            <App />
+            <Toaster
+              position='top-center'
+              richColors
+              closeButton
+            />
+          </BrowserRouter>
+          <ReactQueryDevtools />
+        </SocketProvider>
       </AuthProvider>
     </QueryClientProvider>
   </StrictMode>

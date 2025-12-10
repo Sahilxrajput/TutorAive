@@ -2,7 +2,6 @@ import useAuth from "@/hooks/useAuth";
 import type { ILecture } from "@/types/type";
 import { CalendarRangeIcon, Clock, Pencil, Trash } from "lucide-react";
 import { AlertConfirmDialog } from "../AlertConfirmDialog";
-import { useEffect } from "react";
 
 
 interface EventCardProps {

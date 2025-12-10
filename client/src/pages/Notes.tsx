@@ -4,8 +4,10 @@ import {
   Trash2,
   Archive,
   Plus,
+  Globe,
+  Pin,
+  Shield,
 } from "lucide-react";
-import { motion } from "framer-motion";
 import useAuth from "@/hooks/useAuth";
 import { Link } from "react-router-dom";
 import NotesGrid from "@/components/note/NotesGrid";
@@ -13,8 +15,8 @@ import { useClearTrash, useNotes } from "@/tanStack/hooks/useNotes";
 import NoteSkelton from "@/components/note/NoteSkelton";
 
 export default function Notes() {
-  const [status, setStatus] = useState<"active" | "other" | "archived" | "trashed">("active");
-  const navItem = ["other", "active", "archived", "trashed"]
+  const [status, setStatus] = useState<"active" | "other" | "archived" | "trashed" | "pinned">("active");
+  const navItem = ["other", "active", "archived", "trashed", "pinned"]
 
   const { user } = useAuth();
 
@@ -29,42 +31,38 @@ export default function Notes() {
     )
   }));
 
-  if (isLoading) {
-    return <NoteSkelton />
-  }
-
 
   // ---------- MAIN RETURN ----------
   return (
     <div className="min-h-screen bg-muted/30 px-8 py-8 max-w-full mx-auto flex flex-col gap-8">
       {/* Header */}
       <div className="flex w-full justify-between items-center flex-wrap gap-2">
-
         <div className="space-x-2 flex items-center justify-center">
           {navItem.map((type) => {
             const isActive = status === type;
             const icons: Record<string, JSX.Element> = {
-              other: <></>,
-              active: <></>,
+              other: <Globe className="w-4 h-4 mr-1" />,
+              active: <Shield className="w-4 h-4 mr-1" />,
               archived: <Archive className="w-4 h-4 mr-1" />,
               trashed: <Trash2 className="w-4 h-4 mr-1" />,
+              pinned: <Pin className="w-4 h-4 mr-1" />,
             };
             return (
               <Button
                 key={type}
                 variant={isActive ? "default" : "outline"}
-                onClick={() => setStatus(type as "active" | "other" | "archived" | "trashed")}
+                onClick={() => setStatus(type as "active" | "other" | "archived" | "trashed" | "pinned")}
               >
                 {icons[type]}
                 {type === "other"
                   ? "Explore"
-                  : type === "active"? "My" : type.charAt(0).toUpperCase() + type.slice(1) }
+                  : type === "active" ? "My" : type.charAt(0).toUpperCase() + type.slice(1)}
               </Button>
             );
           })}
         </div>
 
-        {(status === "active" || status === "other") && (
+        {(status === "active" || status === "other" || status==="pinned") && (
           <Link to="/notes/new"
             className="flex items-center justify-center shadow-sm hover:shadow-md border-2 p-2 rounded-lg text-sm gap-2"
           >
@@ -80,7 +78,9 @@ export default function Notes() {
         )}
       </div>
 
-      {notes.length === 0 &&
+      {isLoading && <NoteSkelton />}
+
+      {!isLoading && notes.length === 0 &&
         <p className="text-center text-muted-foreground mt-10">
           You don’t have any notes yet.
         </p>

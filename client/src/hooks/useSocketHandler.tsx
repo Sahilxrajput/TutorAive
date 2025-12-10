@@ -16,7 +16,7 @@ interface UseSocketReturn {
   reconnectSocket: () => void;
 }
 
-const useSocket = (user?: User): UseSocketReturn => {
+const useSocketHandler = (user?: User): UseSocketReturn => {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [onlineUsers, setOnlineUsers] = useState<User[]>([]);
@@ -50,7 +50,7 @@ const useSocket = (user?: User): UseSocketReturn => {
       return;
     }
 
-    // 🌐 Create new socket connection
+    // Create new socket connection
     const newSocket: Socket = io(backendUrl, {
       // auth: { token: user.token },
       withCredentials: true,
@@ -132,5 +132,4 @@ const useSocket = (user?: User): UseSocketReturn => {
     reconnectSocket,
   };
 };
-
-export default useSocket;
+export default useSocketHandler;

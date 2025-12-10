@@ -1,8 +1,8 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import  { useCallback, useEffect, useState } from 'react'
 import type { Socket } from 'socket.io-client'
 
 const useSocketRoom = (socket: Socket, roomId: string) => {
-    const [participants, setParticipants] = useState([])
+    const [peers, setPeers] = useState([])
     const [isInRoom, setIsInRoom] = useState<boolean>(false)
     const [roomInfo, setRoomInfo] = useState()
 
@@ -24,19 +24,19 @@ const useSocketRoom = (socket: Socket, roomId: string) => {
         socket.on("joined_room", (data) => {
             // setRoomInfo(data);
             setIsInRoom(true);
-            if (Array.isArray(data.participants)) {
-                setParticipants(data.participants);
+            if (Array.isArray(data.peers)) {
+                setPeers(data.peers);
             }
         });
 
         socket.on("room_left", () => {
             setIsInRoom(false);
             setMessages([]);
-            setParticipants([]);
+            setPeers([]);
         });
 
         socket.on("user_joined_room", (data) => {
-            setParticipants((prev) => {
+            setPeers((prev) => {
                 const alreadyExists = prev.some((p) => p.userId === data.userId);
                 if (alreadyExists) return prev;
                 const updated = [...prev, { userId: data.userId, name: data.name }];
@@ -55,7 +55,7 @@ const useSocketRoom = (socket: Socket, roomId: string) => {
         });
 
         socket.on("user_left_room", (data) => {
-            setParticipants((prev) => prev.filter((p) => p.userId !== data.userId));
+            setPeers((prev) => prev.filter((p) => p.userId !== data.userId));
 
             setMessages((prev) => [
                 ...prev,
@@ -82,7 +82,7 @@ const useSocketRoom = (socket: Socket, roomId: string) => {
 
     return {
         isInRoom,
-        participants,
+        peers,
         roomInfo
     }
 

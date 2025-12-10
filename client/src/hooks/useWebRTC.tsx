@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import useSocket from "./useSocket";
+import useSocket from "./useSocketHandler";
 import useAuth from "./useAuth";
 
 
@@ -12,7 +12,6 @@ export function useWebRTC(roomId: string) {
     const { socket } = useSocket(user || undefined)
 
     useEffect(() => {
-
         if (!socket) return
 
         const init = async () => {

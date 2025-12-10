@@ -35,31 +35,33 @@ export const getNotesByStatus = async (req: Request, res: Response) => {
 
     let filter: any = {};
 
-    if (status === "other") {
+    if (status === "pinned") {
+      // Notes pinned by the current user
+      filter = { pinnedBy: userId };
+    } else if (status === "other") {
       filter = {
-        status : "active",
+        status: "active",
         isPublic: true,
         owner: { $ne: userId },
         "collaborators.user": { $ne: userId },
       };
     } else {
       filter = {
-        $and: [
-          { status: status ?? "active" },
-          {
-            $or: [
-              { owner: userId },
-              { "collaborators.user": userId },
-              { isPublic: true },
-            ],
-          },
+        status: status ?? "active",
+        $or: [
+          { owner: userId },
+          { "collaborators.user": userId },
+          { isPublic: true },
         ],
       };
     }
 
     const notes = await Note.find(filter)
-      .populate("owner", "email profilePicture userName")
-      .populate("collaborators.user", "profilePicture userName")
+      .populate("owner", "email profilePicture userName firstName lastName")
+      .populate(
+        "collaborators.user",
+        "profilePicture userName firstName lastName"
+      )
       .sort({ updatedAt: -1 });
 
     res.status(200).json({ data: notes, success: true });
@@ -71,6 +73,7 @@ export const getNotesByStatus = async (req: Request, res: Response) => {
     });
   }
 };
+
 
 export const getNoteById = async (req: Request, res: Response) => {
   try {

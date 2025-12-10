@@ -19,24 +19,18 @@ const ClassroomSideBar = () => {
     return "/" + item;
   }
 
-  const uploadAssignment = () => {
-    setShowPopup(true)
-  }
-
-
-
   const classContent = ["Overview", "Resources", "Notes", "Assignments", "Leaderboard"]
 
-  const { id } = useParams();
+  const { classroomId } = useParams();
 
   return (
     <div
-      className={`relative flex flex-col bg-gray-600 h-screen transition-all duration-300 
+      className={`relative flex flex-col border-r-2 h-screen transition-all duration-300 
       ${isHide ? "w-0" : "w-64"}`}
     >
       <button
         onClick={() => setIsHide(!isHide)}
-        className={`absolute bg-yellow-500 z-40 p-1 rounded-full text-pink-600 -right-3 top-4 
+        className={`absolute border-2 bg-white z-40 p-1 rounded-full -right-3 top-4 
         transition-transform duration-300 ${isHide && "rotate-180"}`}
       >
         <ChevronLeft />
@@ -53,7 +47,7 @@ const ClassroomSideBar = () => {
         {classContent.map(
           (item) => (
             <Link
-              to={'/classrooms/' + id + pathDetector(item)}
+              to={'/classrooms/' + classroomId + pathDetector(item)}
               key={item}
               className={`hover:bg-blue-400 text-left p-4 w-full transition-all duration-200 ease-in-out ${isHide ? "opacity-0 pointer-events-none" : "opacity-100"
                 }`}
@@ -74,7 +68,7 @@ const ClassroomSideBar = () => {
                 >
                   schedule Class
                 </Button>
-                <PdfUploadDialog buttonText=" Create Assignment" title="Create Assignment" id={id!} type="assignment" />
+                <PdfUploadDialog buttonText=" Create Assignment" title="Create Assignment" id={classroomId!} type="assignment" />
               </div>
             }
 
@@ -83,13 +77,6 @@ const ClassroomSideBar = () => {
       </div>
 
       <DateTimePicker showPopup={showPopup} setShowPopup={setShowPopup} />
-
-
-
-
-
-
-
 
     </div>
   );

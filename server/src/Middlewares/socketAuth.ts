@@ -21,6 +21,7 @@ export const socketAuthMiddleware = (
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as MyJwtPayload;
     socket.data.userId = decoded._id;
     socket.data.userName = decoded.email;
+    socket.data.userRole = decoded.role;
     next();
   } catch (err) {
     console.error("JWT verification failed:", err);

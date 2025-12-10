@@ -4,7 +4,7 @@ import { useParams } from 'react-router-dom';
 
 const Note = () => {
 
-    const { id } = useParams();
+    const { noteId } = useParams();
     const { data: note, isLoading } = useNote(id!);
 
 
@@ -16,7 +16,7 @@ const Note = () => {
 
     return (
         <div className='px-6 py-2 w-full overflow-hidden h-full'>
-            <SimpleEditor content={note?.content} noteId={id} noteTitle={note?.title || "New Document"} />
+            <SimpleEditor content={note?.content} noteId={noteId} noteTitle={note?.title || "New Document"} />
         </div>
     )
 }

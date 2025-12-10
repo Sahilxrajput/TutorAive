@@ -9,7 +9,7 @@ const ClassroomLayout = () => {
       <ClassroomSideBar />
 
       {/* Main classroom content */}
-      <div className="flex-1 bg-yellow-800 overflow-auto">
+      <div className="flex-1  overflow-auto">
         <Outlet />
       </div>
     </div>

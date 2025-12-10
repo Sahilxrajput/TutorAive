@@ -15,3 +15,8 @@ empty component -> shadcn
 
 <!-- note model -->
 trashedAt, ArchievedAt doesn't work as expected --> trashedBy, ArcheivedBy
+
+
+<!-- mediasoup -->
+transport.updateIceServers({ iceServers })
+https://mediasoup.org/documentation/v3/mediasoup-client/api/#transport-updateIceServers

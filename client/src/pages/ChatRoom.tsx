@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import useAuth from "@/hooks/useAuth";
 import useSocket from "@/hooks/useSocket";
 import type { IUser } from "../types/type";
 
@@ -13,8 +12,7 @@ interface Message {
 }
 
 const ChatRoom: React.FC = () => {
-  const { user } = useAuth(); // { token, userName, userId }
-  const { socket, isConnected, onlineUsers, sendMessage, emitCustomEvent } = useSocket(user || undefined);
+  const { socket, isConnected, onlineUsers, sendMessage, emitCustomEvent } = useSocket();
   const [classroomId, setClassroomId] = useState('')
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");

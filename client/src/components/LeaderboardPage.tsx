@@ -1,7 +1,3 @@
-import React, { useEffect, useState } from "react";
-
-
-// Component to show student row
 const StudentRow = ({ student }) => (
   <tr className="border-b hover:bg-gray-50">
     <td className="py-2 px-4 text-center">{student.rank}</td>

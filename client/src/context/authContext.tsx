@@ -4,7 +4,6 @@ import type { AuthContextValue, IUser } from "../types/type";
 import defaultAvatar from "@/assets/image/avatar.png";
 
 
-
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {

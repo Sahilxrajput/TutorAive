@@ -9,6 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Button } from '../ui/button';
 import { useNavigate } from 'react-router-dom';
 import defaultAvtar from "@/assets/image/avatar.png"
+import { HoverCardDemo } from './HoverCardDemo';
 
 const NoteCard = ({ note }: { note: INote }) => {
     const { user } = useAuth();
@@ -18,7 +19,7 @@ const NoteCard = ({ note }: { note: INote }) => {
     ) && note.owner._id.toString() !== user?._id;
 
     const noCollaborators = note.collaborators.length === 0;
-    const avatars = [note.owner,...note.collaborators.map(c => c.user)].slice(0, 4);
+    const avatars = [note.owner, ...note.collaborators.map(c => c.user)].slice(0,);
 
     const navigate = useNavigate();
 
@@ -43,23 +44,10 @@ const NoteCard = ({ note }: { note: INote }) => {
                 </div>
             </div>
 
-
             <div className="text-sm text-muted-foreground flex flex-col items-center justify-center h-full gap-4 my-8">
-                <div className="flex items-center justify-center relative">
+                <div className="flex items-center justify-center relative hover:cursor-pointer">
                     {avatars.map((u, i) => (
-                        <div
-                            key={u?._id || i}
-                            className="relative"
-                            style={{
-                                marginLeft: i === 0 ? 0 : -30,
-                                zIndex: i
-                            }}
-                        >
-                            <Avatar className="w-16 h-16 border-2 border-white shadow-md">
-                                <AvatarImage src={u?.profilePicture || defaultAvtar} />
-                                <AvatarFallback>{u?.userName?.slice(0, 2)?.toUpperCase()}</AvatarFallback>
-                            </Avatar>
-                        </div>
+                        <HoverCardDemo u={u} i={i} />
                     ))}
                 </div>
 

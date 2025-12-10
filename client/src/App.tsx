@@ -22,6 +22,7 @@ import LiveSession from "./pages/LiveSession";
 import CommunityPage from "./pages/CommunityPage";
 import SaveNotes from "./pages/SaveNotes";
 import Note from "./pages/Note";
+import Call from "./pages/Call";
 
 
 
@@ -32,10 +33,11 @@ const App: React.FC = () => {
     <Routes>
       <Route path="/" element={<Layout />}>
         <Route index element={<Home />} />
-        <Route path="chats" element={<ChatRoom />} />
+        <Route path="chats" element={<Call />} />
+        {/* <Route path="chats" element={<ChatRoom />} /> */}
         <Route path="editor" element={<Editor />} />
         <Route path="notes" element={<Notes />} />
-        <Route path="notes/:id" element={<Note />} />
+        <Route path="notes/:noteId" element={<Note />} />
         <Route path="notes/new" element={<SaveNotes />} />
         <Route path="quizs" element={<Quiz />} />
         <Route path="live" element={<LiveSession />} />
@@ -45,13 +47,13 @@ const App: React.FC = () => {
         <Route path="classrooms" element={<BrowseClassroom />} />
 
         {/* Individual classroom page */}
-        <Route path="classrooms/:id" element={
+        <Route path="classrooms/:classroomId" element={
           <EnrolledRoute>
             <ClassroomLayout />
           </EnrolledRoute>
         }>
           <Route index element={<ClassroomOverview />} />
-          <Route path="notes" element={<ClassroomNotes />} />
+          <Route path="notes" element={<Notes />} />
           <Route path="assignments" element={<Assignments />} />
           <Route path="leaderboard" element={<LeaderboardPage />} />
         </Route>

@@ -1,0 +1,84 @@
+// /components/note-actions/menu/noteMenuConfig.ts
+import type { INote } from "@/types/type";
+import {
+  Pin,
+  PinOff,
+  Globe,
+  Lock,
+  Archive,
+  ArchiveRestore,
+  UsersRound,
+  UserPlus,
+  Users2,
+  Trash,
+  Save,
+} from "lucide-react";
+
+
+
+export const getNoteMenuConfig = (note:INote, isOwner:boolean, openDialog:any, actions:any) => {
+  const { pin, changeAccess, archive, trash } = actions;
+
+  return [
+    // PIN
+    note.status === "active" && {
+      label: note.isPinned ? "Unpin" : "Pin",
+      icon: note.isPinned ? PinOff : Pin,
+      onClick: () => pin.mutate(note._id),
+    },
+
+    // PUBLIC / PRIVATE
+    isOwner &&
+      note.status !== "trashed" && {
+        label: note.isPublic ? "Make Private" : "Make Public",
+        icon: note.isPublic ? Lock : Globe,
+        onClick: () => changeAccess.mutate(note._id),
+      },
+
+    // ARCHIVE
+    isOwner &&
+      note.status !== "trashed" && {
+        label: note.status === "archived" ? "Unarchive" : "Archive",
+        icon: note.status === "archived" ? ArchiveRestore : Archive,
+        onClick: () => archive.mutate(note._id),
+      },
+
+    // COLLAB SUBMENU
+    isOwner &&
+      note.status !== "trashed" && {
+        label: "Collaborators",
+        icon: UsersRound,
+        children: [
+          {
+            label: "Add Collaborator",
+            icon: UserPlus,
+            onClick: () => openDialog("addCollab"),
+          },
+          {
+            label: "Remove Collaborator",
+            icon: Users2,
+            onClick: () => openDialog("removeCollab"),
+          },
+        ],
+      },
+
+    // RESTORE FROM TRASH
+    note.status === "trashed" &&
+      isOwner && {
+        label: "Restore",
+        icon: Save,
+        onClick: () => trash.mutate(note._id),
+      },
+
+    // DELETE
+    isOwner && {
+      label: "Delete",
+      icon: Trash,
+      variant: "danger",
+      onClick: () => openDialog("deleteConfirm"),
+    },
+  ].filter(
+  (item): item is MenuItem => Boolean(item)
+)
+
+};

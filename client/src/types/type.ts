@@ -1,3 +1,5 @@
+import type useSocket from "@/hooks/useSocketHandler";
+
 export interface IUser {
   _id: string;
   role: string;
@@ -7,6 +9,16 @@ export interface IUser {
   email: string;
   enrolledClassrooms: string[];
   profilePicture?: string;
+}
+
+export interface ISocketContextValue {
+  socket: ReturnType<typeof useSocket>["socket"];
+  isConnected: boolean;
+  onlineUsers: ReturnType<typeof useSocket>["onlineUsers"];
+  sendMessage: ReturnType<typeof useSocket>["sendMessage"];
+  emitCustomEvent: ReturnType<typeof useSocket>["emitCustomEvent"];
+  disconnectSocket: ReturnType<typeof useSocket>["disconnectSocket"];
+  reconnectSocket: ReturnType<typeof useSocket>["reconnectSocket"];
 }
 
 export interface IClassroom {
@@ -82,6 +94,8 @@ export interface INote {
   owner: {
     _id: string;
     userName: string;
+    lastName?: string;
+    firstName?: string;
     profilePicture?: string;
     email: string;
   };

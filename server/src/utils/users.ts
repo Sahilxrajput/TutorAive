@@ -5,6 +5,7 @@ export interface ISocketUser {
   roomId?: string;
 }
 
+
 // Using a Map to ensure uniqueness by userId
 const onlineUsers = new Map<string, ISocketUser>();
 
