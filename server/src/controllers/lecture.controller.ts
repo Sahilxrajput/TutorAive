@@ -2,6 +2,10 @@ import { Request, Response } from "express";
 import User from "../models/user.model";
 import Classroom from "../models/classroom.model";
 import Lecture from "../models/lecture.model";
+import { classroomSocket } from "../sockets/socketRef";
+import { addClassNotificationJob } from "../redis/queue";
+import { ClassUpdatePayload, IClassroom, LectureStatus } from "../types/type";
+import { emitClassUpdate } from "../sockets/class/class.emitter";
 
 const handleError = (
   res: Response,
@@ -15,6 +19,16 @@ const handleError = (
     error: error?.message || defaultMessage,
     message: defaultMessage,
   });
+};
+
+const ALLOWED_TRANSITIONS: Record<LectureStatus, LectureStatus[]> = {
+  scheduled: ["rescheduled", "live", "delayed", "cancelled"],
+  rescheduled: ["rescheduled", "live", "delayed", "cancelled"],
+  //   starting_soon: ["live", "delayed", "cancelled"],
+  delayed: ["scheduled", "live", "cancelled"],
+  live: ["completed"],
+  completed: [],
+  cancelled: [],
 };
 
 // --- Helper function for Authorization checks ---
@@ -46,23 +60,25 @@ export const createLecture = async (req: Request, res: Response) => {
   try {
     const { title, status, startTime, classroomId } = req.body;
 
-    // 1. Validate mandatory fields
-    if (!title || !classroomId || !startTime) {
+    if (!title || !classroomId || !startTime || !status) {
+      console.log(
+        "Missing required fields: title, classroomId, startTime, status."
+      );
       return res.status(400).json({
         success: false,
-        message: "Missing required fields: title, classroomId, startTime.",
+        message:
+          "Missing required fields: title, classroomId, startTime, status.",
       });
     }
 
-    // 2. Fetch User and Classroom concurrently
     const classroom = await Classroom.findById(classroomId);
 
-    if (!classroom)
+    if (!classroom) {
       return res
         .status(404)
         .json({ success: false, message: "Classroom not found." });
+    }
 
-    // 3. Authorization Check: Only classroom instructor can create a lecture
     if (classroom.createdBy.toString() !== req.userId?.toString()) {
       return res.status(403).json({
         success: false,
@@ -71,74 +87,130 @@ export const createLecture = async (req: Request, res: Response) => {
       });
     }
 
-    // 4. Create the Lecture
     const newLecture = await Lecture.create({
       title,
-      status: status || "completed", //?@fix Default status if not provided
+      status,
       createdBy: req.userId,
       startTime,
       classroom: classroom._id,
     });
 
-    const msg =
-      newLecture.status === "scheduled"
-        ? "Class successfully scheduled."
-        : "Class successfully completed.";
-    return res
-      .status(201)
-      .json({ success: true, message: msg, data: newLecture });
+    /* ---------------- NOTIFICATION + EMAIL ---------------- */
+
+    const payload: ClassUpdatePayload = {
+      lectureId: newLecture._id.toString(),
+      classroomId: classroom._id.toString(),
+      classroomName: classroom.title,
+      title: newLecture.title,
+      status: newLecture.status,
+      startTime: newLecture.startTime.toISOString(),
+    };
+
+    // socket emittor
+    emitClassUpdate(payload);
+
+    // email pub/subs
+    // await addClassNotificationJob({
+    //   classroomId: classroom._id.toString(),
+    //   lectureId: newLecture._id.toString(),
+    //   title,
+    //   status,
+    // });
+
+    let msg = "Lecture created successfully.";
+    if (status === "scheduled") msg = `lecture ${newLecture.title} successfully scheduled.`;
+    if (status === "live") msg = `lecture ${newLecture.title} is live now.`;
+
+    return res.status(201).json({
+      success: true,
+      message: msg,
+      data: newLecture,
+    });
   } catch (error) {
-    handleError(res, error, "Failed to create lecture.");
+    handleError(res, error);
   }
 };
 
 export const updateLecture = async (req: Request, res: Response) => {
   try {
-    const lectureId = req.params.id;
-    const { title, status, startTime } = req.body;
+    const { status, title, newStartTime, reason } = req.body;
 
-    // Must update at least one field
-    if (!title && !startTime && !status) {
-      return res.status(400).json({
-        success: false,
-        message: "Missing required fields. Update at least one field.",
-      });
+    const lecture = await Lecture.findById(req.params.id);
+    if (!lecture) {
+      return res.status(404).json({ message: "Lecture not found" });
     }
 
-    // ✔ Check if lecture exists and user is authorized
-    const lecture = await checkAuthorization(req, res, lectureId);
-    if (!lecture) return; // checkAuthorization already sent a response
+    let shouldNotify = false;
 
-    // Build update object without undefined values
-    const updateFields: any = {};
-    if (title !== undefined) updateFields.title = title;
-    if (startTime !== undefined) updateFields.startTime = startTime;
-    if (status !== undefined) updateFields.status = status;
-
-    // Update the lecture
-    const updatedLecture = await Lecture.findByIdAndUpdate(
-      lectureId,
-      updateFields,
-      { new: true, runValidators: true }
-    );
-
-    if (!updatedLecture) {
-      return res.status(404).json({
-        success: false,
-        message: "Lecture not found for update.",
-      });
+    /* ---------------- TITLE UPDATE ---------------- */
+    if (title && title !== lecture.title) {
+      lecture.title = title;
     }
 
-    return res.status(200).json({
+    /* ---------------- STATUS UPDATE ---------------- */
+    if (status) {
+      const allowedNext = ALLOWED_TRANSITIONS[lecture.status as LectureStatus];
+
+      if (!allowedNext.includes(status)) {
+        return res.status(400).json({
+          message: `Invalid status transition from ${lecture.status} to ${status}`,
+        });
+      }
+
+      if (status !== "completed") {
+        shouldNotify = true;
+      }
+
+      if (status === "delayed") {
+        lecture.delayReason = reason;
+      }
+
+      if (status === "cancelled") {
+        lecture.cancelReason = reason;
+      }
+
+      if (["scheduled", "rescheduled"].includes(status)) {
+        lecture.startTime = new Date(newStartTime);
+      }
+
+      lecture.status = status;
+    }
+
+    await lecture.save();
+
+    if (shouldNotify) {
+      /* ---------------- NOTIFICATION + EMAIL ---------------- */
+      const payload: ClassUpdatePayload = {
+        lectureId: lecture._id.toString(),
+        classroomName: lecture.classroom.title || "no class", //@todo
+        classroomId: lecture.classroom.toString(),
+        title: lecture.title.toString(),
+        status: lecture.status,
+        startTime: lecture.startTime.toISOString(),
+    };
+
+      // socket emittor
+      emitClassUpdate(payload);
+
+      // email pub/subs
+      //   await addClassNotificationJob({
+      //     classroomId: lecture.classroom.toString(),
+      //     lectureId: lecture._id.toString(),
+      //     title: lecture.title,
+      //     status: lecture.status,
+      //   });
+    }
+
+    res.json({
+      message: "Lecture updated successfully",
+      lecture,
       success: true,
-      message: "Lecture updated successfully.",
-      data: updatedLecture,
     });
   } catch (error) {
-    handleError(res, error, "Failed to update lecture.");
+    handleError(res, error, "Failed to create lecture.");
   }
 };
-33
+
 export const deleteLecture = async (req: Request, res: Response) => {
   try {
     const lectureId = req.params.id;
@@ -163,10 +235,9 @@ export const getAllScheduleLecturesForInstructor = async (
   res: Response
 ) => {
   try {
-    // Find by createdBy AND status in a single query (more efficient)
     const scheduledLectures = await Lecture.find({
       createdBy: req.userId,
-      status: "scheduled",
+      status: { $in: ["scheduled", "rescheduled", "delayed"] },
     }).sort({ startTime: 1 });
 
     return res.status(200).json({
@@ -180,6 +251,33 @@ export const getAllScheduleLecturesForInstructor = async (
       error,
       "Failed to fetch scheduled lectures for instructor."
     );
+  }
+};
+
+export const getAllScheduleLecturesForStudent = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const scheduledLectures = await Lecture.find({
+      status: { $in: ["scheduled", "rescheduled", "delayed"] },
+    })
+      .populate({
+        path: "classroom",
+        match: { students: req.userId },
+        select: "title",
+      })
+      .sort({ startTime: 1 })
+      .exec()
+      .then((lectures) => lectures.filter((l) => l.classroom));
+
+    return res.status(200).json({
+      success: true,
+      message: "Successfully fetched scheduled lectures for student.",
+      data: scheduledLectures,
+    });
+  } catch (error) {
+    handleError(res, error, "Failed to fetch scheduled lectures for student.");
   }
 };
 
@@ -200,55 +298,6 @@ export const getAllLecturesForInstructor = async (
     });
   } catch (error) {
     handleError(res, error, "Failed to fetch created lectures.");
-  }
-};
-
-export const getAllClassroomLecturesForInstructor = async (
-  req: Request,
-  res: Response
-) => {
-  try {
-    const lectures = await Lecture.find({
-      createdBy: req.userId, // ? @ok think about it
-      classroom: req.params.classroomId,
-    }).sort({ startTime: 1 });
-
-    return res.status(200).json({
-      success: true,
-      message: `Successfully fetched lectures for classroom ${req.params.classroomId}.`,
-      data: lectures,
-    });
-  } catch (error) {
-    handleError(
-      res,
-      error,
-      "Failed to fetch classroom lectures for instructor."
-    );
-  }
-};
-
-export const getAllScheduleLecturesForStudent = async (
-  req: Request,
-  res: Response
-) => {
-  try {
-    const scheduledLectures = await Lecture.find({ status: "scheduled" })
-      .populate({
-        path: "classroom",
-        match: { students: req.userId },
-        select: "title students",
-      })
-      .sort({ startTime: 1 })
-      .exec()
-      .then((lectures) => lectures.filter((l) => l.classroom));
-
-    return res.status(200).json({
-      success: true,
-      message: "Successfully fetched scheduled lectures for student.",
-      data: scheduledLectures,
-    });
-  } catch (error) {
-    handleError(res, error, "Failed to fetch scheduled lectures for student.");
   }
 };
 
@@ -274,27 +323,26 @@ export const getAllLecturesForStudent = async (req: Request, res: Response) => {
   }
 };
 
-export const getAllClassroomLecturesForStudent = async (
-  req: Request,
-  res: Response
-) => {
+export const getAllClassroomLectures = async (req: Request, res: Response) => {
   try {
-    // Similar optimization as /my, but filtered by classroomId
+    const classroom = await Classroom.findOne({
+      _id: req.params.classroomId,
+      // students: req.userId,
+    });
+
+    //@todo security check
+
+    if (!classroom) {
+      throw new Error("You are not enrolled in this classroom");
+    }
+
     const myLectures = await Lecture.find({
       classroom: req.params.classroomId,
-    })
-      .populate({
-        path: "classroom",
-        match: { students: req.userId },
-        select: "title students",
-      })
-      .sort({ startTime: 1 })
-      .exec()
-      .then((lectures) => lectures.filter((l) => l.classroom));
+    }).sort({ startTime: 1 });
 
     return res.status(200).json({
       success: true,
-      message: `Successfully fetched your lectures for classroom ${req.params.classroomId}.`,
+      message: `Successfully fetched your lectures for classroom ${classroom.title}.`,
       data: myLectures,
     });
   } catch (error) {

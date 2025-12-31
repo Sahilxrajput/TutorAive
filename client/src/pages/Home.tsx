@@ -1,16 +1,17 @@
 import API from '@/lib/api';
-import { DateTimePicker } from '@/components/classroom/DateTimePicker';
+import { StartClass } from '@/components/classroom/StartClass';
 import EventCard from '@/components/home/EventCard';
 import LearningCard from '@/components/home/LeaningCard';
 import { Calendar } from '@/components/ui/calendar';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import useAuth from '@/hooks/useAuth';
-import type { ILecture } from '@/types/type';
+import type { AssignmentPayload, ClassUpdatePayload, ILecture } from '@/types/type';
 import { formatDateTime } from '@/utils/splitDateTime';
 import { BookHeartIcon, Bookmark, Clock, Rocket } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import useSocketContext from '@/hooks/useSocketContext';
 
 const Home = () => {
     const [date, setDate] = useState<Date | undefined>(new Date());
@@ -20,16 +21,17 @@ const Home = () => {
     const [eventId, setEventId] = useState<string>('')
 
     const { isInstructor } = useAuth()
+    const { socket } = useSocketContext()
 
-    function detectPath() {
-        if (isInstructor) return "/lectures/scheduled/created"
-        return "/lectures/scheduled/my"
-    }
+    const detectPath = useCallback(
+        function detectPath() {
+            if (isInstructor) return "/lectures/scheduled/created"
+            return "/lectures/scheduled/my"
+        }, [isInstructor])
 
     const deleteScheduleLecture = async (id: string) => {
         try {
             setLoading(true);
-            console.log("id : ", id)
             const { data } = await API.delete("/lectures/" + id)
             console.log(data)
             if (data?.success) {
@@ -55,14 +57,8 @@ const Home = () => {
             try {
                 setLoading(true);
                 const { data } = await API.get(detectPath());
-                const formattedLectures = data.data.map((lecture: ILecture) => {
-                    const { dateStr, timeStr } = formatDateTime(lecture.startTime!);
-                    return { ...lecture, dateStr, timeStr };
-                });
-
-                console.log("schedule lectures => ", formattedLectures)
-
-                setScheduleLecture(formattedLectures);
+                console.log("setScheduleLecture : ", data.data)
+                setScheduleLecture(data.data);
             } catch (error) {
                 console.error('Error fetching lectures:', error);
             } finally {
@@ -70,7 +66,90 @@ const Home = () => {
             }
         };
         fetchScheduleLectures();
-    }, []);
+    }, [detectPath]);
+
+    useEffect(() => {
+        if (!socket) return
+
+        const joinClassrooms = async () => {
+            const { data } = await API.get("/classrooms/enrolled")
+
+            data.forEach((c) => {
+                socket.emit("join:classroom", c._id)
+            });
+        };
+
+        joinClassrooms()
+
+    }, [socket])
+
+
+
+    useEffect(() => {
+        if (!socket) return;
+
+        const handleClassUpdate = (payload: ClassUpdatePayload) => {
+            console.log("payload : ", payload)
+            // setScheduleLecture()
+            switch (payload.status) {
+                case "live":
+                    toast.success(`lecture ${payload.title} is live now`);
+                    break;
+
+                // case "starting_soon":
+                //     toast.info("Class starting soon ⏳");
+                //     console.log("payload : ", payload)
+                //     break;
+
+                case "scheduled":
+                    toast.info("Class scheduled ");
+                    break;
+
+                case "rescheduled":
+                    toast.info(
+                        ` ${payload.title} rescheduled\nNew time: ${formatDateTime(payload.startTime)}`
+                    );
+                    break;
+
+                case "delayed":
+                    toast.warning(
+                        ` ${payload.title} delayed\nReason: ${payload.reason}`
+                    );
+                    break;
+
+                case "cancelled":
+                    toast.error(
+                        ` ${payload.title} cancelled\nReason: ${payload.reason}`
+                    );
+                    break;
+
+                default:
+                    toast("Class updated");
+                    console.log("payload : ", payload)
+            }
+        };
+
+        const handleAssignmentUpdate = (payload: AssignmentPayload) => {
+            console.log("assignment payload : ", payload)
+            toast.info(
+                ` New assignment: ${payload.title}`,
+                {
+                    description: `Due: ${new Date(payload.dueDate).toLocaleString()}`,
+                    duration: 5000, // 5 sec
+                }
+            );
+        };
+
+
+        socket.on("lecture:update", handleClassUpdate);
+        socket.on("assignment:update", handleAssignmentUpdate);
+
+        return () => {
+            socket.off("lecture:update", handleClassUpdate);
+            socket.off("assignment:update", handleAssignmentUpdate);
+        };
+    }, [socket]);
+
 
     return (
         <main className="h-screen flex p-4">
@@ -107,10 +186,7 @@ const Home = () => {
                             <div key={i} className="p-2 border rounded-md shadow-sm space-y-2 flex flex-col items-center justify-center">
                                 <Skeleton className="h-4 w-1/2" />
                                 <Skeleton className="h-4 w-8/10" />
-                                <div className="flex justify-between w-full pt-2 ">
-                                    <Skeleton className="h-4 w-30" />
-                                    <Skeleton className="h-4 w-24" />
-                                </div>
+                                <Skeleton className="h-4 w-7/10" />
                             </div>
                         ))
                     ) : scheduleLecture.length > 0 ? (
@@ -125,7 +201,7 @@ const Home = () => {
                         <p className="text-gray-500 text-center">No upcoming lectures</p>
                     )}
                 </div>
-                {openCalender && <DateTimePicker id={eventId} showPopup={openCalender} setShowPopup={setOpenCalender} action='edit' />}
+                {openCalender && <StartClass id={eventId} showPopup={openCalender} setShowPopup={setOpenCalender} action='update' />}
             </section>
         </main>
     );

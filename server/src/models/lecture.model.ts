@@ -8,19 +8,39 @@ const lectureSession = new Schema<ILecture>(
       ref: "Classroom",
       required: true,
     },
+
     title: { type: String, required: true },
     description: String,
+
     startTime: { type: Date, required: true },
     endTime: Date,
-    recurrenceRule: String, // optional iCalendar-style recurrence
+
     createdBy: {
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
+
+    recurrenceRule: String, // optional iCalendar-style recurrence
+
+    delayReason: {
+      type: String,
+    },
+
+    cancelReason: {
+      type: String,
+    },
+
     status: {
       type: String,
-      enum: ["scheduled", "completed", "cancelled"],
+      enum: [
+        "scheduled",
+        "rescheduled",
+        "delayed",
+        "live",
+        "completed",
+        "cancelled",
+      ],
       default: "scheduled",
     },
   },

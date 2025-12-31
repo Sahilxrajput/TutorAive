@@ -1,66 +1,57 @@
 import { Router } from "mediasoup/node/lib/RouterTypes";
 import Room from "../classes/room";
 import Peer from "../classes/peer";
-import { peerRoom, peers } from "./PeerManager";
+import { addPeer, removePeer, peerRoom } from "./PeerManager";
 
-export const rooms = new Map<string, Room>();
+export const rooms = new Map<string, Room>(); // roomId -> Room
 
-export function addRoom(room: Room) {
-  rooms.set(room.roomId, room);
-}
+/* -------------------- ROOM LIFECYCLE -------------------- */
 
-export function getRoom(roomId: string) {
-  return rooms.get(roomId);
-}
+export function createRoom(roomId: string, router: Router, host: Peer): Room {
+  if (rooms.has(roomId)) {
+    throw new Error("Room already exists");
+  }
 
-export function removeRoom(roomId: string) {
-  rooms.delete(roomId);
-}
-
-function createRoom(roomId: string, router: Router, host: Peer) {
   const room = new Room(roomId, router, host);
-
   rooms.set(roomId, room);
-  peers.set(host.socketId, host);
-  peerRoom.set(host.socketId, roomId);
+
+  // PeerManager handles peer-room mapping
+  addPeer(host, roomId);
 
   return room;
 }
 
-function joinRoom(roomId: string, peer: Peer) {
-  const room = rooms.get(roomId);
-  if (!room) return;
-
-  room.addPeer(peer);
-
-  peers.set(peer.socketId, peer);
-  peerRoom.set(peer.socketId, roomId);
+export function removeRoom(roomId: string): void {
+  rooms.delete(roomId);
 }
 
-function leaveRoom(socketId: string) {
+export function getRoom(roomId: string): Room | undefined {
+  return rooms.get(roomId);
+}
+
+/* -------------------- ROOM MEMBERSHIP -------------------- */
+
+// export function joinRoom(roomId: string, peer: Peer): void {
+//   const room = rooms.get(roomId);
+//   if (!room) {
+//     throw new Error("Room not found");
+//   }
+
+//   addPeer(peer, roomId);
+// }
+
+export function leaveRoom(socketId: string): void {
   const roomId = peerRoom.get(socketId);
   if (!roomId) return;
 
   const room = rooms.get(roomId);
-  room?.removePeer(socketId);
 
-  peerRoom.delete(socketId);
-  peers.delete(socketId);
+  // Delegate cleanup to PeerManager
+  removePeer(socketId);
 
-  // destroy room if empty
-  if (room?.isEmpty()) {
+  //@todo : if host leaves, destroy room or transfer ownership
+
+  if (room && room.isEmpty()) {
     rooms.delete(roomId);
   }
 }
-
-function getPeersInRoom(roomId: string): Peer[] {
-  const room = rooms.get(roomId);
-  if (!room) return [];
-
-  return [...room.peers.values()];
-}
-
-function getPeer(socketId: string): Peer | undefined {
-  return peers.get(socketId);
-}
-

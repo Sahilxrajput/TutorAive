@@ -8,16 +8,16 @@ const assignmentSchema = new Schema<IAssignment>(
       ref: "Classroom",
       required: true,
     },
-    title: { type: String, required: true },
-    description: String,
+    title: { type: String, required: true, trim: true },
+    description: { type: String, trim: true },
     dueDate: { type: Date, required: true },
     createdBy: { type: Schema.Types.ObjectId, ref: "User", required: true },
     file: {
       url: String,
       public_id: String,
+      resource_type: String,
     },
-    submissions: [{ type: Schema.Types.ObjectId, ref: "Submission" }],
-    maxPoints: { type: Number, default: 0 },
+    maxPoints: { type: Number, default: 100 },
   },
   { timestamps: true }
 );

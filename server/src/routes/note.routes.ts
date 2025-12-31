@@ -4,7 +4,7 @@ import {
   addCollaboratorValidator,
   validateGetNotes,
 } from "../validators/note.validator";
-import { handleValidation } from "../Middlewares/validate";
+import { handleValidation } from "../Middlewares/handleValidation";
 import {
   addCollaborator,
   archiveToggler,

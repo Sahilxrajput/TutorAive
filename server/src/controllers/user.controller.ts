@@ -34,7 +34,7 @@ export async function getAllEnrolledClassrooms(req:any, res:any) {
     const user = await User.findById(req.userId).populate("enrolledClassrooms");
 
     if (!user) return res.status(404).json({ message: "User not found" });
-    console.log(user)
+
     res.status(200).json(user.enrolledClassrooms);
   } catch (error) {
     console.error("Error fetching enrolled classrooms:", error);

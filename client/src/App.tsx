@@ -13,7 +13,7 @@ import BrowseClassroom from "./pages/BrowseClassroom";
 import Layout from "./components/Layout";
 import EnrolledRoute from "./wrapper/EnrolledRoute";
 import ClassroomOverview from "./components/classroom/ClassroomOverview";
-import Assignments from "./components/classroom/Assignments";
+import AssignmentPage from "./components/classroom/Assignments";
 import LeaderboardPage from "./components/LeaderboardPage";
 import ClassroomNotes from "./components/classroom/ClassroomNotes";
 import Quiz from "./pages/Quiz";
@@ -54,7 +54,7 @@ const App: React.FC = () => {
         }>
           <Route index element={<ClassroomOverview />} />
           <Route path="notes" element={<Notes />} />
-          <Route path="assignments" element={<Assignments />} />
+                  <Route path="assignments" element={<AssignmentPage />} />
           <Route path="leaderboard" element={<LeaderboardPage />} />
         </Route>
 

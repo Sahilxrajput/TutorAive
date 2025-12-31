@@ -4,15 +4,15 @@ import { useParams } from "react-router-dom";
 
 export default function ClassroomOverview() {
   const [classroom, setClassroom] = useState<any>(null);
-  const { id } = useParams();
+    const { classroomId } = useParams();
 
   useEffect(() => {
     async function classroomData() {
-      const { data } = await API.get("/classrooms/" + id);
+        const { data } = await API.get("/classrooms/" + classroomId);
       setClassroom(data);
     }
     classroomData();
-  }, [id]);
+  }, [classroomId]);
 
   if (!classroom) return <p>Loading course details...</p>;
 

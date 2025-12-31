@@ -138,14 +138,18 @@ export interface ILecture {
     title: string;
     _id: string;
   };
-  dateStr?: string;
-  startTime?: string;
-  timeStr?: string;
-  status: "scheduled" | "completed" | "cancelled";
+  startTime: string;
+  status:
+    | "scheduled"
+    | "rescheduled"
+    | "live"
+    | "delayed"
+    | "completed"
+    | "cancelled";
   title: string;
-  createdBy: string;
-  createdAt: Date;
-  updatedAt: Date;
+  createdBy?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export interface IAddTweetContext {
@@ -188,4 +192,28 @@ export interface IAssignment {
   createdAt: string;
   updatedAt: string;
   classroom: string;
+}
+
+export type ClassStatus =
+  | "live"
+  //   | "starting_soon"
+  | "scheduled"
+  | "rescheduled"
+  | "delayed"
+  | "cancelled";
+
+export interface ClassUpdatePayload {
+  lectureId: string;
+  classroomId: string;
+  title: string;
+  status: ClassStatus;
+  startTime: string;
+  reason?: string;
+}
+
+export interface AssignmentPayload {
+  assignmentId: string;
+  classroomId: string;
+  title: string;
+  dueDate: Date;
 }

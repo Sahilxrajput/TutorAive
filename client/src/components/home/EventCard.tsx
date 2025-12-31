@@ -1,7 +1,8 @@
 import useAuth from "@/hooks/useAuth";
 import type { ILecture } from "@/types/type";
-import { CalendarRangeIcon, Clock, Pencil, Trash } from "lucide-react";
+import { CalendarRangeIcon, Pencil, Trash } from "lucide-react";
 import { AlertConfirmDialog } from "../AlertConfirmDialog";
+import { formatDateTime } from "@/utils/splitDateTime";
 
 
 interface EventCardProps {
@@ -32,14 +33,22 @@ const EventCard = ({ event, onOpen, onDelete, onEdit }: EventCardProps) => {
             </h3>
 
             {/* Date & Time */}
-            <div className="flex px-2 w-full items-center justify-between text-sm text-gray-600 dark:text-gray-400">
+            {/* <div className="flex px-2 w-full items-center justify-between text-sm text-gray-600 dark:text-gray-400"> */}
+            <p className="text-sm flex text-gray-600 dark:text-gray-400">
+                    <CalendarRangeIcon className="w-4 h-4" /> &nbsp; {formatDateTime(event.startTime!)}
+                </p>
+                {/* <p className="flex items-center gap-1">
+                    <Clock className="w-4 h-4" /> {event.timeStr}
+                </p> */}
+            {/* </div> */}
+            {/* <div className="flex px-2 w-full items-center justify-between text-sm text-gray-600 dark:text-gray-400">
                 <p className="flex items-center gap-1">
                     <CalendarRangeIcon className="w-4 h-4" /> {event.dateStr}
                 </p>
                 <p className="flex items-center gap-1">
                     <Clock className="w-4 h-4" /> {event.timeStr}
                 </p>
-            </div>
+            </div> */}
 
             {/* Delete Button (visible on hover) */}
             {isInstructor &&

@@ -1,48 +1,43 @@
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import {
-    Sheet,
-    SheetClose,
-    SheetContent,
-    SheetDescription,
-    SheetFooter,
-    SheetHeader,
-    SheetTitle,
-    SheetTrigger,
-} from "@/components/ui/sheet"
-import { BellIcon } from "lucide-react"
+import { Bell, ChevronUp, User2 } from "lucide-react"
+import { Sidebar, SidebarProvider, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarFooter, SidebarHeader } from "../ui/sidebar"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu"
 
 export function NotificationSideBar() {
     return (
-        <Sheet>
-            <SheetTrigger asChild>
-                <button><BellIcon /></button>
-            </SheetTrigger>
-            <SheetContent>
-                <SheetHeader>
-                    <SheetTitle>Edit profile</SheetTitle>
-                    <SheetDescription>
-                        Make changes to your profile here. Click save when you&apos;re done.
-                    </SheetDescription>
-                </SheetHeader>
-                <div className="grid flex-1 auto-rows-min gap-6 px-4">
-                    <div className="grid gap-3">
-                        <Label htmlFor="sheet-demo-name">Name</Label>
-                        <Input id="sheet-demo-name" defaultValue="Pedro Duarte" />
-                    </div>
-                    <div className="grid gap-3">
-                        <Label htmlFor="sheet-demo-userName">Username</Label>
-                        <Input id="sheet-demo-userName" defaultValue="@peduarte" />
-                    </div>
-                </div>
-                <SheetFooter>
-                    <Button type="submit">Save changes</Button>
-                    <SheetClose asChild>
-                        <Button variant="outline">Close</Button>
-                    </SheetClose>
-                </SheetFooter>
-            </SheetContent>
-        </Sheet>
+        <Bell />
+        // <SidebarProvider>
+        //     <Sidebar>
+        //         <SidebarHeader />
+        //         <SidebarContent />
+        //         <SidebarFooter>
+        //             <SidebarMenu>
+        //                 <SidebarMenuItem>
+        //                     <DropdownMenu>
+        //                         <DropdownMenuTrigger asChild>
+        //                             <SidebarMenuButton>
+        //                                 <User2 /> Username
+        //                                 <ChevronUp className="ml-auto" />
+        //                             </SidebarMenuButton>
+        //                         </DropdownMenuTrigger>
+        //                         <DropdownMenuContent
+        //                             side="top"
+        //                             className="w-[--radix-popper-anchor-width]"
+        //                         >
+        //                             <DropdownMenuItem>
+        //                                 <span>Account</span>
+        //                             </DropdownMenuItem>
+        //                             <DropdownMenuItem>
+        //                                 <span>Billing</span>
+        //                             </DropdownMenuItem>
+        //                             <DropdownMenuItem>
+        //                                 <span>Sign out</span>
+        //                             </DropdownMenuItem>
+        //                         </DropdownMenuContent>
+        //                     </DropdownMenu>
+        //                 </SidebarMenuItem>
+        //             </SidebarMenu>
+        //         </SidebarFooter>
+        //     </Sidebar>
+        // </SidebarProvider>
     )
 }

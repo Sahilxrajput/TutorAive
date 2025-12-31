@@ -1,8 +1,8 @@
 import { Producer, Transport, Consumer } from "mediasoup/node/lib/types";
 
 class Peer {
-  public userId: string;
   public name: string;
+  public userId: string;
   public socketId: string;
   public producer: {
     cam: Producer | null;

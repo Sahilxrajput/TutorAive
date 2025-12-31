@@ -1,4 +1,4 @@
-export const mediaCodecs = [
+export const mediaCodecs:any = [
   {
     kind: "audio",
     mimeType: "audio/opus",
@@ -44,7 +44,7 @@ export const workerSettings = {
   logTags: ["info", "ice", "dtls", "rtp", "srtp", "rtcp"],
 };
 
-export const webRtcTransport = {
+export const webRtcTransport_options = {
   listenIps: [
     {
       ip: "0.0.0.0", // replace with relevant IP address

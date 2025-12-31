@@ -1,34 +1,57 @@
 import express from "express";
 import {
-  createSubmission,
   getSubmissions,
   getStudentSubmission,
   gradeSubmission,
   getSubmissionById,
+  saveSubmission,
 } from "../controllers/submission.controller";
 import authMiddleware from "../Middlewares/auth.middleware";
 import { isInstructor } from "../Middlewares/Instructor.middleware";
 import { upload } from "../lib/cloudinary";
+import { cloudinarySignature } from "../controllers/assignment.controller";
 
 
 const router = express.Router();
 
 router.use(authMiddleware);
 
-/* ---------------------- Students ---------------------- */
+// @todo isEnrolled middleware
+
+// upload signature
 router.post(
-  "/upload/:assignmentId",
-  upload.single("submissionFile"),
-  createSubmission
+  "/assignments/:assignmentId/cloudinary/signature",
+  cloudinarySignature
 );
 
-/* -------------------- General access --------------------- */
-router.get("/:assignmentId", getStudentSubmission);
+// submit assignment
+router.post(
+  "/assignments/:assignmentId/save",
+  saveSubmission
+);
+
+// get my submission for an assignment
+router.get(
+  "/assignments/:assignmentId/me",
+  getStudentSubmission
+);
+
+// get submission by id (student or teacher)
 router.get("/:id", getSubmissionById);
 
-/* -------------------- Instructors --------------------- */
+/* -------------------- Instructor routes -------------------- */
 router.use(isInstructor);
-router.get("/assignment/:assignmentId", getSubmissions);
-router.put("/grade/:id", gradeSubmission);
+
+// get all submissions for an assignment
+router.get(
+  "/assignments/:assignmentId",
+  getSubmissions
+);
+
+// grade a submission
+router.put(
+  "/:id/grade",
+  gradeSubmission
+);
 
 export default router;

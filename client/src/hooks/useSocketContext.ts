@@ -1,7 +1,7 @@
 import { SocketContext } from "@/context/socketContext";
 import { useContext } from "react";
 
-const useSocket = () => {
+const useSocketContext = () => {
   const context = useContext(SocketContext);
 
   if (!context) {
@@ -11,4 +11,4 @@ const useSocket = () => {
   return context;
 };
 
-export default  useSocket;
+export default  useSocketContext;

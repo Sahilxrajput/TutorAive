@@ -57,7 +57,7 @@ const useSocketHandler = (user?: User): UseSocketReturn => {
       reconnection: true,
       reconnectionAttempts: 5,
       reconnectionDelay: 1000,
-    });
+    }); 
 
     // --- Core connection events ---
     newSocket.on("connect", () => {
@@ -132,4 +132,5 @@ const useSocketHandler = (user?: User): UseSocketReturn => {
     reconnectSocket,
   };
 };
+
 export default useSocketHandler;

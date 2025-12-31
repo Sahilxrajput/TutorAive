@@ -1,73 +1,91 @@
+import { AppData, Consumer, Producer } from "mediasoup/node/lib/types";
 import Peer from "../classes/peer";
+import { rooms } from "./RoomManager";
+import Room from "../classes/room";
 
-export const peers = new Map<string, Peer>();
 export const peerRoom = new Map<string, string>(); // socketId -> roomId
 
-export function addPeer(peer: Peer, roomId: string) {
-  peers.set(peer.socketId, peer);
+export function getRoomBySocket(socketId: string): Room | undefined {
+  const roomId = peerRoom.get(socketId);
+  if (!roomId) return;
+  return rooms.get(roomId);
+}
+
+export function getPeerBySocket(socketId: string): Peer | undefined {
+  const room = getRoomBySocket(socketId);
+  return room?.getPeer(socketId);
+}
+
+/* -------------------- PEER LIFECYCLE -------------------- */
+
+export function addPeer(peer: Peer, roomId: string): void {
+  const room = rooms.get(roomId);
+  if (!room) throw new Error("Room not found");
+
+  room.addPeer(peer);
   peerRoom.set(peer.socketId, roomId);
 }
 
-export function removePeer(socketId: string) {
-  peers.delete(socketId);
+export function removePeer(socketId: string): void {
+  const room = getRoomBySocket(socketId);
+  room?.removePeer(socketId);
+
   peerRoom.delete(socketId);
+
+  // optional cleanup
+  if (room && room.isEmpty()) {
+    rooms.delete(room.roomId);
+  }
 }
 
-export function getPeer(socketId: string) {
-  return peers.get(socketId);
+/* -------------------- PRODUCERS -------------------- */
+
+export function setProducer(
+  socketId: string,
+  type: "cam" | "mic" | "screen" | "saudio",
+  producer: Producer<AppData> | null
+): void {
+  const peer = getPeerBySocket(socketId);
+  if (!peer) return;
+
+  peer.producer[type] = producer;
 }
 
-export function getPeerRoom(socketId: string) {
-  return peerRoom.get(socketId);
+export function getProducer(
+  socketId: string,
+  type: "cam" | "mic" | "screen" | "saudio"
+) {
+  return getPeerBySocket(socketId)?.producer[type];
 }
 
-export function hasPeer(socketId: string): boolean {
-  return peers.has(socketId);
+export function removeProducer(
+  socketId: string,
+  type: "cam" | "mic" | "screen" | "saudio"
+): void {
+  const peer = getPeerBySocket(socketId);
+  if (!peer) return;
+
+  peer.producer[type] = null;
 }
 
-// export function setProducer(
-//   socketId: string,
-//   type: "cam" | "mic" | "screen" | "saudio",
-//   producer
-// ) {
-//   const peer = peers.get(socketId);
-//   if (!peer) return;
+/* -------------------- CONSUMERS -------------------- */
 
-//   peer.producer[type] = producer;
-// }
+export function addConsumer(socketId: string, consumer: Consumer): void {
+  const peer = getPeerBySocket(socketId);
+  if (!peer) return;
 
-// export function getProducer(
-//   socketId: string,
-//   type: "cam" | "mic" | "screen" | "saudio"
-// ) {
-//   return peers.get(socketId)?.producer[type];
-// }
+  peer.consumers.push(consumer);
+}
 
+export function removeConsumer(socketId: string, consumerId: string): void {
+  const peer = getPeerBySocket(socketId);
+  if (!peer) return;
 
-// export function removeProducer(
-//   socketId: string,
-//   type: "cam" | "mic" | "screen" | "saudio"
-// ) {
-//   const peer = peers.get(socketId);
-//   if (!peer) return;
+  peer.consumers = peer.consumers.filter(
+    (consumer) => consumer.id !== consumerId
+  );
+}
 
-//   peer.producer[type] = null;
-// }
-
-// export function addConsumer(socketId: string, consumer) {
-//   const peer = peers.get(socketId);
-//   if (!peer) return;
-
-//   peer.consumers.push(consumer);
-// }
-
-// export function removeConsumer(socketId: string, consumerId: string) {
-//   const peer = peers.get(socketId);
-//   if (!peer) return;
-
-//   peer.consumers = peer.consumers.filter((c) => c.id !== consumerId);
-// }
-
-// export function getConsumers(socketId: string) {
-//   return peers.get(socketId)?.consumers || [];
-// }
+export function getConsumers(socketId: string): Consumer[] {
+  return getPeerBySocket(socketId)?.consumers || [];
+}

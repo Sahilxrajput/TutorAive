@@ -9,12 +9,13 @@ export const formatTime = (date: string ) => {
   return timeStr ;
 };
 
-export const formatDateTime = (date: string | Date) => {
-  const d = new Date(date).toString();
-  const dateStr = d.slice(4, 15);
-  const timeStr = d.slice(16, 21);
-  return { dateStr, timeStr };
-};
+export function formatDateTime(isoString: string) {
+  return new Date(isoString).toLocaleString(undefined, {
+    dateStyle: "medium",
+    timeStyle: "short",
+  });
+}
+
 
 
 /**

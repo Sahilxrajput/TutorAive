@@ -4,8 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "tsc -b && nodemon ./dist/app.js"
+    "dev": "tsx watch src/app.ts",
+    "build": "tsc",
+    "start": "node dist/app.js",
+    "worker": "node ./dist/redis/worker.js"
   },
   "keywords": [],
   "author": "sahil rajput",
@@ -21,14 +23,17 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/multer": "^2.0.0",
     "@types/node": "^24.7.2",
+    "@types/nodemailer": "^7.0.4",
     "@types/passport": "^1.0.17",
     "@types/passport-google-oauth20": "^2.0.16",
     "@types/qrcode": "^1.5.5",
-    "@types/socket.io": "^3.0.1"
+    "@types/socket.io": "^3.0.1",
+    "tsx": "^4.21.0"
   },
   "dependencies": {
     "@google/genai": "^1.26.0",
     "bcrypt": "^6.0.0",
+    "bullmq": "^5.66.2",
     "cloudinary": "^1.41.3",
     "cookie-parser": "^1.4.7",
     "cookie-session": "^2.1.1",
@@ -43,6 +48,7 @@
     "multer": "^1.4.5-lts.2",
     "multer-storage-cloudinary": "^4.0.0",
     "nanoid": "^5.1.6",
+    "nodemailer": "^7.0.12",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
     "qrcode": "^1.5.4",

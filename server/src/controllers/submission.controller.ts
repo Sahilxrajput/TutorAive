@@ -1,70 +1,38 @@
 import { Request, Response } from "express";
 import Submission from "../models/submission.model";
-import mongoose from "mongoose";
-import Assignment from "../models/assignment.model";
-import { cloudinary } from "../lib/cloudinary";
 
-// Submit assignment
-export const createSubmission = async (req: Request, res: Response) => {
+// Save assignment
+export const saveSubmission = async (req: Request, res: Response) => {
   try {
-    if (!req.file) {
-      return res.status(400).json({ message: "PDF file is required." });
-    }
+    const { pdfUrl, public_id, resource_type } = req.body;
 
     const { assignmentId } = req.params;
 
-    if (!mongoose.Types.ObjectId.isValid(assignmentId)) {
-      return res.status(400).json({ message: "Invalid assignment ID" });
-    }
-    // @todo all validator not enrolled user can't ablee to upload submission
-    const existing = await Submission.findOne({
-      assignment: assignmentId,
-      student: req.userId,
-    });
-
-    if (existing) {
-      return res
-        .status(400)
-        .json({ message: "You have already submitted this assignment" });
-    }
-
-    let uploadResult: any = null;
-
-    if (req.file) {
-      uploadResult = await new Promise((resolve, reject) => {
-        const stream = cloudinary.uploader.upload_stream(
-          { folder: "assignment submission" },
-          (error, result) => {
-            if (error) reject(error);
-            else resolve(result);
-          }
-        );
-
-        stream.end(req?.file?.buffer);
-      });
+    if (!resource_type || !pdfUrl || !public_id) {
+      return res.status(400).json({ message: "Missing required fields" });
     }
 
     const submission = await Submission.create({
-      assignment: assignmentId,
       student: req.userId,
+      assignment: assignmentId,
       file: {
-        url: uploadResult.secure_url,
-        public_id: uploadResult.public_id,
+        url: pdfUrl,
+        public_id,
+        resource_type,
       },
       status: "submitted",
     });
 
-    await Assignment.findByIdAndUpdate(assignmentId, {
-      $push: { submissions: submission._id },
-    });
+    console.log("submission : ", submission);
 
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
-      message: "Submission uploaded successfully",
-      submission,
+      message: "Submission done successfully",
+      data: submission,
     });
   } catch (err: any) {
-    res.status(500).json({
+    console.log(err)
+    return res.status(500).json({
       success: false,
       message: "Server error uploading submission",
       error: (err as Error).message,
@@ -86,6 +54,7 @@ export const getSubmissions = async (req: Request, res: Response) => {
   }
 };
 
+// get submission by id
 export const getSubmissionById = async (req: Request, res: Response) => {
   try {
     const submission = await Submission.findById(req.params.id)

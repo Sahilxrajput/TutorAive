@@ -28,11 +28,11 @@ export interface IAssignment extends Document {
   description?: string;
   dueDate: Date;
   createdBy: Types.ObjectId;
-  submissions: Types.ObjectId[];
   maxPoints?: number;
   file?: {
     url: string;
     public_id: string;
+    resource_type: string;
   };
   createdAt: Date;
   updatedAt: Date;
@@ -57,7 +57,7 @@ export interface IClassroom extends Document {
   syllabus: Object[];
   students?: Types.ObjectId[];
   memberships?: Types.ObjectId[];
-  assignments?: Types.ObjectId[];
+//   assignments?: Types.ObjectId[];
   schedules?: Types.ObjectId[];
   invitations?: Types.ObjectId[];
   attendance?: Types.ObjectId[];
@@ -80,8 +80,15 @@ export interface ILecture extends Document {
   endTime?: Date; // optional end time for the first session
   recurrenceRule?: string; // e.g., "RRULE:FREQ=WEEKLY;BYDAY=MO,WE,FR"
   createdBy: Types.ObjectId;
-  status: "scheduled" | "completed" | "cancelled";
-  createdAt: Date;
+  status:
+    | "scheduled"
+    | "rescheduled"
+    | "live"
+    | "completed"
+    | "delayed"
+    | "cancelled";
+  delayReason: string;
+  cancelReason: string;
   updatedAt: Date;
 }
 export interface IClassInvitation extends Document {
@@ -101,6 +108,7 @@ export interface ISubmission extends Document {
   file: {
     url: string;
     public_id: string;
+    resource_type:string,
   };
   content?: string;
   submittedAt: Date;
@@ -164,4 +172,30 @@ export interface ITweet extends Document {
   };
   likes?: Types.ObjectId[];
   parentTweet?: Types.ObjectId;
+}
+
+export type LectureStatus =
+  | "scheduled"
+  | "rescheduled"
+  | "live"
+  | "delayed"
+  | "completed"
+  | "cancelled";
+
+export interface ClassUpdatePayload {
+  lectureId: string;
+  classroomName: string;
+  classroomId: string;
+  title: string;
+  status: LectureStatus;
+  startTime: string;
+  reason?: string;
+}
+
+export interface AssignmentPayload {
+  assignmentId: string;
+  classroomId: string;
+  classroomTitle:string;
+  title: string;
+  dueDate: Date;
 }

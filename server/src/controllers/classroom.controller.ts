@@ -2,6 +2,10 @@ import { Request, Response } from "express";
 import Classroom from "../models/classroom.model";
 import ClassSchedule from "../models/lecture.model";
 import User from "../models/user.model";
+import {
+  addAssignmentNotificationJob,
+  addClassNotificationJob,
+} from "../redis/queue";
 
 // Create a new classroom
 export const createClassroom = async (req: Request, res: Response) => {
@@ -26,11 +30,11 @@ export const getClassrooms = async (req: Request, res: Response) => {
     if (isPublic !== undefined) filter.isPublic = isPublic === "true";
 
     const classrooms = await Classroom.find(filter)
-    //? @fix think about populated fields
+      //? @fix think about populated fields
       .populate("createdBy", "name email")
       .sort({ createdAt: -1 });
 
-      res
+    res
       .status(200)
       .json({ message: "fetch classrooms successfully", data: classrooms });
   } catch (error) {
@@ -38,14 +42,34 @@ export const getClassrooms = async (req: Request, res: Response) => {
   }
 };
 
+// get all enrolled classrooms
+// export const getAllEnrolledClassrooms = async (req: Request, res: Response) => {
+//   const classrooms = await Classroom.find({
+//     students: req.userId,
+//   });
+
+//   if (!classrooms)
+//     return res.status(404).json({
+//       message: "classrooms not found",
+//     });
+
+//   console.log("classrooms -> ", classrooms);
+//   return res.status(200).json({
+//     message: "fetch all enrolled classrooms",
+//     data: classrooms,
+//   });
+// };
+
 // Get a single classroom by ID
 export const getClassroomById = async (req: Request, res: Response) => {
   try {
     const classroom = await Classroom.findById(req.params.id)
       .populate("createdBy", "name email profilePicture")
       .populate("students", "name email profilePicture");
+    //@remind
     if (!classroom)
       return res.status(404).json({ message: "Classroom not found" });
+
     res.json(classroom);
   } catch (error) {
     res.status(500).json({ message: "Error fetching classroom", error });

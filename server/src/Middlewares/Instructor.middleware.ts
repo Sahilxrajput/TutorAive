@@ -1,6 +1,14 @@
 import { Request, Response, NextFunction } from "express";
 import Classroom from "../models/classroom.model";
 
+declare global {
+  namespace Express {
+    interface Request {
+      classroomTitle?: string;
+    }
+  }
+}
+
 export const isInstructor = (
   req: Request,
   res: Response,
@@ -45,6 +53,7 @@ export const isClassroomCreator = async (
         .json({ message: "You are not authorized to modify this classroom" });
     }
 
+    req.classroomTitle = classroom.title;
     next();
   } catch (error) {
     res.status(500).json({

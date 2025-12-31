@@ -123,5 +123,8 @@ export const joinClassroomValidator = [
 ];
 
 export const idParamValidator = [
-  param("id").isMongoId().withMessage("Invalid classroom ID"),
+  param("id").isMongoId().withMessage("Invalid mongo ID"),
+];
+export const classroomIdParamValidator = [
+  param("classroomId").isMongoId().withMessage("Invalid mongo ID"),
 ];
