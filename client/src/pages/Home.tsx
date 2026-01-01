@@ -19,8 +19,9 @@ const Home = () => {
     const [loading, setLoading] = useState<boolean>(true);
     const [openCalender, setOpenCalender] = useState<boolean>(false)
     const [eventId, setEventId] = useState<string>('')
+    const [pendingAssignments, setPendingAssignments] = useState<number>(0)
 
-    const { isInstructor } = useAuth()
+    const { isInstructor, user } = useAuth()
     const { socket } = useSocketContext()
 
     const detectPath = useCallback(
@@ -51,6 +52,21 @@ const Home = () => {
         setOpenCalender(true);
         setEventId(id)
     }
+
+    //@remind fetch all assignments here
+    useEffect(() => {
+        if (!user) return
+        const fetchAssignmnets = async () => {
+            try {
+                const { data } = await API.get(`/assignments/student/${user._id}`)
+                //  console.log("assignmnets : ", data)
+                setPendingAssignments(data.pending.length)
+            } catch {
+                console.log("error while fetching assignmnets")
+            }
+        }
+        fetchAssignmnets()
+    }, [user])
 
     useEffect(() => {
         const fetchScheduleLectures = async () => {
@@ -83,8 +99,6 @@ const Home = () => {
 
     }, [socket])
 
-
-
     useEffect(() => {
         if (!socket) return;
 
@@ -96,6 +110,7 @@ const Home = () => {
                     toast.success(`lecture ${payload.title} is live now`);
                     break;
 
+                //@todo complete status -> remove live class event from notification bar
                 // case "starting_soon":
                 //     toast.info("Class starting soon ⏳");
                 //     console.log("payload : ", payload)
@@ -140,13 +155,26 @@ const Home = () => {
             );
         };
 
-
         socket.on("lecture:update", handleClassUpdate);
         socket.on("assignment:update", handleAssignmentUpdate);
 
         return () => {
             socket.off("lecture:update", handleClassUpdate);
             socket.off("assignment:update", handleAssignmentUpdate);
+        }
+    }, [socket]);
+
+
+    useEffect(() => {
+        if (!socket) return;
+
+        socket.on("tweet:mention", (payload) => {
+            console.log("Mention received:", payload);
+            toast.info(payload.message);
+        });
+
+        return () => {
+            socket.off("tweet:mention");
         };
     }, [socket]);
 
@@ -158,13 +186,12 @@ const Home = () => {
             <section className="flex-1 flex gap-6 flex-col">
                 <div className="w-full h-3/10 bg-yellow-600 shadow-md hover:shadow-lg rounded-lg"></div>
                 <div className="flex items-center justify-between">
-                    <LearningCard title="Couse Completed" Icon={BookHeartIcon} number={8} iconColor="green" />
+                    <LearningCard title="Pending Assignment" Icon={BookHeartIcon} number={pendingAssignments} iconColor="green" />
                     <LearningCard title="Certificates Earned" Icon={Bookmark} number={2} iconColor="blue" />
-                    <LearningCard title="Streak (Days)" Icon={Rocket} number={3} iconColor="green" />
+                    <LearningCard title="Scheduled Class" Icon={Rocket} number={3} iconColor="green" />
                     <LearningCard title="Streak (Days)" Icon={Rocket} number={3} iconColor="blue" />
                     <LearningCard title="Hours Learned" Icon={Clock} number={18.5} iconColor="green" />
                 </div>
-                <h1>For You</h1>
             </section>
 
             {/* right side */}

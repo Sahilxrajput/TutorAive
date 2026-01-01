@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
-import { Baby, BookOpen, ChartSpline, LucideOctagon, MessageCircle, NotepadText, Twitch } from 'lucide-react'
+import { Baby, Bell, BookOpen, ChartSpline, LucideOctagon, MessageCircle, NotepadText, Twitch } from 'lucide-react'
 import useAuth from '@/hooks/useAuth'
-import { NotificationSideBar } from './notification/NotificationSidebar';
+import { NotificationSidebar } from './notification/NotificationSidebar';
 
 
 const Sidebar = () => {
@@ -18,8 +18,8 @@ const Sidebar = () => {
                 <Link to="/community" className='flex flex-col items-center justify-center'><Twitch /> Tweets</Link>
             </div>
             <div className='flex items-center justify-center gap-6 flex-col'>
-                {/* <Link to="/" className='flex flex-col items-center justify-center'><NotificationSideBar/> </Link> */}
-                <NotificationSideBar />
+                <NotificationSidebar/>
+
                 {!user ?
                     <Link to="/signin" className='flex flex-col items-center justify-center'><Baby /></Link>
                     :

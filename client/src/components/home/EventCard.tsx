@@ -28,7 +28,7 @@ const EventCard = ({ event, onOpen, onDelete, onEdit }: EventCardProps) => {
             </h2>
 
             {/* Classroom */}
-            <h3 className="font-thin text-sm pb-2 text-muted-foreground">
+            <h3 className="font-light text-sm pb-2 text-muted-foreground">
                 {event.classroom?.title || "No classroom"}
             </h3>
 

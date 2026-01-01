@@ -6,7 +6,6 @@ import { useParams } from "react-router-dom"
 import type { IAssignment } from "@/types/type"
 
 export default function AssignmentPage() {
-    const [assignments, setAssignments] = useState<IAssignment[]>([])
     const [submitted, setSubmitted] = useState<IAssignment[]>([])
     const [pending, setPending] = useState<IAssignment[]>([])
 
@@ -16,13 +15,12 @@ export default function AssignmentPage() {
     useEffect(() => {
         async function fetchAssignments() {
             const { data } = await API.get(`/assignments/classroom/${classroomId}/my`)
-            console.log("assign : ", data.data)
-            setAssignments(data.data)
-            setPending(data.data.pending)
-            setSubmitted(data.data.submitted)
+            setPending(data.pending)
+            setSubmitted(data.submitted)
         }
         fetchAssignments()
     }, [classroomId])
+
 
 
     function submissionUploaded(id: string, submissionId?: string) {
