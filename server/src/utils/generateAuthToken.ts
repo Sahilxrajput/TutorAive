@@ -7,7 +7,7 @@ const generateAuthToken = (user: IUser) => {
     {
       _id: user._id,
       role: user.role,
-      email: user.email,
+      userName: user.userName,
     },
     process.env.JWT_SECRET as string,
     { expiresIn: process.env.TOKEN_EXPIRY || "1d" }

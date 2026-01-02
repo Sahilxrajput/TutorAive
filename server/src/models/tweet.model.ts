@@ -16,6 +16,12 @@ const tweetSchema = new Schema<ITweet>(
       enum: ["general", "mentorship", "news", "problem", "repost"],
       default: "general",
     },
+    mentions: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
     author: {
       type: Schema.Types.ObjectId,
       ref: "User",

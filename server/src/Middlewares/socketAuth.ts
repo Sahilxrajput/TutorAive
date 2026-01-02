@@ -22,7 +22,6 @@ export const socketAuthMiddleware = (
     socket.data.userId = decoded._id;
     socket.data.userName = decoded.email;
     socket.data.userRole = decoded.role;
-    console.log("decode : ",decoded)
     next();
   } catch (err) {
     console.error("JWT verification failed:", err);

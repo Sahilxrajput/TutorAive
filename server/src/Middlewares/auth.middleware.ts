@@ -7,6 +7,7 @@ declare global {
   namespace Express {
     interface Request {
       userId?: string;
+      userName?: string;
       userRole?: "student" | "instructor" | "admin";
     }
   }
@@ -33,6 +34,7 @@ export default function authMiddleware(
     ) as MyJwtPayload;
     req.userId = decoded._id; 
     req.userRole = decoded.role;
+    req.userName = decoded.userName;
     next(); 
   } catch (err) {
     return res.status(403).json({ error: "Invalid or expired token." });

@@ -57,7 +57,7 @@ export interface IClassroom extends Document {
   syllabus: Object[];
   students?: Types.ObjectId[];
   memberships?: Types.ObjectId[];
-//   assignments?: Types.ObjectId[];
+  //   assignments?: Types.ObjectId[];
   schedules?: Types.ObjectId[];
   invitations?: Types.ObjectId[];
   attendance?: Types.ObjectId[];
@@ -108,7 +108,7 @@ export interface ISubmission extends Document {
   file: {
     url: string;
     public_id: string;
-    resource_type:string,
+    resource_type: string;
   };
   content?: string;
   submittedAt: Date;
@@ -171,6 +171,7 @@ export interface ITweet extends Document {
     public_id: string;
   };
   likes?: Types.ObjectId[];
+  mentions?: Types.ObjectId[];
   parentTweet?: Types.ObjectId;
 }
 
@@ -195,7 +196,13 @@ export interface ClassUpdatePayload {
 export interface AssignmentPayload {
   assignmentId: string;
   classroomId: string;
-  classroomTitle:string;
+  classroomTitle: string;
   title: string;
   dueDate: Date;
+}
+
+export interface ITweetPayload {
+  id: string;
+  mentionId: string;
+  message;
 }

@@ -170,7 +170,7 @@ const Home = () => {
 
         socket.on("tweet:mention", (payload) => {
             console.log("Mention received:", payload);
-            toast.info(payload.message);
+            toast.info(payload.msg);
         });
 
         return () => {

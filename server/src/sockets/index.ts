@@ -6,7 +6,6 @@ import { createWebRtcTransport } from "./utils";
 import { getRoom, rooms } from "../managers/RoomManager";
 import { getPeerBySocket } from "../managers/PeerManager";
 import { Transport } from "mediasoup/node/lib/types";
-import { setClassroomSocket } from "./socketRef";
 
 export let io: Server | null = null;
 
@@ -19,15 +18,21 @@ export const initSocket = async (httpServer: HttpServer) => {
     },
   });
 
-  io.use(socketAuthMiddleware);
-
   const classroom = io.of("/classroom");
+  classroom.use(socketAuthMiddleware);
 
   classroom.on("connection", (socket: Socket) => {
     console.log("Somthing connected!", socket.id);
+    const userId = socket.data.userId;
 
-    //!classroofref
-    setClassroomSocket(classroom);
+  if (!userId) {
+    console.error("Socket connected WITHOUT userId");
+    socket.disconnect(true);
+    return;
+  }
+
+  socket.join(`user:${userId}`);
+  console.log(`User ${userId} joined user:${userId}`);
 
     socket.on("join-room", (data, cb) => onJoinRoom(socket, data, cb)); // name, socketId, userId
 
@@ -282,8 +287,6 @@ export const getIO = () => {
   if (!io) {
     throw new Error("Socket.io not initialized");
   }
-  io.use(socketAuthMiddleware);
 
-  const socket = io.of("/classroom");
-  return socket;
+  return io.of("/classroom");
 };

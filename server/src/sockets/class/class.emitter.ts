@@ -18,3 +18,8 @@ export function emitAssignmentUpdate(payload: AssignmentPayload) {
   console.log("assignment emitter payload", payload);
   socket.to(payload.classroomId).emit("assignment:update", payload);
 }
+export function emitUserMention(payload: any) {
+  const io = getIO();
+  console.log("tweet emitter payload", payload);
+  io.to(`user:${payload.mentionId}`).emit("tweet:mention", payload);
+}

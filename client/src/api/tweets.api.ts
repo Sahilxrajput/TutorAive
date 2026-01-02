@@ -12,6 +12,7 @@ export const createTweet = async (payload: FormData) => {
     "/tweets",
     payload
   );
+  console.log("create post: ", data)
   toast.success(data.message);
   return data.data;
 };

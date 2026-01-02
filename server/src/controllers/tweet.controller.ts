@@ -1,6 +1,12 @@
 import { Request, Response } from "express";
 import Tweet from "../models/tweet.model";
 import { cloudinary } from "../lib/cloudinary";
+import {
+  emitTweetUpdate,
+  emitUserMention,
+} from "../sockets/class/class.emitter";
+import { extractMentionedUserIds } from "../utils/extractMentionIds";
+import { Types } from "mongoose";
 
 const handleError = (
   res: Response,
@@ -20,10 +26,16 @@ export const createTweet = async (req: Request, res: Response) => {
   try {
     const { content, type } = req.body;
 
+    const mentionedUserIds = await extractMentionedUserIds(
+      content,
+      req.userId!
+    );
+
     const tweetData: any = {
       content,
       type,
       author: req.userId,
+      mentions: mentionedUserIds,
     };
 
     // Validate file type
@@ -59,6 +71,18 @@ export const createTweet = async (req: Request, res: Response) => {
     // Create tweet
     const tweet = new Tweet(tweetData);
     await tweet.save();
+
+    console.log("tweet", tweet);
+
+    //  Emit mention notification to each mentioned user
+    mentionedUserIds.forEach((mentionId: Types.ObjectId) => {
+      emitUserMention({
+        mentionId: mentionId.toString(),
+        tweetId: tweet._id.toString(),
+        createdAt: tweet.createdAt,
+        msg: `${req.userName} mentioned you in a post`,
+      });
+    });
 
     return res.status(201).json({
       success: true,

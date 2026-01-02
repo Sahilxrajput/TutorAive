@@ -14,6 +14,7 @@ import {
 } from "../validators/tweet.validator";
 import authMiddleware from "../Middlewares/auth.middleware";
 import { upload } from "../lib/cloudinary";
+import { handleValidation } from "../Middlewares/handleValidation";
 
 const router = express.Router();
 
@@ -23,7 +24,8 @@ router.get("/", getAllTweets);
 router.use(authMiddleware);
 
 // Create post
-router.post("/", createTweetValidator, upload.single("image"), createTweet);
+router.post("/", upload.single("image"), createTweet);
+// router.post("/", createTweetValidator, handleValidation, upload.single("image"), createTweet);
 
 // Single post
 router.get("/:id", tweetIdValidator, getTweetById);
