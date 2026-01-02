@@ -1,15 +1,14 @@
 import express from "express";
 import {
-  getAssignmentsForStudent,
+  getAssignmentsOfStudent,
   getAssignmentById,
   getAssignmentsByClassroomId,
   updateAssignment,
   deleteAssignment,
   getAssignmentsForInstructor,
-  getStudentAssignmentsForClassroom,
+  getStudentAssignmentsInClassroom,
   cloudinarySignature,
   saveAssignment,
-  getAllAssignmentsInClassroomId,
 } from "../controllers/assignment.controller";
 import authMiddleware from "../Middlewares/auth.middleware";
 import {
@@ -30,20 +29,20 @@ const router = express.Router();
 router.use(authMiddleware);
 // router.use(authMiddleware, isEnrolled);//!@todo isEnrolled also check user logedin or not
 
-// Enrolled actions
-router.get("/student", getAssignmentsForStudent);
-router.get("/instructor", getAssignmentsForInstructor); // @todo isInstructor middleware
-router.get("/classroom/:classroomId", getAssignmentsByClassroomId);
+//get all assignments of a student pending  + submitted
+router.get("/student/:studentId", getAssignmentsOfStudent); //isuser isself , isinsructor
+
+//get all classroom assignments of student pending  + submitted
 router.get(
   "/classroom/:classroomId/student/:studentId",
-  getStudentAssignmentsForClassroom
+  isEnrolled, // techer / enrolled student -> true
+  getStudentAssignmentsInClassroom
 );
-router.get("/:id", getAssignmentById);
-router.get("/classroom/:classroomId/my", getAllAssignmentsInClassroomId);
+
+router.get("/:id", isEnrolled, getAssignmentById); 
 
 // Instructor-only routes
-router.use(isInstructor);
-
+// router.use(isInstructor); //@check no need
 
 router.post(
   "/:classroomId/cloudinary/signature",
@@ -53,7 +52,17 @@ router.post(
 
 router.post("/:classroomId/save", isClassroomCreator, saveAssignment);
 
-router.put("/:id", isClassroomCreator, updateAssignment);
-router.delete("/:id", isClassroomCreator, deleteAssignment);
+//get all assignments of classroom -> for instructor
+router.get(
+  "/classroom/:classroomId",
+  isClassroomCreator,
+  getAssignmentsByClassroomId
+);
+
+//get all assignments of all classroom created by instructor
+router.get("/instructor", getAssignmentsForInstructor);
+
+router.put("/:id", updateAssignment);
+router.delete("/:id", deleteAssignment);
 
 export default router;

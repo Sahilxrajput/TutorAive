@@ -103,38 +103,64 @@ export const saveAssignment = async (req: Request, res: Response) => {
   }
 };
 
-export const getAssignmentsForStudent = async (req: Request, res: Response) => {
+export const getAssignmentsOfStudent = async (req: Request, res: Response) => {
   try {
     const userId = req.userId;
+    const { studentId } = req.params;
+
+    //@todo move it to a middleware
+    if (studentId !== userId && req.userRole !== "instructor") {
+      return res
+        .status(403)
+        .json({
+          success: false,
+          message: "you are not authorized to check it",
+        });
+    }
 
     // Find classrooms where the user is a member
     const classrooms = await Classroom.find({ students: userId }).select("_id");
 
     if (!classrooms.length)
-      return res.status(404).json({ message: "User is not in any classroom." });
+      return res
+        .status(404)
+        .json({ message: "User is not enrolled in any classroom." });
 
     const classroomIds = classrooms.map((c) => c._id);
 
-    // Fetch assignments for all those classrooms
+    // 2. Fetch assignments for all those classrooms
     const assignments = await Assignment.find({
       classroom: { $in: classroomIds },
-    })
-      .populate("classroom", "title")
-      .populate("createdBy", "name")
-      .sort({ dueDate: 1 });
+    });
 
-    console.log("assignments :" + assignments);
+    // 3. Get all submissions by this student for these classroom
+    const submissions = await Submission.find({ student: studentId });
+
+    // Convert submitted assignment IDs into a Set for fast lookup
+    const submittedIds = new Set(
+      submissions.map((s: ISubmission) => s.assignment.toString())
+    );
+
+    // 3. Split into pending + submitted
+    const submitted = assignments.filter((a) =>
+      submittedIds.has(a._id.toString())
+    );
+
+    const pending = assignments.filter(
+      (a) => !submittedIds.has(a._id.toString())
+    );
 
     res.status(200).json({
       success: true,
-      totalAssignments: assignments.length,
-      data: assignments,
+      submitted,
+      pending,
     });
   } catch (error) {
     console.error(error);
-    res
-      .status(500)
-      .json({ message: "Server error while fetching assignments." });
+    res.status(500).json({
+      success: false,
+      message: "Server error while fetching assignments.",
+    });
   }
 };
 
@@ -159,8 +185,7 @@ export const getAssignmentsForInstructor = async (
   }
 };
 
-// @remind
-export const getStudentAssignmentsForClassroom = async (
+export const getStudentAssignmentsInClassroom = async (
   req: Request,
   res: Response
 ) => {
@@ -289,21 +314,24 @@ export const updateAssignment = async (req: Request, res: Response) => {
   }
 };
 
-// ---------------------------------------------------------------
-// export const getAllAssignmentsInClassroomId = async (
-//   req: Request,
-//   res: Response
-// ) => {
-//   const classroomId = req.params.classroomId;
-//   const studentId = req.userId;
-
+// export const getAllAssignmentsInClassroom = async (req: Request, res: Response) => {
 //   try {
-//     const result = await Assignment.aggregate([
+//     const { classroomId } = req.params;
+//     const studentId = req.userId;
+
+//     if (!mongoose.Types.ObjectId.isValid(classroomId)) {
+//       return res.status(400).json({ message: "Invalid classroom id" });
+//     }
+
+//     const assignments = await Assignment.aggregate([
+//       // 1. Match classroom
 //       {
 //         $match: {
 //           classroom: new mongoose.Types.ObjectId(classroomId),
 //         },
 //       },
+
+//       // 2. Lookup student's submission
 //       {
 //         $lookup: {
 //           from: "submissions",
@@ -313,12 +341,9 @@ export const updateAssignment = async (req: Request, res: Response) => {
 //               $match: {
 //                 $expr: {
 //                   $and: [
-//                     { $eq: ["$assignmentId", "$$assignmentId"] },
+//                     { $eq: ["$assignment", "$$assignmentId"] },
 //                     {
-//                       $eq: [
-//                         "$studentId",
-//                         new mongoose.Types.ObjectId(studentId),
-//                       ],
+//                       $eq: ["$student", new mongoose.Types.ObjectId(studentId)],
 //                     },
 //                   ],
 //                 },
@@ -328,135 +353,49 @@ export const updateAssignment = async (req: Request, res: Response) => {
 //           as: "mySubmission",
 //         },
 //       },
+
+//       // 3. Add submission flags
 //       {
 //         $addFields: {
 //           isSubmitted: { $gt: [{ $size: "$mySubmission" }, 0] },
 //           submissionId: { $arrayElemAt: ["$mySubmission._id", 0] },
+//           submittedAt: { $arrayElemAt: ["$mySubmission.createdAt", 0] },
 //         },
 //       },
+
+//       // 4. Cleanup
 //       {
 //         $project: {
 //           mySubmission: 0,
 //         },
 //       },
+
+//       // 5. Sort by due date (optional but useful)
 //       {
-//         $group: {
-//           _id: null,
-//           submitted: {
-//             $push: {
-//               $cond: ["$isSubmitted", "$$ROOT", "$$REMOVE"],
-//             },
-//           },
-//           pending: {
-//             $push: {
-//               $cond: ["$isSubmitted", "$$REMOVE", "$$ROOT"],
-//             },
-//           },
-//         },
-//       },
-//       {
-//         $project: {
-//           _id: 0,
-//           submitted: 1,
-//           pending: 1,
-//         },
+//         $sort: { dueDate: 1 },
 //       },
 //     ]);
 
+//     // 6. Split result
+//     const submitted = [];
+//     const pending = [];
+
+//     for (const a of assignments) {
+//       a.isSubmitted ? submitted.push(a) : pending.push(a);
+//     }
+
 //     return res.status(200).json({
 //       success: true,
-//       data: result[0] || { submitted: [], pending: [] },
+//       data: {
+//         submitted,
+//         pending,
+//       },
 //     });
 //   } catch (error) {
+//     console.error("Assignment status fetch error:", error);
 //     return res.status(500).json({
-//       message: "server error",
+//       success: false,
+//       message: "Failed to fetch assignments",
 //     });
 //   }
 // };
-
-
-export const getAllAssignmentsInClassroomId = async (req: Request, res: Response) => {
-  try {
-    const { classroomId } = req.params;
-    const studentId = req.userId;
-
-    if (!mongoose.Types.ObjectId.isValid(classroomId)) {
-      return res.status(400).json({ message: "Invalid classroom id" });
-    }
-
-    const assignments = await Assignment.aggregate([
-      // 1. Match classroom
-      {
-        $match: {
-          classroom: new mongoose.Types.ObjectId(classroomId),
-        },
-      },
-
-      // 2. Lookup student's submission
-      {
-        $lookup: {
-          from: "submissions",
-          let: { assignmentId: "$_id" },
-          pipeline: [
-            {
-              $match: {
-                $expr: {
-                  $and: [
-                    { $eq: ["$assignment", "$$assignmentId"] },
-                    {
-                      $eq: ["$student", new mongoose.Types.ObjectId(studentId)],
-                    },
-                  ],
-                },
-              },
-            },
-          ],
-          as: "mySubmission",
-        },
-      },
-
-      // 3. Add submission flags
-      {
-        $addFields: {
-          isSubmitted: { $gt: [{ $size: "$mySubmission" }, 0] },
-          submissionId: { $arrayElemAt: ["$mySubmission._id", 0] },
-          submittedAt: { $arrayElemAt: ["$mySubmission.createdAt", 0] },
-        },
-      },
-
-      // 4. Cleanup
-      {
-        $project: {
-          mySubmission: 0,
-        },
-      },
-
-      // 5. Sort by due date (optional but useful)
-      {
-        $sort: { dueDate: 1 },
-      },
-    ]);
-
-    // 6. Split result
-    const submitted = [];
-    const pending = [];
-
-    for (const a of assignments) {
-      a.isSubmitted ? submitted.push(a) : pending.push(a);
-    }
-
-    return res.status(200).json({
-      success: true,
-      data: {
-        submitted,
-        pending,
-      },
-    });
-  } catch (error) {
-    console.error("Assignment status fetch error:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Failed to fetch assignments",
-    });
-  }
-};

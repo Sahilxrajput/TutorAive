@@ -59,10 +59,10 @@ const Home = () => {
         const fetchAssignmnets = async () => {
             try {
                 const { data } = await API.get(`/assignments/student/${user._id}`)
-                //  console.log("assignmnets : ", data)
+                 console.log("assignmnets : ", data)
                 setPendingAssignments(data.pending.length)
-            } catch {
-                console.log("error while fetching assignmnets")
+            } catch(e) {
+                console.log("error while fetching assignmnets", e)
             }
         }
         fetchAssignmnets()
