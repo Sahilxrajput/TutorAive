@@ -22,6 +22,22 @@ export interface IUser {
   enrolledClassrooms?: Types.ObjectId[];
   role: "student" | "instructor" | "admin";
 }
+
+export interface INotification extends Document {
+  user: Types.ObjectId;
+  type: "lecture" | "assignment" | "message" | "system";
+  title: string;
+  message: string;
+  data?: {
+    classroomId?: Types.ObjectId;
+    lectureId?: Types.ObjectId;
+    tweetId?: Types.ObjectId;
+    assignmentId?: Types.ObjectId;
+  };
+  isRead: boolean;
+  createdAt: Date;
+}
+
 export interface IAssignment extends Document {
   classroom: Types.ObjectId;
   title: string;
