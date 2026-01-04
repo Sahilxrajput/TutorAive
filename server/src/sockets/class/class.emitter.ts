@@ -1,13 +1,12 @@
 import { getIO } from "..";
 import {
   AssignmentPayload,
-  ClassUpdatePayload,
-  LectureStatus,
+  LectureUpdatePayload,
 } from "../../types/type";
 
-export function emitClassUpdate(payload: ClassUpdatePayload) {
+export function emitLectureUpdate(payload: LectureUpdatePayload) {
   const socket = getIO();
-
+  console.log("tweet emitter payload", payload);
   if (payload.status === "completed") return;
 
   socket.to(payload.classroomId).emit("lecture:update", payload);

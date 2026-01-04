@@ -3,6 +3,9 @@ import type { ILecture } from "@/types/type";
 import { CalendarRangeIcon, Pencil, Trash } from "lucide-react";
 import { AlertConfirmDialog } from "../AlertConfirmDialog";
 import { formatDateTime } from "@/utils/splitDateTime";
+import { DropdownMenu, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "../ui/dropdown-menu";
+import { DropdownMenuContent } from "@radix-ui/react-dropdown-menu";
+import { EventDropdownMenu } from "./EventDropdownMenu";
 
 
 interface EventCardProps {
@@ -13,7 +16,7 @@ interface EventCardProps {
 }
 
 
-const EventCard = ({ event, onOpen, onDelete, onEdit }: EventCardProps) => {
+const EventCard = ({ event, onOpen }: EventCardProps) => {
     const { isInstructor } = useAuth();
 
 
@@ -35,9 +38,9 @@ const EventCard = ({ event, onOpen, onDelete, onEdit }: EventCardProps) => {
             {/* Date & Time */}
             {/* <div className="flex px-2 w-full items-center justify-between text-sm text-gray-600 dark:text-gray-400"> */}
             <p className="text-sm flex text-gray-600 dark:text-gray-400">
-                    <CalendarRangeIcon className="w-4 h-4" /> &nbsp; {formatDateTime(event.startTime!)}
-                </p>
-                {/* <p className="flex items-center gap-1">
+                <CalendarRangeIcon className="w-4 h-4" /> &nbsp; {formatDateTime(event.newStartTime ?? event.startTime)}
+            </p>
+            {/* <p className="flex items-center gap-1">
                     <Clock className="w-4 h-4" /> {event.timeStr}
                 </p> */}
             {/* </div> */}
@@ -50,26 +53,9 @@ const EventCard = ({ event, onOpen, onDelete, onEdit }: EventCardProps) => {
                 </p>
             </div> */}
 
-            {/* Delete Button (visible on hover) */}
             {isInstructor &&
-                <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center space-x-4">
-                    <button
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            onEdit?.(event._id);
-                        }}
-                        className="text-gray-500 hover:text-gray-600"
-                    >
-                        <Pencil size={16} />
-                    </button>
-                    <AlertConfirmDialog
-                        Icon={Trash}
-                        title="Cancle this lecture?"
-                        description="This action cannot be undone. The lecture will be permanently removed."
-                        confirmText="Delete"
-                        cancelText="Cancel"
-                        onConfirm={() => onDelete?.(event._id)}
-                    />
+                <div className="absolute top-2 right-2 z-20">
+                    <EventDropdownMenu eventId={event._id} />
                 </div>
             }
         </div>

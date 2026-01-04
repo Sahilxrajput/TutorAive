@@ -26,7 +26,6 @@ export interface IUser {
 export interface INotification extends Document {
   user: Types.ObjectId;
   type: "lecture" | "assignment" | "message" | "system";
-  title: string;
   message: string;
   data?: {
     classroomId?: Types.ObjectId;
@@ -199,7 +198,7 @@ export type LectureStatus =
   | "completed"
   | "cancelled";
 
-export interface ClassUpdatePayload {
+export interface LectureUpdatePayload {
   lectureId: string;
   classroomName: string;
   classroomId: string;

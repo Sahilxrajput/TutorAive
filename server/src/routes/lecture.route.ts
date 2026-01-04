@@ -25,7 +25,7 @@ router.use(authMiddleware);
 router.post("/", createLectureValidator, handleValidation, createLecture);
 
 // @ok Delete a lecture by its id. Route param: id
-router.delete("/:id", deleteLecture);
+router.delete("/:id", createLectureValidator, handleValidation, deleteLecture);
 
 // @ok Update an existing lecture by id. Route param: id. Expects updated fields in body.
 router.put("/:id", updateLectureValidator, handleValidation, updateLecture);

@@ -139,6 +139,7 @@ export interface ILecture {
     _id: string;
   };
   startTime: string;
+  newStartTime: string;
   status:
     | "scheduled"
     | "rescheduled"
@@ -202,7 +203,7 @@ export type ClassStatus =
   | "delayed"
   | "cancelled";
 
-export interface ClassUpdatePayload {
+export interface LectureUpdatePayload {
   lectureId: string;
   classroomId: string;
   title: string;

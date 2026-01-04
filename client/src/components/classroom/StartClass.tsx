@@ -4,7 +4,7 @@ import { useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { Calendar as CalendarIcon } from "lucide-react";
 
-import { CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CardContent, CardHeader } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -17,7 +17,6 @@ import {
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import API from "@/lib/api";
-import useSocketContext from "@/hooks/useSocketContext";
 
 function combineDateWithTime(date: Date, time: string) {
     const [hours, minutes] = time.split(":").map(Number);
@@ -27,27 +26,21 @@ function combineDateWithTime(date: Date, time: string) {
 }
 
 interface DateTimePickerProps {
-    id?: string
     showPopup: boolean;
-    action?: "update" | "create";
     setShowPopup: Dispatch<SetStateAction<boolean>>;
 }
 
-export function StartClass({ showPopup, setShowPopup, action = "create", id }: DateTimePickerProps) {
+export function StartClass({ showPopup, setShowPopup }: DateTimePickerProps) {
     const { classroomId } = useParams();
     const [title, setTitle] = useState("");
-    const [date, setDate] = useState<Date>(new Date());
+    const [date, setDate] = useState<Date | undefined>(new Date());
     const [time, setTime] = useState("");
     const [loading, setLoading] = useState(false);
-    // const [scheduledAt, setScheduledAt] = useState<Date | null>(null);
     const [error, setError] = useState<string | null>(null);
 
-    const { socket } = useSocketContext();
 
-    //live, schedule, reschedule, delay, cancle, title update
 
-    //@todo handler reschedule
-    const handleCreate = async (e: React.FormEvent) => {
+    const handleSchedule = async (e: React.FormEvent) => {
         e.preventDefault();
         setError(null);
 
@@ -74,10 +67,9 @@ export function StartClass({ showPopup, setShowPopup, action = "create", id }: D
             console.log("data:", data)
 
 
-
             if (data.success) {
-                // toast.success(data.message);
-                setTimeout(() => setShowPopup(false), 700);
+                toast.success(data.message);
+                setShowPopup(false)
             } else {
                 toast.error(data.message);
             }
@@ -108,7 +100,7 @@ export function StartClass({ showPopup, setShowPopup, action = "create", id }: D
             console.log("data : ", data)
 
             if (data.success) {
-                // toast.success(data.message);
+                toast.success(data.message);
                 setShowPopup(false);
             } else {
                 toast.error(data.message);
@@ -121,80 +113,6 @@ export function StartClass({ showPopup, setShowPopup, action = "create", id }: D
         }
     };
 
-    const handleUpdate = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setError(null);
-
-        if (!id) return setError("Lecture ID missing.");
-
-        const updateBody: {
-            newStartTime?: Date,
-            status?: | "live"
-            | "scheduled"
-            | "rescheduled"
-            | "delayed"
-            | "cancelled",
-            title?: string
-        } = {};
-
-        // Title update (independent)
-        if (title.trim()) {
-            updateBody.title = title.trim();
-        }
-
-        const hasDate = Boolean(date);
-        const hasTime = Boolean(time.trim());
-
-        // Date/time logic
-        if (hasDate || hasTime) {
-            // Partial datetime is not allowed
-            if (!hasDate || !hasTime) {
-                return setError("Please provide both date and time to reschedule.");
-            }
-
-            const combined = combineDateWithTime(date!, time!);
-
-            if (combined.getTime() < Date.now()) {
-                return setError("Scheduled time must be in the future.");
-            }
-
-            updateBody.newStartTime = combined;
-            updateBody.status = "rescheduled";
-        }
-
-        //  Nothing changed
-        if (Object.keys(updateBody).length === 0) {
-            return setError("Please update at least one field.");
-        }
-
-        setLoading(true);
-        try {
-            const { data } = await API.put(`/lectures/${id}`, updateBody);
-
-            if (data.success) {
-                setShowPopup(false);
-            } else {
-                toast.error(data.message);
-            }
-        } catch (err) {
-            console.error(err);
-            setError("Failed to update class. Try again.");
-        } finally {
-            setLoading(false);
-            setTitle("");
-            setDate(undefined);
-            setTime("");
-        }
-    };
-
-
-    const actionDecider = (e: React.FormEvent) => {
-        if (action === "create") {
-            handleCreate(e)
-        } else {
-            handleUpdate(e)
-        }
-    }
 
     return (
         <Dialog open={showPopup} onOpenChange={setShowPopup}>
@@ -205,7 +123,7 @@ export function StartClass({ showPopup, setShowPopup, action = "create", id }: D
                     </DialogTitle>
                 </CardHeader>
                 <CardContent>
-                    <form onSubmit={actionDecider} className="space-y-4">
+                    <form onSubmit={handleSchedule} className="space-y-4">
                         {/* Title */}
                         <div className="space-y-2">
                             <Label htmlFor="title">Class title</Label>
@@ -240,7 +158,9 @@ export function StartClass({ showPopup, setShowPopup, action = "create", id }: D
                                         <Calendar
                                             mode="single"
                                             selected={date}
-                                            onSelect={setDate}
+                                            onSelect={(date) => {
+                                                setDate(date)
+                                            }}
                                             disabled={(d) => d < new Date()}
                                         />
                                     </PopoverContent>
@@ -254,6 +174,7 @@ export function StartClass({ showPopup, setShowPopup, action = "create", id }: D
                                     id="time-picker"
                                     type="time"
                                     value={time}
+                                    defaultValue="10:30:00"
                                     onChange={(e) => setTime(e.target.value)}
                                     step="60"
                                 />
@@ -269,17 +190,17 @@ export function StartClass({ showPopup, setShowPopup, action = "create", id }: D
                                 type="submit"
                                 variant="outline"
                                 disabled={loading}>
-                                {loading ? (action === "update" ? "Updating..." : "Scheduling...")
-                                    : (action === "update" ? "Update class" : "Schedule class")}
+                                {loading ? "Scheduling..."
+                                    : "Schedule class"}
                             </Button>
 
-                            {action === "create" && <Button
+                            <Button
                                 type="button"
                                 onClick={handleStartNow}
                                 disabled={loading}>
-                                {loading ? (action === "create" && "Starting...")
-                                    : (action === "create" && "Start class")}
-                            </Button>}
+                                {loading ? "Starting..."
+                                    : "Start class"}
+                            </Button>
                         </div>
                     </form>
                 </CardContent>

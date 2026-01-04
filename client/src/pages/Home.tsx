@@ -1,12 +1,11 @@
 import API from '@/lib/api';
-import { StartClass } from '@/components/classroom/StartClass';
 import EventCard from '@/components/home/EventCard';
 import LearningCard from '@/components/home/LeaningCard';
 import { Calendar } from '@/components/ui/calendar';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import useAuth from '@/hooks/useAuth';
-import type { AssignmentPayload, ClassUpdatePayload, ILecture } from '@/types/type';
+import type { AssignmentPayload, LectureUpdatePayload, ILecture } from '@/types/type';
 import { formatDateTime } from '@/utils/splitDateTime';
 import { BookHeartIcon, Bookmark, Clock, Rocket } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
@@ -17,8 +16,6 @@ const Home = () => {
     const [date, setDate] = useState<Date | undefined>(new Date());
     const [scheduleLecture, setScheduleLecture] = useState<ILecture[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
-    const [openCalender, setOpenCalender] = useState<boolean>(false)
-    const [eventId, setEventId] = useState<string>('')
     const [pendingAssignments, setPendingAssignments] = useState<number>(0)
 
     const { isInstructor, user } = useAuth()
@@ -48,10 +45,6 @@ const Home = () => {
 
     }
 
-    async function openPopUp(id: string) {
-        setOpenCalender(true);
-        setEventId(id)
-    }
 
     //@remind fetch all assignments here
     useEffect(() => {
@@ -59,9 +52,9 @@ const Home = () => {
         const fetchAssignmnets = async () => {
             try {
                 const { data } = await API.get(`/assignments/student/${user._id}`)
-                 console.log("assignmnets : ", data)
+                console.log("assignmnets : ", data)
                 setPendingAssignments(data.pending.length)
-            } catch(e) {
+            } catch (e) {
                 console.log("error while fetching assignmnets", e)
             }
         }
@@ -102,7 +95,7 @@ const Home = () => {
     useEffect(() => {
         if (!socket) return;
 
-        const handleClassUpdate = (payload: ClassUpdatePayload) => {
+        const handleClassUpdate = (payload: LectureUpdatePayload) => {
             console.log("payload : ", payload)
             // setScheduleLecture()
             switch (payload.status) {
@@ -117,24 +110,24 @@ const Home = () => {
                 //     break;
 
                 case "scheduled":
-                    toast.info("Class scheduled ");
+                    toast.info(`lecture scheduled at ${formatDateTime(payload.startTime)}`);
                     break;
 
                 case "rescheduled":
                     toast.info(
-                        ` ${payload.title} rescheduled\nNew time: ${formatDateTime(payload.startTime)}`
+                        ` ${payload.title} lecture rescheduled\nNew time: ${formatDateTime(payload.startTime)}`
                     );
                     break;
 
                 case "delayed":
                     toast.warning(
-                        ` ${payload.title} delayed\nReason: ${payload.reason}`
+                        ` "${payload.title}" lecture delay`
                     );
                     break;
 
                 case "cancelled":
                     toast.error(
-                        ` ${payload.title} cancelled\nReason: ${payload.reason}`
+                        ` ${payload.title} lecture cancelled\nReason: ${payload.reason}`
                     );
                     break;
 
@@ -221,14 +214,12 @@ const Home = () => {
                             <EventCard key={e._id}
                                 event={e}
                                 onOpen={() => { }}
-                                onEdit={openPopUp}
                                 onDelete={deleteScheduleLecture} />
                         ))
                     ) : (
                         <p className="text-gray-500 text-center">No upcoming lectures</p>
                     )}
                 </div>
-                {openCalender && <StartClass id={eventId} showPopup={openCalender} setShowPopup={setOpenCalender} action='update' />}
             </section>
         </main>
     );
