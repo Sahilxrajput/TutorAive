@@ -11,17 +11,16 @@ import {
   saveAssignment,
 } from "../controllers/assignment.controller";
 import authMiddleware from "../Middlewares/auth.middleware";
-import {
-  isClassroomCreator,
-  isInstructor,
-} from "../Middlewares/Instructor.middleware";
+import { isInstructor } from "../Middlewares/Instructor.middleware";
 import { upload } from "../lib/cloudinary";
 import { isEnrolled } from "../Middlewares/isEnrolled.middleware";
 import {
   classroomIdParamValidator,
   idParamValidator,
+  saveAssignmentValidator,
 } from "../validators/classroom.validator";
 import { handleValidation } from "../Middlewares/handleValidation";
+import { body, param } from "express-validator";
 
 const router = express.Router();
 
@@ -39,30 +38,26 @@ router.get(
   getStudentAssignmentsInClassroom
 );
 
-router.get("/:id", isEnrolled, getAssignmentById); 
+router.get("/:id", isEnrolled, getAssignmentById);
 
 // Instructor-only routes
 // router.use(isInstructor); //@check no need
 
+router.post("/:classroomId/cloudinary/signature", cloudinarySignature);
+
 router.post(
-  "/:classroomId/cloudinary/signature",
-  isClassroomCreator,
-  cloudinarySignature
+  "/:classroomId/save",
+  saveAssignmentValidator,
+  handleValidation, // This middleware should check validationResult(req)
+  saveAssignment
 );
-
-router.post("/:classroomId/save", isClassroomCreator, saveAssignment);
-
 //get all assignments of classroom -> for instructor
-router.get(
-  "/classroom/:classroomId",
-  isClassroomCreator,
-  getAssignmentsByClassroomId
-);
+router.get("/classroom/:classroomId", getAssignmentsByClassroomId);
 
 //get all assignments of all classroom created by instructor
 router.get("/instructor", getAssignmentsForInstructor);
 
-router.put("/:id", updateAssignment);
+// router.put("/:id", updateAssignment);
 router.delete("/:id", deleteAssignment);
 
 export default router;

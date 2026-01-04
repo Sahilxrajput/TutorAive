@@ -32,7 +32,6 @@ const NotificationSchema = new Schema<INotification>(
   { timestamps: { createdAt: true, updatedAt: false } }
 );
 
-export const Notification = models.Notification || model<INotification>(
-  "Notification",
-  NotificationSchema
-);
+export const Notification =
+  models.Notification ||
+  model<INotification>("Notification", NotificationSchema);

@@ -1,6 +1,5 @@
 import { body, param } from "express-validator";
 
-
 export const createClassroomValidator = [
   body("title")
     .trim()
@@ -29,10 +28,7 @@ export const createClassroomValidator = [
     .isArray()
     .withMessage("Tags must be an array of strings"),
 
-  body("tags.*")
-    .optional()
-    .isString()
-    .withMessage("Each tag must be a string"),
+  body("tags.*").optional().isString().withMessage("Each tag must be a string"),
 
   body("settings.maxStudents")
     .optional()
@@ -98,7 +94,7 @@ export const createClassScheduleValidator = [
   body("status")
     .optional()
     .isIn(["scheduled", "completed", "cancelled"])
-    .withMessage("Status must be one of scheduled, completed, or cancelled")
+    .withMessage("Status must be one of scheduled, completed, or cancelled"),
 ];
 
 export const updateClassroomValidator = [
@@ -119,7 +115,10 @@ export const joinClassroomByCodeValidator = [
 ];
 
 export const joinClassroomValidator = [
-  body("classroomId").isMongoId().notEmpty().withMessage("classroomId is required and must be valid mongoId"),
+  body("classroomId")
+    .isMongoId()
+    .notEmpty()
+    .withMessage("classroomId is required and must be valid mongoId"),
 ];
 
 export const idParamValidator = [
@@ -127,4 +126,40 @@ export const idParamValidator = [
 ];
 export const classroomIdParamValidator = [
   param("classroomId").isMongoId().withMessage("Invalid mongo ID"),
+];
+
+export const saveAssignmentValidator = [
+  // Validate the URL Parameter
+  param("classroomId").isMongoId().withMessage("Invalid Classroom ID"),
+
+  // Validate the Body
+  body("title").trim().notEmpty().withMessage("Assignment title is required"),
+
+  body("description")
+    .trim()
+    .notEmpty()
+    .withMessage("Assignment description is required"),
+
+  body("pdfUrl").isURL().withMessage("A valid PDF URL is required"),
+
+  body("public_id").notEmpty().withMessage("Public ID is required"),
+
+  body("maxPoints")
+    .notEmpty()
+    .withMessage("Max points are required")
+    .isInt({ min: 1 })
+    .withMessage("Points must be a positive integer"),
+
+  body("dueDate")
+    .notEmpty()
+    .withMessage("Due date is required")
+    .isISO8601()
+    .withMessage("Due date must be a valid ISO 8601 date")
+    .toDate()
+    .custom((value) => {
+      if (value < new Date()) {
+        throw new Error("Due date cannot be in the past");
+      }
+      return true;
+    }),
 ];

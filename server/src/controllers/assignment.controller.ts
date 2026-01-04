@@ -1,16 +1,84 @@
 import { Request, Response } from "express";
 import Assignment from "../models/assignment.model";
 import Classroom from "../models/classroom.model";
-import mongoose from "mongoose";
+import mongoose, { Types } from "mongoose";
 import Submission from "../models/submission.model";
-import { ISubmission } from "../types/type";
+import {
+  IAssignment,
+  IClassroom,
+  INotification,
+  ISubmission,
+} from "../types/type";
 import { cloudinary } from "../lib/cloudinary";
-import { addAssignmentNotificationJob } from "../redis/queue";
 import { emitAssignmentUpdate } from "../sockets/class/class.emitter";
+import { Notification } from "../models/notification.model";
+import { addAssignmentNotificationJob } from "../redis/queue";
 
-export const cloudinarySignature = async (_: Request, res: Response) => {
+// --- Helper function for Authorization checks ---
+type AuthorizeParams = {
+  req: Request;
+  res: Response;
+  assignmentId?: string;
+  classroomId?: string;
+};
+
+export const authorizeOwner = async ({
+  req,
+  res,
+  assignmentId,
+  classroomId,
+}: AuthorizeParams)  => {
+  try {
+    let item = null;
+
+    // 1. Fetch based on what ID is provided
+    if (assignmentId) {
+      item = await Assignment.findById(assignmentId).populate("classroom");
+    } else if (classroomId) {
+      item = await Classroom.findById(classroomId);
+    }
+
+    // 2. Uniform Not Found Check
+    if (!item) {
+      const entity = assignmentId ? "Assignment" : "Classroom";
+      res.status(404).json({ success: false, message: `${entity} not found` });
+      return null;
+    }
+
+    // 3. Authorization Logic
+    // If it's a assignment, we check the owner of the assignment.
+    // If it's a classroom, we check the owner of the classroom.
+    const ownerId = item.createdBy?.toString();
+
+    if (ownerId !== req.userId) {
+      res.status(403).json({
+        success: false,
+        message: "You do not have permission to modify this resource",
+      });
+      return null;
+    }
+
+    return item;
+  } catch (error) {
+    // Catching casting errors (e.g., invalid MongoDB ObjectIds)
+    res
+      .status(400)
+      .json({ success: false, message: "Invalid ID format provided" });
+    return null;
+  }
+};
+
+export const cloudinarySignature = async (req: Request, res: Response) => {
   try {
     const { CLOUD_API_KEY, CLOUD_NAME, CLOUD_API_SECRET } = process.env;
+    const { classroomId } = req.params;
+
+    const classroom = await authorizeOwner({
+      req,
+      res,
+      classroomId,
+    });
+    if (!classroom) return;
 
     const timestamp = Math.floor(Date.now() / 1000);
     // const folder = "tweets";
@@ -53,42 +121,59 @@ export const saveAssignment = async (req: Request, res: Response) => {
 
     const { classroomId } = req.params;
 
-    if (!title || !dueDate || !pdfUrl || !public_id) {
-      return res.status(400).json({ message: "Missing required fields" });
-    }
+    // 1. Authorization Check
+    const classroomDoc = await authorizeOwner({ req, res, classroomId });
+    if (!classroomDoc) return;
 
+    // 2. Create Assignment
     const assignment = await Assignment.create({
       classroom: classroomId,
       title,
       description,
       dueDate: new Date(dueDate),
       createdBy: req.userId,
-      maxPoints: Number(maxPoints),
+      maxPoints: Number(maxPoints) || 0,
       file: {
         url: pdfUrl,
         public_id,
         resource_type,
       },
-      status: "pending",
     });
 
-    // socker event
+    // 3. Socket Event (Real-time update)
     emitAssignmentUpdate({
       classroomId,
-      classroomTitle: req.classroomTitle!,
+      classroomTitle: classroomDoc.title,
       assignmentId: assignment._id.toString(),
       title: assignment.title,
       dueDate,
     });
 
-    // message queue
-    await addAssignmentNotificationJob({
-      classroomId,
-      classroomTitle: req.classroomTitle!,
-      assignmentId: assignment._id,
-      title,
-      dueDate,
-    });
+    const students = classroomDoc.students || [];
+
+    // 4. Bulk Notification Persistence
+    if (students.length > 0) {
+      const notificationDocs = students.map((studentId: Types.ObjectId) => ({
+        user: studentId,
+        type: "assignment",
+        message: `New assignment "${assignment.title}" posted in classroom ${classroomDoc.title}`,
+        data: {
+          assignmentId: assignment._id,
+          classroomId: classroomDoc._id,
+        },
+      }));
+
+      await Notification.insertMany(notificationDocs);
+    }
+
+    // 5. Message Queue (Email/Push Notifications)
+    // await addAssignmentNotificationJob({
+    //   classroomId,
+    //   classroomTitle: classroom.title,
+    //   assignmentId: assignment._id,
+    //   title,
+    //   dueDate,
+    // });
 
     return res.status(201).json({
       success: true,
@@ -110,12 +195,10 @@ export const getAssignmentsOfStudent = async (req: Request, res: Response) => {
 
     //@todo move it to a middleware
     if (studentId !== userId && req.userRole !== "instructor") {
-      return res
-        .status(403)
-        .json({
-          success: false,
-          message: "you are not authorized to check it",
-        });
+      return res.status(403).json({
+        success: false,
+        message: "you are not authorized to check it",
+      });
     }
 
     // Find classrooms where the user is a member
@@ -240,6 +323,13 @@ export const getAssignmentsByClassroomId = async (
   res: Response
 ) => {
   try {
+    const classroom = await authorizeOwner({
+      req,
+      res,
+      classroomId: req.params.classroomId,
+    });
+    if (!classroom) return;
+
     const assignments = await Assignment.find({
       classroom: req.params.classroomId,
     });
@@ -256,13 +346,12 @@ export const getAssignmentsByClassroomId = async (
 // Delete assignment (instructor only)
 export const deleteAssignment = async (req: Request, res: Response) => {
   try {
-    const assignment = await Assignment.findById(req.params.id);
-
-    if (assignment.createdBy.toString() !== req.userId) {
-      return res
-        .status(403)
-        .json({ error: "Not authorized to delete this assignmnet" });
-    }
+    const assignment = await authorizeOwner({
+      req,
+      res,
+      assignmentId: req.params.id,
+    });
+    if (!assignment) return;
 
     // Delete Cloudinary image if exists
     if (assignment?.file?.public_id) {
@@ -270,6 +359,7 @@ export const deleteAssignment = async (req: Request, res: Response) => {
     }
 
     await Assignment.findByIdAndDelete(req.params.id);
+    
     res
       .status(200)
       .json({ success: true, message: "Assignment deleted successfully" });
@@ -284,6 +374,7 @@ export const deleteAssignment = async (req: Request, res: Response) => {
   }
 };
 
+//@todo
 export const updateAssignment = async (req: Request, res: Response) => {
   try {
     const assignment = await Assignment.findById(req.params.id);

@@ -45,16 +45,15 @@ type AuthorizeParams = {
   lectureId?: string;
   classroomId?: string;
 };
-type AuthorizedItem = (ILecture & { classroom: IClassroom }) | IClassroom;
 
 export const authorizeOwner = async ({
   req,
   res,
   lectureId,
   classroomId,
-}: AuthorizeParams): Promise<AuthorizedItem | null> => {
+}: AuthorizeParams) => {
   try {
-    let item: AuthorizedItem | null = null;
+    let item = null;
 
     // 1. Fetch based on what ID is provided
     if (lectureId) {
@@ -92,15 +91,13 @@ export const authorizeOwner = async ({
     return null;
   }
 };
+
 /*  Helper fxn */
-const handleLectureNotifications = async (lecture: any, actorId: string) => {
+const handleLectureNotifications = async (lecture: any) => {
   try {
     const students = lecture.classroom?.students || [];
-    const recipientIds = students.filter(
-      (id: Types.ObjectId) => id.toString() !== actorId
-    );
 
-    if (recipientIds.length === 0) return;
+    if (students.length === 0) return;
 
     // Prepare Payload for Socket
     const payload: LectureUpdatePayload = {
@@ -115,7 +112,7 @@ const handleLectureNotifications = async (lecture: any, actorId: string) => {
     emitLectureUpdate(payload);
 
     // Persist Notifications in Bulk
-    const notificationDocs = recipientIds.map((studentId: any) => ({
+    const notificationDocs = students.map((studentId: any) => ({
       user: studentId,
       type: "lecture",
       message: `Lecture "${lecture.title}" is now ${lecture.status}`,
@@ -164,7 +161,7 @@ export const createLecture = async (req: Request, res: Response) => {
     newLecture.classroom = classroom;
 
     // Fire and forget background tasks
-    handleLectureNotifications(newLecture, req.userId!, "created");
+    handleLectureNotifications(newLecture);
 
     return res.status(201).json({
       success: true,
@@ -184,6 +181,8 @@ export const updateLecture = async (req: Request, res: Response) => {
       res,
       lectureId: req.params.id,
     });
+    if (!lecture) return;
+
     if (title && title !== lecture.title) {
       lecture.title = title;
     }
@@ -226,7 +225,7 @@ export const updateLecture = async (req: Request, res: Response) => {
 
     // Background notifications
     if (status && status !== "completed") {
-      handleLectureNotifications(lecture, req.userId!);
+      handleLectureNotifications(lecture);
     }
   } catch (error) {
     handleError(res, error);
@@ -241,9 +240,6 @@ export const deleteLecture = async (req: Request, res: Response) => {
       lectureId: req.params.id,
     });
     if (!lecture) return;
-
-    // Notify BEFORE deletion so we still have the lecture data in memory
-    handleLectureNotifications(lecture, req.userId!, "deleted");
 
     await Lecture.findByIdAndDelete(lecture._id);
 
