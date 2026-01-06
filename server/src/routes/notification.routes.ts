@@ -13,7 +13,7 @@ router.use(authMiddleware);
 
 router.get("/", getMyNotifications);
 router.get("/unread-count", getUnreadCount);
-router.patch("/:id/read", markAsRead);
-router.patch("/read-all", markAllAsRead);
+router.patch("/:id/mark-read", markAsRead);
+router.patch("/mark-all-read", markAllAsRead);
 
 export default router;

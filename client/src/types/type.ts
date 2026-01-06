@@ -11,6 +11,21 @@ export interface IUser {
   profilePicture?: string;
 }
 
+export interface INotification {
+  _id: string;
+  user: string;
+  type: "lecture" | "assignment" | "message" | "system";
+  message: string;
+  data?: {
+    classroomId?: string;
+    lectureId?: string;
+    tweetId?: string;
+    assignmentId?: string;
+  };
+  isRead: boolean;
+  createdAt: Date;
+}
+
 export interface ISocketContextValue {
   socket: ReturnType<typeof useSocket>["socket"];
   isConnected: boolean;
@@ -138,6 +153,25 @@ export interface ILecture {
     title: string;
     _id: string;
   };
+  startTime: string;
+  newStartTime: string;
+  status:
+    | "scheduled"
+    | "rescheduled"
+    | "live"
+    | "delayed"
+    | "completed"
+    | "cancelled";
+  title: string;
+  createdBy?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+// Example of how you might use this in your Service
+export interface ILectureWOPopulate {
+  _id: string;
+  classroom: string; // Now stores only the classroom ID
   startTime: string;
   newStartTime: string;
   status:

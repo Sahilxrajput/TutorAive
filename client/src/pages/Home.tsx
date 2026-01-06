@@ -161,16 +161,17 @@ const Home = () => {
     useEffect(() => {
         if (!socket) return;
 
-        socket.on("tweet:mention", (payload) => {
+        socket.on("tweet:update", (payload) => {
             console.log("Mention received:", payload);
-            toast.info(payload.msg);
+            toast.success(payload.msg);
         });
 
         return () => {
-            socket.off("tweet:mention");
+            socket.off("tweet:update");
         };
     }, [socket]);
 
+    
 
     return (
         <main className="h-screen flex p-4">

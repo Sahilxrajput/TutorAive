@@ -1,11 +1,9 @@
 import useAuth from "@/hooks/useAuth";
-import type { ILecture } from "@/types/type";
-import { CalendarRangeIcon, Pencil, Trash } from "lucide-react";
-import { AlertConfirmDialog } from "../AlertConfirmDialog";
+import type { ILecture, ILectureWOPopulate } from "@/types/type";
+import { CalendarRangeIcon } from "lucide-react";
 import { formatDateTime } from "@/utils/splitDateTime";
-import { DropdownMenu, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "../ui/dropdown-menu";
-import { DropdownMenuContent } from "@radix-ui/react-dropdown-menu";
 import { EventDropdownMenu } from "./EventDropdownMenu";
+import { useEffect } from "react";
 
 
 interface EventCardProps {
@@ -14,7 +12,6 @@ interface EventCardProps {
     onDelete?: (id: string) => void;
     onEdit?: (id: string) => void;
 }
-
 
 const EventCard = ({ event, onOpen }: EventCardProps) => {
     const { isInstructor } = useAuth();
@@ -55,7 +52,7 @@ const EventCard = ({ event, onOpen }: EventCardProps) => {
 
             {isInstructor &&
                 <div className="absolute top-2 right-2 z-20">
-                    <EventDropdownMenu eventId={event._id} />
+                    <EventDropdownMenu classroomId={event.classroom._id ?? event.classroom} eventId={event._id} />
                 </div>
             }
         </div>

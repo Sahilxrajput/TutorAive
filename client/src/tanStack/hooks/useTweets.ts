@@ -142,8 +142,6 @@ export const useRepostTweet = () => {
         type,
         author: user!,
         createdAt: new Date().toISOString(),
-        // timeStr: "123",
-        // dateStr: "123",
       };
 
       qc.setQueryData<ITweet[]>(CACHE_KEY_TWEETS, (prev = []) => [

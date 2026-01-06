@@ -26,6 +26,7 @@ export const createLectureValidator = [
 export const updateLectureValidator = [
   /* ---------------- PARAM ---------------- */
   param("id").isMongoId().withMessage("Invalid lecture ID"),
+//   param("classroomId").isMongoId().withMessage("Invalid classroom ID"),
 
   /* ---------------- BASIC FIELDS ---------------- */
   body("title")

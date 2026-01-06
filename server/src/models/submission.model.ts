@@ -16,7 +16,7 @@ const submissionSchema = new Schema<ISubmission>(
     },
     status: {
       type: String,
-      enum: ["submitted", "checked"],
+      enum: ["submitted", "graded"],
       default: "submitted",
     },
     content: String,

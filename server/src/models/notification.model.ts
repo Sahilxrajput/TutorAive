@@ -23,6 +23,7 @@ const NotificationSchema = new Schema<INotification>(
       tweetId: { type: Schema.Types.ObjectId, ref: "Tweet" },
       lectureId: { type: Schema.Types.ObjectId, ref: "Lecture" },
       assignmentId: { type: Schema.Types.ObjectId, ref: "Assignment" },
+      reason:String,
     },
     isRead: {
       type: Boolean,

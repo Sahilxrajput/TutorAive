@@ -18,6 +18,7 @@ import assignmentRoutes from "./routes/assignment.routes";
 import submissionRoutes from "./routes/submission.routes";
 import paymentRoutes from "./routes/payment.routes";
 import quizRouter from "./routes/quiz.routes";
+import notificationsRouter from "./routes/notification.routes";
 import genearteQrCode from "./utils/generateQrCode";
 import notesRouter from "./routes/note.routes";
 import lectureRouter from "./routes/lecture.route";
@@ -73,6 +74,7 @@ app.use("/api/classrooms", classRouter);
 app.use("/api/invitations", invitationRouter);
 app.use("/api/lectures", lectureRouter); // all required auth
 app.use("/api/notes", notesRouter); // all required auth
+app.use("/api/notifications", notificationsRouter);
 app.use("/api/payment", paymentRoutes);
 app.use("/api/quizs", quizRouter);
 app.use("/api/submissions", submissionRoutes);

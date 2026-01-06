@@ -1,5 +1,5 @@
 import { Queue } from "bullmq";
-import { LectureStatus } from "../types/type";
+import { IAssignmentNotificationJob, IClassNotificationJob, ITweetNotificationJob, LectureStatus } from "../types/type";
 
 const notificationQueue = new Queue("notifications", {
   connection: {
@@ -15,13 +15,7 @@ export const addAssignmentNotificationJob = async ({
   assignmentId,
   title,
   dueDate,
-}: {
-  classroomId: string;
-  classroomTitle: string;
-  assignmentId: string;
-  title: string;
-  dueDate: string;
-}) => {
+}:IAssignmentNotificationJob) => {
   await notificationQueue.add(
     "assignment-notification",
     { assignmentId, classroomId, classroomTitle, title, dueDate },
@@ -40,18 +34,15 @@ export const addAssignmentNotificationJob = async ({
 
 export const addClassNotificationJob = async ({
   classroomId,
+  startTime,
+  reason,
   lectureId,
   status,
   title,
-}: {
-  classroomId: string;
-  lectureId: string;
-  title: string;
-  status: LectureStatus;
-}) => {
+}: IClassNotificationJob) => {
   await notificationQueue.add(
     "class-notification",
-    { lectureId, classroomId, title, status },
+    { lectureId, startTime, reason, classroomId, title, status },
     {
       attempts: 5,
       backoff: {
@@ -64,6 +55,36 @@ export const addClassNotificationJob = async ({
   );
   console.log("added in class queue : ");
 };
+
+export const addTweetNotificationJob = async ({
+  userId,
+  tweetId,
+  actorName,
+  action,
+}:ITweetNotificationJob ) => {
+  await notificationQueue.add(
+    "tweet-notification",
+    {
+      userId,
+      tweetId,
+      actorName,
+      action,
+    },
+    {
+      attempts: 5,
+      backoff: {
+        type: "exponential",
+        delay: 3000,
+      },
+      removeOnComplete: true,
+      removeOnFail: false,
+    }
+  );
+
+  console.log("added in tweet notification queue");
+};
+
+
 
 notificationQueue.on("waiting", (jobId) =>
   console.log(`class Job ${jobId} is waiting`)

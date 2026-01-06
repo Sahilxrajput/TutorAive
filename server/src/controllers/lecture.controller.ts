@@ -10,7 +10,7 @@ import {
   LectureStatus,
   ILecture,
 } from "../types/type";
-import { emitLectureUpdate } from "../sockets/class/class.emitter";
+import { emitLectureNotification } from "../sockets/class/class.emitter";
 import { Notification } from "../models/notification.model";
 import { Types } from "mongoose";
 
@@ -92,50 +92,6 @@ export const authorizeOwner = async ({
   }
 };
 
-/*  Helper fxn */
-const handleLectureNotifications = async (lecture: any) => {
-  try {
-    const students = lecture.classroom?.students || [];
-
-    if (students.length === 0) return;
-
-    // Prepare Payload for Socket
-    const payload: LectureUpdatePayload = {
-      lectureId: lecture._id.toString(),
-      classroomName: lecture.classroom.title || "Classroom",
-      classroomId: lecture.classroom._id.toString(),
-      title: lecture.title,
-      status: lecture.status,
-      startTime: lecture.startTime.toISOString(),
-    };
-
-    emitLectureUpdate(payload);
-
-    // Persist Notifications in Bulk
-    const notificationDocs = students.map((studentId: any) => ({
-      user: studentId,
-      type: "lecture",
-      message: `Lecture "${lecture.title}" is now ${lecture.status}`,
-      data: {
-        lectureId: lecture._id,
-        classroomId: lecture.classroom._id,
-      },
-    }));
-
-    await Promise.all([Notification.insertMany(notificationDocs)]);
-
-    // Trigger Email Queue
-    // await addClassNotificationJob({
-    //   classroomId: lecture.classroom._id.toString(),
-    //   lectureId: lecture._id.toString(),
-    //   title: lecture.title,
-    //   status: lecture.status,
-    // });
-  } catch (err) {
-    console.error("Notification Error:", err);
-  }
-};
-
 export const createLecture = async (req: Request, res: Response) => {
   try {
     const { title, status, startTime, classroomId } = req.body;
@@ -161,7 +117,12 @@ export const createLecture = async (req: Request, res: Response) => {
     newLecture.classroom = classroom;
 
     // Fire and forget background tasks
-    handleLectureNotifications(newLecture);
+    addClassNotificationJob({
+      classroomId,
+      lectureId: newLecture._id.toString(),
+      status,
+      title,
+    });
 
     return res.status(201).json({
       success: true,
@@ -176,10 +137,17 @@ export const createLecture = async (req: Request, res: Response) => {
 export const updateLecture = async (req: Request, res: Response) => {
   try {
     const { status, title, newStartTime, delayTime, reason } = req.body;
+    const { id: lectureId, classroomId } = req.params;
+
+    console.log("classroomId: ", classroomId);
+    console.log("lectureId: ", lectureId);
+    console.log("status: ", status);
+    console.log("title: ", title);
+
     const lecture = await authorizeOwner({
       req,
       res,
-      lectureId: req.params.id,
+      lectureId,
     });
     if (!lecture) return;
 
@@ -187,6 +155,8 @@ export const updateLecture = async (req: Request, res: Response) => {
       lecture.title = title;
     }
     if (title) lecture.title = title;
+
+    let notificationTime: Date | undefined;
 
     if (status) {
       const allowedNext =
@@ -202,18 +172,40 @@ export const updateLecture = async (req: Request, res: Response) => {
           lecture.startTime.getTime() + delayTime * 60000
         );
         lecture.delayReason = reason;
-      } else if (status === "cancelled") {
-        lecture.cancelReason = reason;
-      } else if (
-        ["scheduled", "rescheduled"].includes(status) &&
-        newStartTime
-      ) {
-        lecture.startTime = new Date(newStartTime);
+        notificationTime = lecture.startTime;
       }
+
+      if (status === "cancelled") {
+        lecture.cancelReason = reason;
+      }
+
+      if (status === "rescheduled" && newStartTime) {
+        lecture.startTime = new Date(newStartTime);
+        lecture.rescheduleReason = reason;
+        notificationTime = lecture.startTime;
+      }
+
       lecture.status = status;
     }
 
     await lecture.save();
+    const newTime = lecture.newStartTime ?? lecture.startTime;
+
+    // Fire and forget background tasks
+    if (status && status !== "completed") {
+      addClassNotificationJob({
+        classroomId: lecture.classroom._id.toString(),
+        lectureId: lecture._id.toString(),
+        title: lecture.title,
+        status: lecture.status,
+
+        // send ONLY if meaningful
+        ...(notificationTime && {
+          startTime: notificationTime.toISOString(),
+        }),
+        ...(reason && { reason }),
+      });
+    }
 
     res.json({
       success: true,
@@ -222,11 +214,6 @@ export const updateLecture = async (req: Request, res: Response) => {
         : `Lecture title changed to ${lecture.title}`,
       lecture,
     });
-
-    // Background notifications
-    if (status && status !== "completed") {
-      handleLectureNotifications(lecture);
-    }
   } catch (error) {
     handleError(res, error);
   }

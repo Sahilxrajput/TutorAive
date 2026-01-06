@@ -1,12 +1,12 @@
 import { Request, Response } from "express";
 import Tweet from "../models/tweet.model";
 import { cloudinary } from "../lib/cloudinary";
-import {
-  emitTweetUpdate,
-  emitUserMention,
-} from "../sockets/class/class.emitter";
+import { emitTweetNotification } from "../sockets/class/class.emitter";
 import { extractMentionedUserIds } from "../utils/extractMentionIds";
 import { Types } from "mongoose";
+import { Notification } from "../models/notification.model";
+import { ITweetNotificationJob } from "../types/type";
+import { addTweetNotificationJob } from "../redis/queue";
 
 const handleError = (
   res: Response,
@@ -74,15 +74,40 @@ export const createTweet = async (req: Request, res: Response) => {
 
     console.log("tweet", tweet);
 
-    //  Emit mention notification to each mentioned user
-    mentionedUserIds.forEach((mentionId: Types.ObjectId) => {
-      emitUserMention({
-        mentionId: mentionId.toString(),
-        tweetId: tweet._id.toString(),
-        createdAt: tweet.createdAt,
-        msg: `${req.userName} mentioned you in a post`,
-      });
-    });
+    if (mentionedUserIds.length > 0) {
+        for (const mentionId of mentionedUserIds) {
+            await addTweetNotificationJob({
+                userId: mentionId.toString(),
+                tweetId: tweet._id.toString(),
+                actorName: req.userName ?? "someone",
+                action: "mention",
+            });
+        }
+    }
+
+        // emitTweetNotification({
+        //   userId: mentionId.toString(),
+        //   tweetId: tweet._id.toString(),
+        //   msg: `${req.userName} mentioned you in a post`,
+        // });
+
+
+      // Persist Notifications in Bulk (Tweet Mentions)
+      //   const notificationDocs = mentionedUserIds.map(
+      //     (userId: Types.ObjectId) => ({
+      //       user: userId,
+      //       type: "message", // correct semantic type
+      //       message: `You were mentioned in a tweet`,
+      //       data: {
+      //         tweetId: tweet._id,
+      //       },
+      //     })
+      //   );
+
+    //   if (notificationDocs.length > 0) {
+    //     await Notification.insertMany(notificationDocs);
+    //   }
+    // }
 
     return res.status(201).json({
       success: true,
@@ -173,15 +198,27 @@ export const toggleLikeTweet = async (req: Request, res: Response) => {
 
     // Convert all like IDs to string & check toggle state
     const alreadyLiked = tweet.likes.some(
-      (id: any) => id.toString() === userId
+      (id: Types.ObjectId) => id.toString() === userId
     );
 
     if (alreadyLiked) {
       // Remove like
-      tweet.likes = tweet.likes.filter((id: any) => id.toString() !== userId);
+      tweet.likes = tweet.likes.filter(
+        (id: Types.ObjectId) => id.toString() !== userId
+      );
     } else {
       // Add like
       tweet.likes.push(userId);
+
+      // Notify tweet author (only if not self-like)
+      if (tweet.author.toString() !== userId) {
+        addTweetNotificationJob({
+          actorName: req.userName ?? "someone",
+          userId: tweet.author.toString(),
+          tweetId: tweet._id.toString(),
+          action: "like",
+        });
+      }
     }
 
     const updatedTweets = await tweet.save();
@@ -205,15 +242,22 @@ export const repostTweet = async (req: Request, res: Response) => {
       return res.status(404).json({ error: "Tweet not found" });
     }
 
-    const userContent = req.body.content?.trim();
-    const userType = req.body.type?.trim();
-
     const repost = await Tweet.create({
-      type: userType || "general",
+      type: req.body.type || "general",
       author: req.userId,
       parentTweet: originalTweet._id,
-      content: userContent || undefined,
+      content: req.body.content?.trim() ?? undefined,
     });
+
+    // Notify original author (if not self)
+    if (originalTweet.author.toString() !== req.userId) {
+      addTweetNotificationJob({
+        actorName: req.userName ?? "someone",
+        userId: originalTweet.author.toString(),
+        tweetId: originalTweet._id.toString(),
+        action: "repost",
+      });
+    }
 
     return res.status(201).json({
       success: true,

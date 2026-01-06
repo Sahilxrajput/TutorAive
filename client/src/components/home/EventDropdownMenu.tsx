@@ -24,7 +24,7 @@ import { Textarea } from "@/components/ui/textarea"
 import API from "@/lib/api"
 import { toast } from "sonner"
 
-export function EventDropdownMenu({ eventId }: { eventId: string }) {
+export function EventDropdownMenu({ eventId, classroomId }: { eventId: string, classroomId: string }) {
     const [dialogType, setDialogType] = useState<"delay" | "reschedule" | "cancel" | "title" | null>(null)
     const [title, setTitle] = useState("")
     const [reason, setReason] = useState("")
@@ -45,7 +45,7 @@ export function EventDropdownMenu({ eventId }: { eventId: string }) {
             return toast.warning("Delay reason is required");
         }
 
-        const { data } = await API.put(`/lectures/${eventId}`, {
+        const { data } = await API.put(`/classrooms/${classroomId}/lectures/${eventId}`, {
             status: "delayed",
             delayTime: Number(timeValue),
             reason,
@@ -67,7 +67,7 @@ export function EventDropdownMenu({ eventId }: { eventId: string }) {
             return toast.warning("New time must be in the future");
         }
 
-        const { data } = await API.put(`/lectures/${eventId}`, {
+        const { data } = await API.put(`/classrooms/${classroomId}/lectures/${eventId}`, {
             status: "rescheduled",
             newStartTime: date.toISOString(),
             reason,
@@ -81,7 +81,7 @@ export function EventDropdownMenu({ eventId }: { eventId: string }) {
             return toast.warning("Cancel reason is required");
         }
 
-        const { data } = await API.put(`/lectures/${eventId}`, {
+        const { data } = await API.put(`/classrooms/${classroomId}/lectures/${eventId}`, {
             status: "cancelled",
             reason,
         });
@@ -119,7 +119,7 @@ export function EventDropdownMenu({ eventId }: { eventId: string }) {
             return alert("Title cannot be empty");
         }
 
-        const { data } = await API.put(`/lectures/${eventId}`, {
+        const { data } = await API.put(`/classrooms/${classroomId}/lectures/${eventId}`, {
             title: title.trim(),
         });
 

@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import Submission from "../models/submission.model";
+import Assignment from "../models/assignment.model";
 
 // Save assignment
 export const saveSubmission = async (req: Request, res: Response) => {
@@ -31,7 +32,7 @@ export const saveSubmission = async (req: Request, res: Response) => {
       data: submission,
     });
   } catch (err: any) {
-    console.log(err)
+    console.log(err);
     return res.status(500).json({
       success: false,
       message: "Server error uploading submission",
@@ -97,17 +98,33 @@ export const gradeSubmission = async (req: Request, res: Response) => {
   try {
     const { marks, feedback } = req.body;
 
-    const submission = await Submission.findByIdAndUpdate(
-      req.params.id,
-      { marks, feedback },
-      { new: true }
+    const submission = await Submission.findById(req.params.id).populate(
+      "assignmentId"
     );
 
-    if (!submission)
+    if (!submission) {
       return res.status(404).json({ message: "Submission not found" });
+    }
 
-    res.json(submission);
-  } catch (err: any) {
-    res.status(500).json({ message: err.message });
+    const assignmentCreatorId = submission.assignmentId.createdBy.toString();
+
+    if (assignmentCreatorId !== req.userId) {
+      return res.status(403).json({
+        message: "Unauthorized: Only the assignment creator can grade this.",
+      });
+    }
+
+    submission.marks = marks;
+    submission.feedback = feedback;
+    submission.status = "graded";
+
+    //@todo send a msg after grade the submission
+    await submission.save();
+
+    return res.status(200).json({ message: "Graded successfully", submission });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "Server error", error: error.message });
   }
 };

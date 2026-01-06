@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
 import Assignment from "../models/assignment.model";
 import Classroom from "../models/classroom.model";
-import mongoose, { Types } from "mongoose";
 import Submission from "../models/submission.model";
 import {
   IAssignment,
@@ -10,8 +9,6 @@ import {
   ISubmission,
 } from "../types/type";
 import { cloudinary } from "../lib/cloudinary";
-import { emitAssignmentUpdate } from "../sockets/class/class.emitter";
-import { Notification } from "../models/notification.model";
 import { addAssignmentNotificationJob } from "../redis/queue";
 
 // --- Helper function for Authorization checks ---
@@ -27,7 +24,7 @@ export const authorizeOwner = async ({
   res,
   assignmentId,
   classroomId,
-}: AuthorizeParams)  => {
+}: AuthorizeParams) => {
   try {
     let item = null;
 
@@ -140,40 +137,14 @@ export const saveAssignment = async (req: Request, res: Response) => {
       },
     });
 
-    // 3. Socket Event (Real-time update)
-    emitAssignmentUpdate({
-      classroomId,
+    // Message Queue (Email/Push Notifications)
+    await addAssignmentNotificationJob({
+      classroomId: classroomDoc._id.toString(),
       classroomTitle: classroomDoc.title,
       assignmentId: assignment._id.toString(),
       title: assignment.title,
       dueDate,
     });
-
-    const students = classroomDoc.students || [];
-
-    // 4. Bulk Notification Persistence
-    if (students.length > 0) {
-      const notificationDocs = students.map((studentId: Types.ObjectId) => ({
-        user: studentId,
-        type: "assignment",
-        message: `New assignment "${assignment.title}" posted in classroom ${classroomDoc.title}`,
-        data: {
-          assignmentId: assignment._id,
-          classroomId: classroomDoc._id,
-        },
-      }));
-
-      await Notification.insertMany(notificationDocs);
-    }
-
-    // 5. Message Queue (Email/Push Notifications)
-    // await addAssignmentNotificationJob({
-    //   classroomId,
-    //   classroomTitle: classroom.title,
-    //   assignmentId: assignment._id,
-    //   title,
-    //   dueDate,
-    // });
 
     return res.status(201).json({
       success: true,
@@ -359,7 +330,7 @@ export const deleteAssignment = async (req: Request, res: Response) => {
     }
 
     await Assignment.findByIdAndDelete(req.params.id);
-    
+
     res
       .status(200)
       .json({ success: true, message: "Assignment deleted successfully" });

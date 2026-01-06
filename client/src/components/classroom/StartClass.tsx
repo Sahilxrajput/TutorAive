@@ -57,7 +57,7 @@ export function StartClass({ showPopup, setShowPopup }: DateTimePickerProps) {
 
         setLoading(true);
         try {
-            const { data } = await API.post("/lectures", {
+            const { data } = await API.post(`/classrooms/${classroomId}/lectures`, {
                 title,
                 status: "scheduled",
                 startTime: combined,
@@ -91,7 +91,7 @@ export function StartClass({ showPopup, setShowPopup }: DateTimePickerProps) {
 
         setLoading(true);
         try {
-            const { data } = await API.post("/lectures", {
+            const { data } = await API.post(`/classrooms/${classroomId}/lectures`, {
                 title,
                 status: "live",
                 startTime: new Date(),

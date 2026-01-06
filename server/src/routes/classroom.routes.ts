@@ -21,8 +21,15 @@ import {
 import authMiddleware from "../Middlewares/auth.middleware";
 import { handleValidation } from "../Middlewares/handleValidation";
 import { isInstructor } from "../Middlewares/Instructor.middleware";
-import { createLecture } from "../controllers/lecture.controller";
+import {
+  createLecture,
+  updateLecture,
+} from "../controllers/lecture.controller";
 import { getAllEnrolledClassrooms } from "../controllers/user.controller";
+import {
+  createLectureValidator,
+  updateLectureValidator,
+} from "../validators/lecture.validtor";
 
 const router = express.Router();
 
@@ -59,14 +66,8 @@ router.use(isInstructor);
 // Create a new classroom
 router.post("/", createClassroomValidator, handleValidation, createClassroom);
 
-//!@check create a --------------------lecture------------------------ in classroom 
-router.route("/:classroomId/lectures").post(createLecture).get(deleteClassroom);
-
 // Update classroom
 router.put("/:id", updateClassroomValidator, handleValidation, updateClassroom);
-
-// Delete classroom
-router.delete("/:id", idParamValidator, handleValidation, deleteClassroom);
 
 // Archive classroom
 router.put(
@@ -75,5 +76,15 @@ router.put(
   handleValidation,
   archiveClassroom
 );
+
+//!@check create a --------------------lecture------------------------ in classroom
+router
+  .route("/:classroomId/lectures")
+  .post(createLectureValidator, handleValidation, createLecture);
+
+router
+  .route("/:classroomId/lectures/:id")
+  .put(updateLectureValidator, handleValidation, updateLecture)
+  .delete(idParamValidator, handleValidation, deleteClassroom)
 
 export default router;

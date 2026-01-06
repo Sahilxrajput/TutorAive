@@ -32,6 +32,7 @@ export interface INotification extends Document {
     lectureId?: Types.ObjectId;
     tweetId?: Types.ObjectId;
     assignmentId?: Types.ObjectId;
+    reason?: string;
   };
   isRead: boolean;
   createdAt: Date;
@@ -118,7 +119,7 @@ export interface IClassInvitation extends Document {
 }
 export interface ISubmission extends Document {
   assignment: Types.ObjectId;
-  status: "submitted" | "checked";
+  status: "submitted" | "graded";
   student: Types.ObjectId;
   file: {
     url: string;
@@ -200,16 +201,19 @@ export type LectureStatus =
 
 export interface LectureUpdatePayload {
   lectureId: string;
-  classroomName: string;
+  studentId: string;
+  classroomTitle: string;
   classroomId: string;
   title: string;
   status: LectureStatus;
-  startTime: string;
+  startTime?: string;
   reason?: string;
+  
 }
 
 export interface AssignmentPayload {
   assignmentId: string;
+  studentId: string;
   classroomId: string;
   classroomTitle: string;
   title: string;
@@ -217,7 +221,31 @@ export interface AssignmentPayload {
 }
 
 export interface ITweetPayload {
-  id: string;
-  mentionId: string;
-  message;
+  msg: string;
+  userId: string;
+  tweetId: string;
+}
+
+export interface ITweetNotificationJob {
+  userId: string; // receiver of notification
+  tweetId: string;
+  actorName: string; // who performed the action
+  action: "mention" | "like" | "repost";
+}
+
+export interface IAssignmentNotificationJob {
+  classroomId: string;
+  classroomTitle: string;
+  assignmentId: string;
+  title: string;
+  dueDate: string;
+}
+
+export interface IClassNotificationJob {
+  classroomId: string;
+  lectureId: string;
+  title: string;
+  startTime: string;
+  reason: string;
+  status: LectureStatus;
 }
