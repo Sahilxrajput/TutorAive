@@ -5,6 +5,7 @@ import {
     BookOpen,
     MessageSquare,
     CheckCircle2,
+    Check,
 } from "lucide-react";
 
 import {
@@ -29,18 +30,21 @@ export function NotificationSidebar() {
     const [notifications, setNotifications] = useState<INotification[]>([]);
     const [activeTab, setActiveTab] = useState<"all" | "lecture" | "assignment" | "message">("all");
 
-    // const { data, isLoading } = useNotifications();
+    const { data, isLoading } = useNotifications();
 
-    // useEffect(() => {
-    //     if (data) setNotifications(data);
-    // }, [data]);
+    useEffect(() => {
+        if (data) setNotifications(data);
+    }, [data]);
 
     const unreadCount = notifications.filter(n => !n.isRead).length;
 
-    const filteredNotifications = notifications.filter(n => {
-        if (activeTab === "all") return true;
-        return n.type === activeTab;
-    });
+    const filteredNotifications = notifications
+        .filter(n => {
+            if (activeTab === "all") return true;
+            return n.type === activeTab;
+        })
+        .sort((a, b) => Number(a.isRead) - Number(b.isRead));
+
 
     const markAllAsRead = async () => {
         try {
@@ -53,6 +57,15 @@ export function NotificationSidebar() {
             console.error("Failed to mark notifications as read", err);
         }
     };
+
+    const markAsRead = async (id: string) => {
+        try {
+            const { data } = await API.patch(`/notifications/${id}/mark-read`);
+            console.log(data)
+        } catch (err) {
+            console.error("Failed to mark notification as read", err);
+        }
+    }
 
     const getIcon = (type: INotification["type"]) => {
         switch (type) {
@@ -107,7 +120,7 @@ export function NotificationSidebar() {
 
                     <Separator className="mt-4" />
 
-                    {/* <ScrollArea className="flex-1 px-6 min-h-0">
+                    <ScrollArea className="flex-1 px-6 min-h-0">
                         <div className="py-6 space-y-3">
                             {isLoading && (
                                 <p className="text-sm text-muted-foreground">
@@ -122,14 +135,37 @@ export function NotificationSidebar() {
                             )}
 
                             {filteredNotifications.map(item => (
+                                // <div
+                                //     key={item._id}
+                                //     className={`flex gap-3 p-3 rounded-lg border transition ${item.isRead
+                                //         ? "bg-background"
+                                //         : "bg-muted/40"
+                                //         }`}
+                                // >
+                                //     <div className="p-2 h-8 aspect-square rounded-full bg-muted">
+                                //         {getIcon(item.type)}
+                                //     </div>
+
+                                //     <div className="flex-1">
+                                //         <p className="text-sm font-medium">{item.message}</p>
+                                //         <p className="text-xs text-muted-foreground">
+                                //             {new Date(item.createdAt).toLocaleString()}
+                                //         </p>
+                                //     </div>
+
+                                //     {!item.isRead && (
+                                //         // <div>
+                                //         <span className="h-2 w-2 rounded-full bg-blue-500 mt-2" />
+                                //         // </div>
+                                //     )}
+                                // </div>
+
                                 <div
                                     key={item._id}
-                                    className={`flex gap-3 p-3 rounded-lg border transition ${item.isRead
-                                        ? "bg-background"
-                                        : "bg-muted/40"
+                                    className={`flex gap-3 p-3 rounded-lg border transition ${item.isRead ? "bg-background" : "bg-muted/40"
                                         }`}
                                 >
-                                    <div className="p-2 aspect-square rounded-full bg-muted">
+                                    <div className="p-2 h-8 aspect-square rounded-full bg-muted">
                                         {getIcon(item.type)}
                                     </div>
 
@@ -141,12 +177,31 @@ export function NotificationSidebar() {
                                     </div>
 
                                     {!item.isRead && (
-                                        <span className="h-2 w-2 rounded-full bg-blue-500 mt-2" />
+                                        <div
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                markAsRead(item._id);
+                                            }}
+                                            className="group mt-2 h-4 w-4 flex items-center justify-center
+                 cursor-pointer"
+                                            title="Mark as read"
+                                        >
+                                            {/* Blue dot */}
+                                            <span className="h-2 w-2 rounded-full bg-blue-500 
+                       group-hover:hidden" />
+
+                                            {/* Check icon on hover */}
+                                            <Check
+                                                size={14}
+                                                className="hidden text-blue-500 group-hover:block"
+                                            />
+                                        </div>
                                     )}
                                 </div>
+
                             ))}
                         </div>
-                    </ScrollArea> */}
+                    </ScrollArea>
                 </Tabs>
 
                 <div className="p-6 border-t">

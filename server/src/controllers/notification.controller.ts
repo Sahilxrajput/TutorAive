@@ -23,7 +23,7 @@ export const getUnreadCount = async (req: Request, res: Response) => {
 
 export const markAsRead = async (req: Request, res: Response) => {
   const { id } = req.params;
-
+    console.log("id:",id)
   if (!mongoose.Types.ObjectId.isValid(id)) {
     return res.status(400).json({ message: "Invalid notification ID" });
   }
