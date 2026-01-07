@@ -4,12 +4,13 @@ import authMiddleware from "../Middlewares/auth.middleware";
 import {
   deleteAccount,
   forgotPassword,
+  signup,
   signin,
   loginfailed,
-  logout,
+  signout,
   resetPassword,
-  signup,
   googleCallback,
+  refreshAccessToken,
 } from "../controllers/auth.controller";
 
 const router = Router();
@@ -17,13 +18,19 @@ const router = Router();
 // google route
 router.get(
   "/google",
-  passport.authenticate("google", { scope: ["profile", "email"] })
+  passport.authenticate("google", {
+    scope: ["profile", "email"],
+    session: false,
+  })
 );
 
 // google callback route
 router.get(
   "/callback/google",
-  passport.authenticate("google", { failureRedirect: "/login/failed" }),
+  passport.authenticate("google", {
+    session: false,
+    failureRedirect: "/login/failed",
+  }),
   googleCallback
 );
 
@@ -35,8 +42,9 @@ router.post("/signup", signup);
 
 // @todo validation
 router.post("/signin", signin);
+router.post("/refresh", refreshAccessToken);
 
-router.get("/logout", authMiddleware, logout);
+router.get("/signout", authMiddleware, signout);
 router.put("/reset-password", authMiddleware, resetPassword);
 router.put("/forget-password", authMiddleware, forgotPassword);
 router.delete("/delete", authMiddleware, deleteAccount);

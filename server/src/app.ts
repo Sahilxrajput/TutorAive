@@ -3,7 +3,6 @@ import "dotenv/config";
 import express, { Application } from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-import session from "express-session";
 import passport from "passport";
 import "./lib/passportConfig"; // <-- Import the passportConfig
 import connectDB from "./database/db";
@@ -43,29 +42,13 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-// Use session middleware
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET as string, // used to sign the session ID cookie
-    resave: false, // don't save session if unmodified
-    saveUninitialized: false, // don't create session until something is stored
-    cookie: {
-      secure: process.env.NODE_ENV === "production", // only send cookie over HTTPS in production
-      maxAge: 1000 * 60 * 60 * 24 * 7, // cookie expires in 7 days
-      sameSite: "lax",
-      httpOnly: true,
-    },
-  })
-);
 
 
 
 connectDB();
 app.use(passport.initialize());
-app.use(passport.session());
 
 createRedisWorker();
-
 
 app.get("/", (_, res) => res.send("Socket.IO Server Running"));
 app.use("/api/assignments", assignmentRoutes);

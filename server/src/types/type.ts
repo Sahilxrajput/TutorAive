@@ -16,6 +16,7 @@ export interface IUser {
   oauthId?: string;
   profilePicture?: string;
   email: string;
+  refreshToken?: string;
   password?: string;
   assignments?: Types.ObjectId[];
   notes?: Types.ObjectId[];

@@ -147,6 +147,7 @@ export function createRedisWorker() {
 
           break;
         }
+
         case "tweet-notification": {
           const { userId, tweetId, actorName, action } = job.data;
 

@@ -29,11 +29,11 @@ export function NotificationSidebar() {
     const [notifications, setNotifications] = useState<INotification[]>([]);
     const [activeTab, setActiveTab] = useState<"all" | "lecture" | "assignment" | "message">("all");
 
-    const { data, isLoading } = useNotifications();
+    // const { data, isLoading } = useNotifications();
 
-    useEffect(() => {
-        if (data) setNotifications(data);
-    }, [data]);
+    // useEffect(() => {
+    //     if (data) setNotifications(data);
+    // }, [data]);
 
     const unreadCount = notifications.filter(n => !n.isRead).length;
 
@@ -107,7 +107,7 @@ export function NotificationSidebar() {
 
                     <Separator className="mt-4" />
 
-                    <ScrollArea className="flex-1 px-6 min-h-0">
+                    {/* <ScrollArea className="flex-1 px-6 min-h-0">
                         <div className="py-6 space-y-3">
                             {isLoading && (
                                 <p className="text-sm text-muted-foreground">
@@ -146,7 +146,7 @@ export function NotificationSidebar() {
                                 </div>
                             ))}
                         </div>
-                    </ScrollArea>
+                    </ScrollArea> */}
                 </Tabs>
 
                 <div className="p-6 border-t">

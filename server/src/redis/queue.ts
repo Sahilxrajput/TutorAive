@@ -1,7 +1,7 @@
 import { Queue } from "bullmq";
 import { IAssignmentNotificationJob, IClassNotificationJob, ITweetNotificationJob, LectureStatus } from "../types/type";
 
-const notificationQueue = new Queue("notifications", {
+export const notificationQueue = new Queue("notifications", {
   connection: {
     host: "127.0.0.1",
     // host: "localhost",

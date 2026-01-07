@@ -1,4 +1,5 @@
 import type useSocket from "@/hooks/useSocketHandler";
+import type { Dispatch, SetStateAction } from "react";
 
 export interface IUser {
   _id: string;
@@ -9,6 +10,7 @@ export interface IUser {
   email: string;
   enrolledClassrooms: string[];
   profilePicture?: string;
+  refreshToken?:string
 }
 
 export interface INotification {
@@ -83,8 +85,8 @@ export interface AuthContextValue {
   isInstructor: boolean;
   loading: boolean;
   refreshUser: () => Promise<void>;
-  logout: () => Promise<void>;
-  login: (credentials: { email: string; password: string }) => Promise<void>;
+  signout: () => Promise<void>;
+  signin: (credentials: { email: string; password: string }) => Promise<void>;
 }
 
 export interface ISaveNote {

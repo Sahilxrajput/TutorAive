@@ -27,149 +27,149 @@ const Home = () => {
             return "/lectures/scheduled/my"
         }, [isInstructor])
 
-    const deleteScheduleLecture = async (id: string) => {
-        try {
-            setLoading(true);
-            const { data } = await API.delete("/lectures/" + id)
-            console.log(data)
-            if (data?.success) {
-                toast.success(data.message)
-                setScheduleLecture(scheduleLecture.filter((l: ILecture) => l._id !== id))
-            }
-        } catch (error: any) { // *@fix think about error meg toast
-            console.error('Error fetching lectures:', error.response.data.message);
-            toast.error(error?.response?.data?.message)
-        } finally {
-            setLoading(false)
-        }
+    // const deleteScheduleLecture = async (id: string) => {
+    //     try {
+    //         setLoading(true);
+    //         const { data } = await API.delete("/lectures/" + id)
+    //         console.log(data)
+    //         if (data?.success) {
+    //             toast.success(data.message)
+    //             setScheduleLecture(scheduleLecture.filter((l: ILecture) => l._id !== id))
+    //         }
+    //     } catch (error: any) { // *@fix think about error meg toast
+    //         console.error('Error fetching lectures:', error.response.data.message);
+    //         toast.error(error?.response?.data?.message)
+    //     } finally {
+    //         setLoading(false)
+    //     }
 
-    }
+    // }
 
 
     //@remind fetch all assignments here
-    useEffect(() => {
-        if (!user) return
-        const fetchAssignmnets = async () => {
-            try {
-                const { data } = await API.get(`/assignments/student/${user._id}`)
-                console.log("assignmnets : ", data)
-                setPendingAssignments(data.pending.length)
-            } catch (e) {
-                console.log("error while fetching assignmnets", e)
-            }
-        }
-        fetchAssignmnets()
-    }, [user])
+    // useEffect(() => {
+    //     if (!user) return
+    //     const fetchAssignmnets = async () => {
+    //         try {
+    //             const { data } = await API.get(`/assignments/student/${user._id}`)
+    //             console.log("assignmnets : ", data)
+    //             setPendingAssignments(data.pending.length)
+    //         } catch (e) {
+    //             console.log("error while fetching assignmnets", e)
+    //         }
+    //     }
+    //     fetchAssignmnets()
+    // }, [user])
 
-    useEffect(() => {
-        const fetchScheduleLectures = async () => {
-            try {
-                setLoading(true);
-                const { data } = await API.get(detectPath());
-                console.log("setScheduleLecture : ", data.data)
-                setScheduleLecture(data.data);
-            } catch (error) {
-                console.error('Error fetching lectures:', error);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchScheduleLectures();
-    }, [detectPath]);
+    // useEffect(() => {
+    //     const fetchScheduleLectures = async () => {
+    //         try {
+    //             setLoading(true);
+    //             const { data } = await API.get(detectPath());
+    //             console.log("setScheduleLecture : ", data.data)
+    //             setScheduleLecture(data.data);
+    //         } catch (error) {
+    //             console.error('Error fetching lectures:', error);
+    //         } finally {
+    //             setLoading(false);
+    //         }
+    //     };
+    //     fetchScheduleLectures();
+    // }, [detectPath]);
 
-    useEffect(() => {
-        if (!socket) return
+    // useEffect(() => {
+    //     if (!socket) return
 
-        const joinClassrooms = async () => {
-            const { data } = await API.get("/classrooms/enrolled")
+    //     const joinClassrooms = async () => {
+    //         const { data } = await API.get("/classrooms/enrolled")
 
-            data.forEach((c) => {
-                socket.emit("join:classroom", c._id)
-            });
-        };
+    //         data.forEach((c) => {
+    //             socket.emit("join:classroom", c._id)
+    //         });
+    //     };
 
-        joinClassrooms()
+    //     joinClassrooms()
 
-    }, [socket])
+    // }, [socket])
 
-    useEffect(() => {
-        if (!socket) return;
+    // useEffect(() => {
+    //     if (!socket) return;
 
-        const handleClassUpdate = (payload: LectureUpdatePayload) => {
-            console.log("payload : ", payload)
-            // setScheduleLecture()
-            switch (payload.status) {
-                case "live":
-                    toast.success(`lecture ${payload.title} is live now`);
-                    break;
+    //     const handleClassUpdate = (payload: LectureUpdatePayload) => {
+    //         console.log("payload : ", payload)
+    //         // setScheduleLecture()
+    //         switch (payload.status) {
+    //             case "live":
+    //                 toast.success(`lecture ${payload.title} is live now`);
+    //                 break;
 
-                //@todo complete status -> remove live class event from notification bar
-                // case "starting_soon":
-                //     toast.info("Class starting soon ⏳");
-                //     console.log("payload : ", payload)
-                //     break;
+    //             //@todo complete status -> remove live class event from notification bar
+    //             // case "starting_soon":
+    //             //     toast.info("Class starting soon ⏳");
+    //             //     console.log("payload : ", payload)
+    //             //     break;
 
-                case "scheduled":
-                    toast.info(`lecture scheduled at ${formatDateTime(payload.startTime)}`);
-                    break;
+    //             case "scheduled":
+    //                 toast.info(`lecture scheduled at ${formatDateTime(payload.startTime)}`);
+    //                 break;
 
-                case "rescheduled":
-                    toast.info(
-                        ` ${payload.title} lecture rescheduled\nNew time: ${formatDateTime(payload.startTime)}`
-                    );
-                    break;
+    //             case "rescheduled":
+    //                 toast.info(
+    //                     ` ${payload.title} lecture rescheduled\nNew time: ${formatDateTime(payload.startTime)}`
+    //                 );
+    //                 break;
 
-                case "delayed":
-                    toast.warning(
-                        ` "${payload.title}" lecture delay`
-                    );
-                    break;
+    //             case "delayed":
+    //                 toast.warning(
+    //                     ` "${payload.title}" lecture delay`
+    //                 );
+    //                 break;
 
-                case "cancelled":
-                    toast.error(
-                        ` ${payload.title} lecture cancelled\nReason: ${payload.reason}`
-                    );
-                    break;
+    //             case "cancelled":
+    //                 toast.error(
+    //                     ` ${payload.title} lecture cancelled\nReason: ${payload.reason}`
+    //                 );
+    //                 break;
 
-                default:
-                    toast("Class updated");
-                    console.log("payload : ", payload)
-            }
-        };
+    //             default:
+    //                 toast("Class updated");
+    //                 console.log("payload : ", payload)
+    //         }
+    //     };
 
-        const handleAssignmentUpdate = (payload: AssignmentPayload) => {
-            console.log("assignment payload : ", payload)
-            toast.info(
-                ` New assignment: ${payload.title}`,
-                {
-                    description: `Due: ${new Date(payload.dueDate).toLocaleString()}`,
-                    duration: 5000, // 5 sec
-                }
-            );
-        };
+    //     const handleAssignmentUpdate = (payload: AssignmentPayload) => {
+    //         console.log("assignment payload : ", payload)
+    //         toast.info(
+    //             ` New assignment: ${payload.title}`,
+    //             {
+    //                 description: `Due: ${new Date(payload.dueDate).toLocaleString()}`,
+    //                 duration: 5000, // 5 sec
+    //             }
+    //         );
+    //     };
 
-        socket.on("lecture:update", handleClassUpdate);
-        socket.on("assignment:update", handleAssignmentUpdate);
+    //     socket.on("lecture:update", handleClassUpdate);
+    //     socket.on("assignment:update", handleAssignmentUpdate);
 
-        return () => {
-            socket.off("lecture:update", handleClassUpdate);
-            socket.off("assignment:update", handleAssignmentUpdate);
-        }
-    }, [socket]);
+    //     return () => {
+    //         socket.off("lecture:update", handleClassUpdate);
+    //         socket.off("assignment:update", handleAssignmentUpdate);
+    //     }
+    // }, [socket]);
 
 
-    useEffect(() => {
-        if (!socket) return;
+    // useEffect(() => {
+    //     if (!socket) return;
 
-        socket.on("tweet:update", (payload) => {
-            console.log("Mention received:", payload);
-            toast.success(payload.msg);
-        });
+    //     socket.on("tweet:update", (payload) => {
+    //         console.log("Mention received:", payload);
+    //         toast.success(payload.msg);
+    //     });
 
-        return () => {
-            socket.off("tweet:update");
-        };
-    }, [socket]);
+    //     return () => {
+    //         socket.off("tweet:update");
+    //     };
+    // }, [socket]);
 
     
 

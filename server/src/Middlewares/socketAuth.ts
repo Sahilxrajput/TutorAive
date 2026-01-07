@@ -1,26 +1,32 @@
-import jwt from "jsonwebtoken";
 import { Socket } from "socket.io";
+import jwt from "jsonwebtoken";
 import { MyJwtPayload } from "../types/type";
 
 export const socketAuthMiddleware = (
   socket: Socket,
   next: (err?: Error) => void
 ) => {
-  const cookieHeader = socket.handshake.headers.cookie;
-  const token = cookieHeader
-    ?.split("; ")
-    .find((row) => row.startsWith("authToken="))
-    ?.split("=")[1];
-  console.log("socket token found in cookie: ");
+  // Try Authorization header first
+  const authHeader = socket.handshake.headers["authorization"] as string;
+  const token = authHeader?.startsWith("Bearer ")
+    ? authHeader.split(" ")[1]
+    : undefined;
+
+  console.log("Auth header:", socket.handshake.headers["authorization"]);
+  console.log("Extracted token:", token);
+
   if (!token) {
-    console.log("socket token not found in cookie: ");
+    console.log("Socket token not found in header");
     return next(new Error("No token provided"));
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as MyJwtPayload;
+    const decoded = jwt.verify(
+      token,
+      process.env.ACCESS_TOKEN_SECRET!
+    ) as MyJwtPayload;
     socket.data.userId = decoded._id;
-    socket.data.userName = decoded.email;
+    socket.data.userName = decoded.userName;
     socket.data.userRole = decoded.role;
     next();
   } catch (err) {

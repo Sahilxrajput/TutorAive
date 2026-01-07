@@ -2,38 +2,56 @@ import { Request, Response } from "express";
 import Attendance from "../models/attendence.model.";
 import Classroom from "../models/classroom.model";
 import User from "../models/user.model";
-import generateAuthToken from "../utils/generateAuthToken";
 import bcrypt from "bcrypt";
+import {
+  generateAccessToken,
+  generateRefreshToken,
+} from "../utils/generateAuthToken";
+import jwt, { JwtPayload } from "jsonwebtoken";
+import { IUser, MyJwtPayload } from "../types/type";
+import { HydratedDocument } from "mongoose";
 
-const googleCallback = (req: Request, res: Response) => {
-  const user = req.user as any;
-  const token = generateAuthToken(user);
+const googleCallback = async (req: Request, res: Response) => {
+  const user = req.user as HydratedDocument<IUser>;
 
-  // Set token in HTTP-only cookie
-  res.cookie("authToken", token, {
+  const refreshToken = generateRefreshToken({
+    _id: user._id.toString(),
+    userName: user.userName!,
+    role: user.role,
+  });
+
+  // store hashed refresh token
+  user.refreshToken = await bcrypt.hash(refreshToken, 12);
+  await user.save();
+
+  res.cookie("refreshToken", refreshToken, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
-    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 
+  // redirect with no tokens in URL
   res.redirect(`${process.env.CLIENT_URL}/auth/success`);
 };
 
 //@todo add firstname, lastname default
 const signup = async (req: Request, res: Response) => {
   try {
-    let { email, firstName, lastName, userName, password, role } = req.body;
+    let {
+      email,
+      firstName = "tony",
+      lastName = "strak",
+      userName,
+      password,
+      role,
+    } = req.body;
 
     // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: "User already exists" });
     }
-
-    //FIX
-    firstName = "tony";
-    lastName = "stark";
 
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 12);
@@ -53,20 +71,25 @@ const signup = async (req: Request, res: Response) => {
 
     const savedUser = await newUser.save();
 
-    // Exclude password from response
-    const { password: _, ...userData } = savedUser.toObject();
+    const accessToken = generateAccessToken(savedUser);
+    const refreshToken = generateRefreshToken(savedUser);
 
-    const token = generateAuthToken(savedUser);
+    // save hashed refresh token
+    savedUser.refreshToken = await bcrypt.hash(refreshToken, 12);
+    await savedUser.save();
+
+    // Exclude password from response
+    const { password: _, refreshToken: __, ...userData } = savedUser.toObject();
 
     // Set token in HTTP-only cookie
-    res.cookie("authToken", token, {
+    res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
 
-    res.status(201).json({ user: userData, token });
+    res.status(201).json({ user: userData, accessToken });
   } catch (err) {
     console.error("Signup error:", err);
     res.status(500).json({ message: "Failed to create user", err });
@@ -77,41 +100,45 @@ const signin = async (req: Request, res: Response) => {
   const { email, password } = req.body;
 
   try {
-    // Fetch user and include password explicitly
     const user = await User.findOne({ email }).select("+password");
 
     if (!user) {
       return res.status(400).json({ message: "User doesn't exist" });
     }
 
-    // Compare passwords
     const isPasswordCorrect = await bcrypt.compare(password, user.password);
     if (!isPasswordCorrect) {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
-    // Generate JWT
-    const token = generateAuthToken(user);
+    // 1️. Generate tokens
+    const accessToken = generateAccessToken(user);
+    const refreshToken = generateRefreshToken(user);
 
-    // Set token as HTTP-only cookie
-    res.cookie("authToken", token, {
+    // 2️. Store hash refresh token in DB
+    user.refreshToken = await bcrypt.hash(refreshToken, 12);
+    await user.save();
+
+    // 3️. Send refresh token as httpOnly cookie
+    res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      sameSite: "strict",
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
 
-    // Remove sensitive data before sending response
-    const { password: _, ...userData } = user.toObject();
+    // 4️. Remove sensitive fields
+    const { password: _, refreshToken: __, ...userData } = user.toObject();
 
-    res.status(200).json({
+    // 5️. Send access token in response body
+    return res.status(200).json({
       message: "Login successful",
       user: userData,
-      token,
+      accessToken,
     });
   } catch (err) {
     console.error("Login error:", err);
-    res.status(500).json({ message: "Server error", error: err });
+    return res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -119,19 +146,33 @@ const loginfailed = (req: Request, res: Response) => {
   return res.status(401).json({ success: false, message: "Login failed" });
 };
 
-const logout = (req: Request, res: Response) => {
-  req.session.destroy((err: Error) => {
-    if (err) {
-      console.error("Session destruction error:", err);
-      return res.status(500).json({ message: "Logout failed" });
+const signout = async (req: Request, res: Response) => {
+  try {
+    const refreshToken = req.cookies.refreshToken;
+
+    if (refreshToken) {
+      const decoded = jwt.verify(
+        refreshToken,
+        process.env.REFRESH_TOKEN_SECRET!
+      ) as JwtPayload;
+
+      await User.findByIdAndUpdate(decoded._id, {
+        refreshToken: null,
+      });
     }
-    res.clearCookie("authToken", {
+
+    res.clearCookie("refreshToken", {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
     });
-    res.status(200).json({ message: "Logged out successfully" });
-  });
+
+    return res.status(200).json({ message: "Logged out successfully" });
+  } catch (err) {
+    // Even if token is invalid/expired, logout should succeed
+    res.clearCookie("refreshToken");
+    return res.status(200).json({ message: "Logged out successfully" });
+  }
 };
 
 const deleteAccount = async (req: Request, res: Response) => {
@@ -159,19 +200,14 @@ const deleteAccount = async (req: Request, res: Response) => {
     // 2. delete account
     await User.findByIdAndDelete(user._id);
 
-    req.session.destroy((err: Error) => {
-      if (err) {
-        console.error("Session destruction error:", err);
-        return res.status(500).json({ message: "Logout failed" });
-      }
-      res.clearCookie("authToken", {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-      });
-      res.status(200).json({ message: "Logged out successfully" });
+    res.clearCookie("refreshToken", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
+
+    res.status(200).json({ message: "Logged out successfully" });
 
     return res.status(200).json({ message: "User deleted successfully" });
   } catch (err) {
@@ -214,7 +250,7 @@ const forgotPassword = async (req: Request, res: Response) => {
   //   // Create a short-lived reset token
   //   const resetToken = jwt.sign(
   //     { id: user._id },
-  //     process.env.JWT_SECRET!,
+  //     process.env.ACCESS_TOKEN_SECRET!,
   //     { expiresIn: "15m" } // expires in 15 minutes
   //   );
 
@@ -246,13 +282,42 @@ const forgotPassword = async (req: Request, res: Response) => {
   // }
 };
 
+const refreshAccessToken = async (req: Request, res: Response) => {
+  const token = req.cookies.refreshToken;
+
+  if (!token) {
+    return res.status(401).json({ message: "No refresh token" });
+  }
+
+  try {
+    const decoded = jwt.verify(
+      token,
+      process.env.REFRESH_TOKEN_SECRET!
+    ) as MyJwtPayload;
+
+    const user = await User.findById(decoded._id);
+
+    if (!user || !user.refreshToken) return res.sendStatus(403);
+
+    const isValid = await bcrypt.compare(token, user.refreshToken);
+    if (!isValid) return res.sendStatus(403);
+
+    const newAccessToken = generateAccessToken(user);
+
+    return res.json({ accessToken: newAccessToken });
+  } catch {
+    return res.status(403).json({ message: "Refresh token expired" });
+  }
+};
+
 export {
   googleCallback,
   signup,
   signin,
   loginfailed,
-  logout,
+  signout,
   deleteAccount,
   resetPassword,
   forgotPassword,
+  refreshAccessToken,
 };

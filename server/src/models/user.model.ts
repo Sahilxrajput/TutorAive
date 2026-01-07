@@ -67,6 +67,10 @@ const userSchema = new Schema<IUser>(
       enum: ["student", "instructor", "admin"],
       default: "student",
     },
+    refreshToken: {
+      type: String,
+      default: null,
+    },
   },
   {
     timestamps: true,

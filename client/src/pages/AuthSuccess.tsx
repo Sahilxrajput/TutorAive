@@ -9,7 +9,7 @@ const AuthSuccess: React.FC = () => {
 
   useEffect(() => {
     (async () => {
-      // Backend already set the HTTP-only cookie. Refresh user to fetch profile.
+      // Backend already set the HTTP-only cookie. Refresh user to get accesstoken and fetch profile.
       await refreshUser();
       // navigate wherever you want after login
       navigate("/dashboard");

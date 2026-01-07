@@ -19,7 +19,7 @@ export const initSocket = async (httpServer: HttpServer) => {
   });
 
   const classroom = io.of("/classroom");
-  classroom.use(socketAuthMiddleware);
+//   classroom.use(socketAuthMiddleware);
 
   classroom.on("connection", (socket: Socket) => {
     console.log("Somthing connected!", socket.id);

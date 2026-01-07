@@ -4,7 +4,7 @@ import useAuth from "../hooks/useAuth";
 import { Button } from "@/components/ui/button";
 
 const Dashboard: React.FC = () => {
-  const { user, logout } = useAuth();
+  const { user, signout } = useAuth();
 
   return (
     <div>
@@ -14,7 +14,7 @@ const Dashboard: React.FC = () => {
       <h1>Username {user?.userName}</h1>
       <img src={user?.profilePicture} alt="avatar" width={80} />
       <div>
-        <Button onClick={() => logout()}>Logout</Button>
+        <Button onClick={() => signout()}>Logout</Button>
       </div>
     </div>
   );

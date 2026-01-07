@@ -1,11 +1,13 @@
 import { Link } from 'react-router-dom'
-import { Baby, Bell, BookOpen, ChartSpline, LucideOctagon, MessageCircle, NotepadText, Twitch } from 'lucide-react'
+import { Baby, BookOpen, ChartSpline, LucideOctagon, MessageCircle, NotepadText, Twitch } from 'lucide-react'
 import useAuth from '@/hooks/useAuth'
 import { NotificationSidebar } from './notification/NotificationSidebar';
-    
+
 
 const Sidebar = () => {
     const { user } = useAuth();
+
+
     return (
         <aside className='flex flex-col fixed h-full items-center-safe justify-between py-6 z-50'>
             <div className='flex flex-col justify-center text-sm gap-8 items-center'>
@@ -18,12 +20,12 @@ const Sidebar = () => {
                 <Link to="/community" className='flex flex-col items-center justify-center'><Twitch /> Tweets</Link>
             </div>
             <div className='flex items-center justify-center gap-6 flex-col'>
-                <NotificationSidebar/>
+                <NotificationSidebar />
 
                 {!user ?
                     <Link to="/signin" className='flex flex-col items-center justify-center'><Baby /></Link>
                     :
-                    <Link to="/profile" className='flex flex-col items-center justify-center'><img className='w-10 aspect-square rounded-full' src={user?.profilePicture} alt="" /></Link>
+                    <Link to="/profile" className='flex flex-col items-center justify-center'><img className='w-10 aspect-square rounded-full' src={user.profilePicture} alt="" /></Link>
                 }
             </div>
         </aside>

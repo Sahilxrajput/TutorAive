@@ -1,17 +1,32 @@
 import jwt from "jsonwebtoken";
 import { IUser } from "../types/type";
 
-const generateAuthToken = (user: IUser) => {
+export const generateAccessToken = ({
+  _id,
+  role,
+  userName,
+}: {
+  _id: string;
+  role: string;
+  userName: string;
+}) => {
   // @ts-ignore
-  return jwt.sign(
-    {
-      _id: user._id,
-      role: user.role,
-      userName: user.userName,
-    },
-    process.env.JWT_SECRET as string,
-    { expiresIn: process.env.TOKEN_EXPIRY || "1d" }
-  );
+  return jwt.sign({ _id, role, userName }, process.env.ACCESS_TOKEN_SECRET!, {
+    expiresIn: process.env.ACCESS_TOKEN_EXPIRES || "15m",
+  });
 };
 
-export default generateAuthToken;
+export const generateRefreshToken = ({
+  _id,
+  role,
+  userName,
+}: {
+  _id: string;
+  role: string;
+  userName: string;
+}) => {
+  // @ts-ignore
+  return jwt.sign({ _id, role, userName }, process.env.REFRESH_TOKEN_SECRET!, {
+    expiresIn: process.env.REFRESH_TOKEN_EXPIRES || "7d",
+  });
+};
