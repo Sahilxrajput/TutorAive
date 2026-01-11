@@ -86,7 +86,7 @@ export default function Notes() {
         </p>
       }
 
-      <div className="space-y-6  h-full">
+      <div className="space-y-6 h-full">
         <NotesGrid noteList={notes} />
       </div>
 

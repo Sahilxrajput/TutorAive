@@ -30,6 +30,11 @@ import {
   createLectureValidator,
   updateLectureValidator,
 } from "../validators/lecture.validtor";
+import { isEnrolled } from "../Middlewares/isEnrolled.middleware";
+import {
+  getStudentAssignmentProgress,
+  getMyAssignmentProgress,
+} from "../controllers/assignment.controller";
 
 const router = express.Router();
 
@@ -60,6 +65,14 @@ router.post(
   enrollClassroom
 );
 
+//!@check create a --------------------lecture/Assignmnet------------------------ in classroom
+//get classroom assignments of student pending  + submitted
+router.get(
+  "/:classroomId/my-assignment-progress",
+  isEnrolled, // techer / enrolled student -> true
+  getMyAssignmentProgress
+);
+
 // isInstructor?
 router.use(isInstructor);
 
@@ -85,6 +98,12 @@ router
 router
   .route("/:classroomId/lectures/:id")
   .put(updateLectureValidator, handleValidation, updateLecture)
-  .delete(idParamValidator, handleValidation, deleteClassroom)
+  .delete(idParamValidator, handleValidation, deleteClassroom);
+
+router.get(
+  "/:classroomId/students/:studentId/assignment-progress",
+  isEnrolled,
+  getStudentAssignmentProgress
+);
 
 export default router;

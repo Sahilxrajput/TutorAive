@@ -6,7 +6,6 @@ import {
   updateAssignment,
   deleteAssignment,
   getAssignmentsForInstructor,
-  getStudentAssignmentsInClassroom,
   cloudinarySignature,
   saveAssignment,
 } from "../controllers/assignment.controller";
@@ -31,12 +30,6 @@ router.use(authMiddleware);
 //get all assignments of a student pending  + submitted
 router.get("/student/:studentId", getAssignmentsOfStudent); //isuser isself , isinsructor
 
-//get all classroom assignments of student pending  + submitted
-router.get(
-  "/classroom/:classroomId/student/:studentId",
-  isEnrolled, // techer / enrolled student -> true
-  getStudentAssignmentsInClassroom
-);
 
 router.get("/:id", isEnrolled, getAssignmentById);
 

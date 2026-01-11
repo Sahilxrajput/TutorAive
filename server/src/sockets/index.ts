@@ -19,20 +19,20 @@ export const initSocket = async (httpServer: HttpServer) => {
   });
 
   const classroom = io.of("/classroom");
-//   classroom.use(socketAuthMiddleware);
+  classroom.use(socketAuthMiddleware);
 
   classroom.on("connection", (socket: Socket) => {
     console.log("Somthing connected!", socket.id);
     const userId = socket.data.userId;
 
-  if (!userId) {
-    console.error("Socket connected WITHOUT userId");
-    socket.disconnect(true);
-    return;
-  }
+    if (!userId) {
+      console.error("Socket connected WITHOUT userId");
+      socket.disconnect(true);
+      return;
+    }
 
-  socket.join(`user:${userId}`);
-  console.log(`User ${userId} joined user:${userId}`);
+    socket.join(`user:${userId}`);
+    console.log(`User ${userId} joined user:${userId}`);
 
     socket.on("join-room", (data, cb) => onJoinRoom(socket, data, cb)); // name, socketId, userId
 

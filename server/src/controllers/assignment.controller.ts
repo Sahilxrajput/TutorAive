@@ -239,10 +239,7 @@ export const getAssignmentsForInstructor = async (
   }
 };
 
-export const getStudentAssignmentsInClassroom = async (
-  req: Request,
-  res: Response
-) => {
+export const getStudentAssignmentProgress = async (req: Request, res: Response) => {
   try {
     const { classroomId, studentId } = req.params;
 
@@ -251,6 +248,40 @@ export const getStudentAssignmentsInClassroom = async (
 
     // 2. Get all submissions by this student for this classroom
     const submissions = await Submission.find({ student: studentId });
+
+    // Convert submitted assignment IDs into a Set for fast lookup
+    const submittedIds = new Set(
+      submissions.map((s: ISubmission) => s.assignment.toString())
+    );
+
+    // 3. Split into pending + submitted
+    const submitted = assignments.filter((a) =>
+      submittedIds.has(a._id.toString())
+    );
+
+    const pending = assignments.filter(
+      (a) => !submittedIds.has(a._id.toString())
+    );
+
+    res.status(200).json({
+      success: true,
+      submitted,
+      pending,
+    });
+  } catch (err: any) {
+    res.status(500).json({ success: false, message: err?.message });
+  }
+};
+
+export const getMyAssignmentProgress = async (req: Request, res: Response) => {
+  try {
+    const { classroomId } = req.params;
+
+    // 1. Get all assignments for the classroom
+    const assignments = await Assignment.find({ classroom: classroomId });
+
+    // 2. Get all submissions by this student for this classroom
+    const submissions = await Submission.find({ student: req.userId });
 
     // Convert submitted assignment IDs into a Set for fast lookup
     const submittedIds = new Set(

@@ -1,5 +1,5 @@
 import { createTransport } from "nodemailer";
-import { LectureNotificationStatus } from "../types/type";
+import { LectureStatus } from "../types/type";
 
 export const sendAssignmentEmail = async ({
   toEmail,
@@ -96,110 +96,8 @@ export const sendAssignmentEmail = async ({
   const info = await transporter.sendMail(mailOptions);
 };
 
-// export const sendClassStatusEmail = async ({
-//   toEmail,
-//   classroomName = "advanced backend",
-//   lectureId,
-//   status,
-//   title,
-// }: {
-//   toEmail: string;
-//   classroomName?: string;
-//   lectureId: string;
-//   status:string;
-//   title:string;
-// }) => {
-//   const transporter = createTransport({
-//     service: "gmail",
-//     secure: true,
-//     port: 465,
-//     auth: {
-//       user: process.env.MAIL_USER,
-//       pass: process.env.MAIL_PASS,
-//     },
-//   });
-
-//   const lectureUrl = `${process.env.SERVER_URL}/lectures/${lectureId}`;
-
-//   const mailOptions = {
-//     from: `"Online Tutor" <online@tutor.in>`,
-//     to: toEmail,
-//     subject: "New Assignment Posted",
-//     html: `
-//     <div style="font-family: Arial, Helvetica, sans-serif; background-color: #f4f6f8; padding: 20px;">
-//   <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; padding: 24px; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.08);">
-
-//     <h2 style="margin-top: 0; color: #1f2937;">
-//       Class Update
-//     </h2>
-
-//     <p style="color: #374151; font-size: 14px;">
-//       Hello,
-//     </p>
-
-//     <p style="color: #374151; font-size: 14px;">
-//       There is an update regarding your class session:
-//     </p>
-
-//     <p style="font-size: 15px; font-weight: bold; color: #111827; margin: 16px 0;">
-//       ${classroomName}
-//     </p>
-
-//     <p style="color: #374151; font-size: 14px;">
-//       Click below to view lecture details, class status, or session updates.
-//     </p>
-
-//     <div style="text-align: center; margin: 24px 0;">
-//       <a
-//         href="${lectureUrl}"
-//         target="_blank"
-//         style="
-//           display: inline-block;
-//           padding: 12px 22px;
-//           background-color: #2563eb;
-//           color: #ffffff;
-//           text-decoration: none;
-//           border-radius: 4px;
-//           font-size: 14px;
-//           font-weight: 600;
-//         "
-//       >
-//         View lecture
-//       </a>
-//     </div>
-
-//     <p style="color: #6b7280; font-size: 12px;">
-//       If the button doesn’t work, use the link below:
-//     </p>
-
-//     <p style="font-size: 12px; word-break: break-all;">
-//       <a href="${lectureUrl}" style="color: #2563eb;">
-//         ${lectureUrl}
-//       </a>
-//     </p>
-
-//     <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;" />
-
-//     <p style="color: #6b7280; font-size: 12px;">
-//       This is an automated notification. Please do not reply.
-//     </p>
-
-//     <p style="color: #6b7280; font-size: 12px; margin-bottom: 0;">
-//       © ${new Date().getFullYear()} Online Tutor
-//     </p>
-//   </div>
-// </div>
-
-//   `,
-//   };
-
-//   const info = await transporter.sendMail(mailOptions);
-
-//   //   console.log("info: ", info);
-// };
-
 const CLASS_STATUS_CONFIG: Record<
-  LectureNotificationStatus,
+  LectureStatus,
   {
     subject: string;
     heading: string;
@@ -219,15 +117,15 @@ const CLASS_STATUS_CONFIG: Record<
     showButton: true,
   },
 
-//   starting_soon: {
-//     subject: "⏰ Class Starting in 5 Minutes",
-//     heading: "Class Starting Soon",
-//     message:
-//       "Your class will begin in approximately 5 minutes. Please make sure you are ready.",
-//     color: "#16a34a",
-//     buttonText: "Join Class",
-//     showButton: true,
-//   },
+  //   starting_soon: {
+  //     subject: "⏰ Class Starting in 5 Minutes",
+  //     heading: "Class Starting Soon",
+  //     message:
+  //       "Your class will begin in approximately 5 minutes. Please make sure you are ready.",
+  //     color: "#16a34a",
+  //     buttonText: "Join Class",
+  //     showButton: true,
+  //   },
 
   scheduled: {
     subject: "📅 Class Scheduled",
@@ -265,6 +163,14 @@ const CLASS_STATUS_CONFIG: Record<
     color: "#dc2626",
     showButton: false,
   },
+  completed: {
+    //@todo complete it or remove it and modify type
+    subject: "class complete",
+    heading: "Class complete",
+    message: " this class session has been complete.",
+    color: "#dc2626",
+    showButton: false,
+  },
 };
 
 // type EmailStatus = Exclude<ClassStatus, "scheduled">;
@@ -279,7 +185,7 @@ export const sendClassStatusEmail = async ({
   toEmail: string;
   classroomName?: string;
   lectureId: string;
-  status: LectureNotificationStatus;
+  status: LectureStatus;
   title: string;
 }) => {
   const transporter = createTransport({

@@ -15,10 +15,10 @@ import useSocketContext from '@/hooks/useSocketContext';
 const Home = () => {
     const [date, setDate] = useState<Date | undefined>(new Date());
     const [scheduleLecture, setScheduleLecture] = useState<ILecture[]>([]);
-    const [loading, setLoading] = useState<boolean>(true);
+    // const [loading, setLoading] = useState<boolean>(true);
     const [pendingAssignments, setPendingAssignments] = useState<number>(0)
 
-    const { isInstructor, user } = useAuth()
+    const { isInstructor, user, loading } = useAuth()
     const { socket } = useSocketContext()
 
     const detectPath = useCallback(
@@ -171,6 +171,9 @@ const Home = () => {
     //     };
     // }, [socket]);
 
+    useEffect(()=>{
+        console.log("user",user)
+    },[])
     
 
     return (

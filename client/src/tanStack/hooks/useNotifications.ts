@@ -1,9 +1,10 @@
 import { fetchNotifications } from "@/api/tweets.api";
 import { useQuery } from "@tanstack/react-query";
+import {CACHE_KEY_NOTIFICATIONS} from "../constants"
 
 export function useNotifications() {
   return useQuery({
-    queryKey: ["NOTi"],
+    queryKey: CACHE_KEY_NOTIFICATIONS,
     queryFn: fetchNotifications,
   });
 }

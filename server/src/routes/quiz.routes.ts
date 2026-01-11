@@ -7,6 +7,8 @@ const router = Router();
 
 router.get("/generate", generateQuizs);
 
+router.get("/get", generateQuizs);
+
 // GET all quizzes
 // router.get("/", async (req, res) => {
 //   try {

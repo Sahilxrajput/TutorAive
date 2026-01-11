@@ -121,6 +121,7 @@ export const createLecture = async (req: Request, res: Response) => {
       classroomId,
       lectureId: newLecture._id.toString(),
       status,
+      startTime,
       title,
     });
 

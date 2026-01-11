@@ -122,7 +122,7 @@ export const gradeSubmission = async (req: Request, res: Response) => {
     await submission.save();
 
     return res.status(200).json({ message: "Graded successfully", submission });
-  } catch (error) {
+  } catch (error:any) {
     return res
       .status(500)
       .json({ message: "Server error", error: error.message });

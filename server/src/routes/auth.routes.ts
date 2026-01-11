@@ -42,7 +42,7 @@ router.post("/signup", signup);
 
 // @todo validation
 router.post("/signin", signin);
-router.post("/refresh", refreshAccessToken);
+router.get("/refresh", refreshAccessToken);
 
 router.get("/signout", authMiddleware, signout);
 router.put("/reset-password", authMiddleware, resetPassword);

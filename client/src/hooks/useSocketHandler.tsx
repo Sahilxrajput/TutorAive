@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { io, Socket } from "socket.io-client";
 import type { IUser } from "../types/type";
-import { accessToken } from "@/lib/api";
+import useAuth from "./useAuth";
 
 interface UseSocketReturn {
     socket: Socket | null;
@@ -18,6 +18,7 @@ const useSocketHandler = (user?: IUser): UseSocketReturn => {
     const [isConnected, setIsConnected] = useState(false);
     const [onlineUsers, setOnlineUsers] = useState<IUser[]>([]);
     const socketRef = useRef<Socket | null>(null);
+    const { accessToken } = useAuth();
 
     const backendUrl = useMemo(() => import.meta.env.VITE_SOCKET_URL as string, []);
 
@@ -36,10 +37,16 @@ const useSocketHandler = (user?: IUser): UseSocketReturn => {
     // --- Initialize socket connection ---
     useEffect(() => {
         //Disconnect immediately if user logs out or token missing
-        // if (!accessToken) {
-        //     cleanupSocket();
-        //     return;
-        // }
+        // 1. No token → no socket
+        const token = localStorage.getItem("accessToken");
+
+        // No token → no socket
+        if (!token) {
+            cleanupSocket();
+            console.log("no token: ")
+            return;
+        }
+
 
         //Prevent duplicate connections
         if (socketRef.current?.connected) {
@@ -47,14 +54,14 @@ const useSocketHandler = (user?: IUser): UseSocketReturn => {
             return;
         }
 
-        console.log("getAccessToken: ", accessToken)
+        // console.log("getAccessToken: ", accessToken)
 
         // Create new socket connection
         const newSocket: Socket = io(backendUrl, {
-            extraHeaders: {
-                Authorization: `Bearer ${accessToken}`, // pass token in header
+            auth: {
+                token: accessToken,
             },
-            // withCredentials: true,
+            withCredentials: true,
             reconnection: true,
             reconnectionAttempts: 5,
             reconnectionDelay: 1000,
@@ -96,7 +103,7 @@ const useSocketHandler = (user?: IUser): UseSocketReturn => {
 
         // Cleanup on unmount or token change
         return () => cleanupSocket();
-    }, [user, backendUrl, cleanupSocket]);
+    }, [user, accessToken, backendUrl, cleanupSocket]);
 
     // --- Emitters ---
     const sendMessage = useCallback((message: string, roomId: string) => {

@@ -14,7 +14,7 @@ export default function AssignmentPage() {
 
     useEffect(() => {
         async function fetchAssignments() {
-            const { data } = await API.get(`/assignments/classroom/${classroomId}/my`)
+            const { data } = await API.get(`/classrooms/${classroomId}/my-assignment-progress`)
             setPending(data.pending)
             setSubmitted(data.submitted)
         }

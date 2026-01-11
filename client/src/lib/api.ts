@@ -1,13 +1,16 @@
-// src/api.ts
+import useAuth from "@/hooks/useAuth";
 import axios from "axios";
 
 export let accessToken: string | null = null;
 
 export const setAccessToken = (token: string | null) => {
   accessToken = token;
-//   console.log("token for set ", token)
+  if (token) localStorage.setItem("accessToken", token);
+
+  //   console.log("token for set ", token)
 };
 
+const localToken = localStorage.getItem("accessToken");
 
 const API = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
@@ -17,10 +20,14 @@ const API = axios.create({
 
 API.interceptors.request.use((config) => {
   if (accessToken) {
-    config.headers.Authorization = `Bearer ${accessToken}`;
+    config.headers.Authorization = `Bearer ${localToken}`;
+    // console.log("accesstoken in header: ", accessToken);
   }
   return config;
 });
+
+let isRefreshing = false;
+let pendingRequests: any[] = [];
 
 API.interceptors.response.use(
   (response) => response,
@@ -28,77 +35,58 @@ API.interceptors.response.use(
     const originalRequest = error.config;
 
     if (error.response?.status === 401 && !originalRequest._retry) {
+      if (isRefreshing) {
+        return new Promise((resolve, reject) => {
+          pendingRequests.push({ resolve, reject });
+        }).then((token) => {
+          originalRequest.headers.Authorization = `Bearer ${token}`;
+          return API(originalRequest);
+        });
+      }
+
       originalRequest._retry = true;
+      isRefreshing = true;
 
-      const { data } = await axios.get(
-        `${import.meta.env.VITE_API_URL}/auth/refresh`,
-        {
-          withCredentials: true,
+      try {
+        const { data } = await axios.get(
+          `${import.meta.env.VITE_API_URL}/auth/refresh`,
+          { withCredentials: true }
+        );
+        console.log("inception: ", data);
+        setAccessToken(data.accessToken);
+
+        pendingRequests.forEach((p) => p.resolve(data.accessToken));
+        pendingRequests = [];
+
+        originalRequest.headers.Authorization = `Bearer ${data.accessToken}`;
+        return API(originalRequest);
+      } catch (err) {
+        pendingRequests.forEach((p) => p.reject(err));
+        pendingRequests = [];
+        if (axios.isAxiosError(err)) {
+          const status = err.response?.status;
+
+          if (status === 401 || status === 403) {
+            // refresh token invalid → real logout
+            const { user, setUser } = useAuth();
+
+            setUser(null);
+            // setAccessToken(null);
+            setAccessToken(null);
+
+            // optional: redirect to login
+            // navigate("/login");
+          }
         }
-      );
-      console.log("interceptors: ", data);
-      setAccessToken(data.accessToken);
 
-      originalRequest.headers.Authorization = `Bearer ${data.accessToken}`;
-
-      return API(originalRequest);
+        throw err;
+      } finally {
+        isRefreshing = false;
+      }
     }
 
     return Promise.reject(error);
   }
 );
-
-// export class APIClient<T> {
-//   endPoint: string;
-
-//   constructor(endPoint: string) {
-//     this.endPoint = endPoint;
-//   }
-
-//   getAll = async () => {
-//     const { data } = await API.get<{ data: T[] }>(this.endPoint);
-//     return data.data;
-//   };
-
-//   post = async (payload: T) => {
-//     const { data } = await API.post<{ data: T; message: string }>(
-//       this.endPoint,
-//       payload
-//     );
-//     toast.success(data.message);
-//     return data.data;
-//   };
-
-//   get = async (id: string) => {
-//     const { data } = await API.get<{ data: T }>(`${this.endPoint}/${id}`);
-//     return data.data;
-//   };
-
-//   delete = async (id: string) => {
-//     //? @issue does data really requires -> for react query to muatate data is required
-//     const { data } = await API.delete<{ data: T; message: string }>(
-//       `${this.endPoint}/${id}`
-//     );
-//     // toast.success(data.message);
-//   };
-
-//   // @note
-//   update = async (id: string, payload: T) => {
-//     const { data } = await API.put<{ data: T; message: string }>(
-//       `${this.endPoint}/${id}`,
-//       payload
-//     );
-//     toast.success(data.message);
-//     return data.data;
-//   };
-//   patch = async (id: string, payload: T) => {
-//     const { data } = await API.patch<{ data: T; message: string }>(
-//       `${this.endPoint}/${id}`,
-//       payload
-//     );
-//     toast.success(data.message);
-//     return data.data;
-//   };
-// }
 
 export default API;

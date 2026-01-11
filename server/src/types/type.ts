@@ -247,6 +247,6 @@ export interface IClassNotificationJob {
   lectureId: string;
   title: string;
   startTime: string;
-  reason: string;
+  reason?: string; // !@fix check createLecture controller
   status: LectureStatus;
 }

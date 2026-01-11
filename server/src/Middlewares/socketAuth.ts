@@ -6,14 +6,9 @@ export const socketAuthMiddleware = (
   socket: Socket,
   next: (err?: Error) => void
 ) => {
-  // Try Authorization header first
-  const authHeader = socket.handshake.headers["authorization"] as string;
-  const token = authHeader?.startsWith("Bearer ")
-    ? authHeader.split(" ")[1]
-    : undefined;
+  const token = socket.handshake.auth?.token;
 
-  console.log("Auth header:", socket.handshake.headers["authorization"]);
-  console.log("Extracted token:", token);
+//   console.log("Auth socket.handshake: ", socket.handshake.auth);
 
   if (!token) {
     console.log("Socket token not found in header");
@@ -25,6 +20,7 @@ export const socketAuthMiddleware = (
       token,
       process.env.ACCESS_TOKEN_SECRET!
     ) as MyJwtPayload;
+
     socket.data.userId = decoded._id;
     socket.data.userName = decoded.userName;
     socket.data.userRole = decoded.role;

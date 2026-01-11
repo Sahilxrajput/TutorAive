@@ -10,16 +10,10 @@ interface Props {
 
 const NotesGrid = ({ noteList, }: Props) => {
 
-    useEffect(() => {
-        console.log("list", noteList)
-    }, [])
-
     if (noteList.length === 0) return null;
 
-   
-
     return (
-        <div className="grid xs sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 ">
+        <div className="grid sm:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 ">
             {/* @fix make grid responsive */}
             {noteList.map((note) => <NoteCard key={note._id} note={note} />)}
         </div>

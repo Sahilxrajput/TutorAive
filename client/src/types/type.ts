@@ -10,7 +10,7 @@ export interface IUser {
   email: string;
   enrolledClassrooms: string[];
   profilePicture?: string;
-  refreshToken?:string
+  refreshToken?: string;
 }
 
 export interface INotification {
@@ -82,6 +82,9 @@ export interface IClassroom {
 // }
 export interface AuthContextValue {
   user: IUser | null;
+  setUser: Dispatch<SetStateAction<IUser | null>>;
+  setAccessToken: Dispatch<SetStateAction<string | null>>;
+  accessToken: string | null;
   isInstructor: boolean;
   loading: boolean;
   refreshUser: () => Promise<void>;
