@@ -6,9 +6,12 @@ export const socketAuthMiddleware = (
   socket: Socket,
   next: (err?: Error) => void
 ) => {
-  const token = socket.handshake.auth?.token;
-
-//   console.log("Auth socket.handshake: ", socket.handshake.auth);
+    const token = socket.handshake.auth?.token;
+    
+//   const token = socket.handshake.headers.cookie
+//     ?.split("; ")
+//     .find((cookie) => cookie.startsWith("refreshToken="))
+//     ?.split("=")[1];
 
   if (!token) {
     console.log("Socket token not found in header");

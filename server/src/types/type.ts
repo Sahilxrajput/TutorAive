@@ -56,8 +56,12 @@ export interface IAssignment extends Document {
 }
 export interface IAttendance extends Document {
   classroom: Types.ObjectId;
+  lecture: Types.ObjectId;
   student: Types.ObjectId;
-  date: Date;
+  markedBy: Types.ObjectId;
+  sessionDate: Date;
+  leaveTime?: Date;
+  joinTime?: Date;
   status: "present" | "absent";
 }
 export interface IClassroom extends Document {
@@ -106,6 +110,7 @@ export interface ILecture extends Document {
     | "cancelled";
   delayReason: string;
   cancelReason: string;
+  isAttendanceLocked: boolean;
   updatedAt: Date;
 }
 export interface IClassInvitation extends Document {
@@ -209,7 +214,6 @@ export interface LectureUpdatePayload {
   status: LectureStatus;
   startTime?: string;
   reason?: string;
-  
 }
 
 export interface AssignmentPayload {

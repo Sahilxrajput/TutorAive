@@ -39,6 +39,7 @@ const useSocketHandler = (user?: IUser): UseSocketReturn => {
         //Disconnect immediately if user logs out or token missing
         // 1. No token → no socket
         const token = localStorage.getItem("accessToken");
+        // console.log("localstorage token: ", token)
 
         // No token → no socket
         if (!token) {

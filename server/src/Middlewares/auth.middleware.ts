@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import jwt, { JwtPayload } from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 import { MyJwtPayload } from "../types/type";
 
 // Extend Request interface to include userId
@@ -26,7 +26,7 @@ export default function authMiddleware(
   }
 
   const token = authHeader.split(" ")[1];
-  console.log("token exist: ")
+
   // Get token from cookies or Authorization header
   //   const token =
   //     req.cookies?.accessToken ||

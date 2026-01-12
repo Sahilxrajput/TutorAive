@@ -1,4 +1,3 @@
-// import "dotenv/config";
 import dotenv from "dotenv";
 dotenv.config({ path: "../../.env" });
 import { Request, Response } from "express";
@@ -21,115 +20,115 @@ const {
 const ai = new GoogleGenAI({});
 const History: ContentListUnion = [];
 
-const convertQueryIntoVector = async (query: string) => {
-  try {
-    //1.convert this question into vector
-    const embeddings = new GoogleGenerativeAIEmbeddings({
-      apiKey: GEMINI_API_KEY,
-      model: "text-embedding-004",
-    });
+// const convertQueryIntoVector = async (query: string) => {
+//   try {
+//     //1.convert this question into vector
+//     const embeddings = new GoogleGenerativeAIEmbeddings({
+//       apiKey: GEMINI_API_KEY,
+//       model: "text-embedding-004",
+//     });
 
-    const queryVector = await embeddings.embedQuery(query);
+//     const queryVector = await embeddings.embedQuery(query);
 
-    //3. search in pinecone
+//     //3. search in pinecone
 
-    const pinecone = new Pinecone();
-    const pineconeIndex = pinecone.Index(PINECONE_INDEX_NAME!);
+//     const pinecone = new Pinecone();
+//     const pineconeIndex = pinecone.Index(PINECONE_INDEX_NAME!);
 
-    const searchResults = await pineconeIndex.query({
-      topK: 10,
-      vector: queryVector,
-      includeMetadata: true,
-    });
-    //   console.log("searchResults: ", searchResults);
+//     const searchResults = await pineconeIndex.query({
+//       topK: 10,
+//       vector: queryVector,
+//       includeMetadata: true,
+//     });
+//     //   console.log("searchResults: ", searchResults);
 
-    // 4. extract text from each document's metadata
+//     // 4. extract text from each document's metadata
 
-    const context = searchResults.matches
-      .map((match) => match.metadata?.text || "")
-      .filter((text) => typeof text === "string" && text.length > 0)
-      .join("\n\n---\n\n");
+//     const context = searchResults.matches
+//       .map((match) => match.metadata?.text || "")
+//       .filter((text) => typeof text === "string" && text.length > 0)
+//       .join("\n\n---\n\n");
 
-    // console.log("context: ", context);
+//     // console.log("context: ", context);
 
-    //create the context for LLM
-    History.push({
-      role: "user",
-      parts: [{ text: query }],
-    });
+//     //create the context for LLM
+//     History.push({
+//       role: "user",
+//       parts: [{ text: query }],
+//     });
 
-    //Gemini
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: History,
-      config: {
-        systemInstruction: `You have to behave like a Data Structure and Algorithm Expert.
-      You will be given a context of relevant information and a user question.
-      Your task is to answer the user's question based ONLY on the provided context.
-      If the answer is not in the context, you must say "I could not find the answer in the provided document."
-      Keep your answers clear, concise, and educational.
+//     //Gemini
+//     const response = await ai.models.generateContent({
+//       model: "gemini-2.5-flash",
+//       contents: History,
+//       config: {
+//         systemInstruction: `You have to behave like a Data Structure and Algorithm Expert.
+//       You will be given a context of relevant information and a user question.
+//       Your task is to answer the user's question based ONLY on the provided context.
+//       If the answer is not in the context, you must say "I could not find the answer in the provided document."
+//       Keep your answers clear, concise, and educational.
         
-        Context: ${context}
-        `,
-      },
-    });
+//         Context: ${context}
+//         `,
+//       },
+//     });
 
-    History.push({
-      role: "model",
-      parts: [{ text: response.text }],
-    });
+//     History.push({
+//       role: "model",
+//       parts: [{ text: response.text }],
+//     });
 
-    console.log("\n");
-    console.log("response", response.text);
-  } catch (error) {
-    console.log("error: ", error);
-  }
-};
+//     console.log("\n");
+//     console.log("response", response.text);
+//   } catch (error) {
+//     console.log("error: ", error);
+//   }
+// };
 
-const name = readline.question("Enter Search Query: ");
-convertQueryIntoVector(name);
+// const name = readline.question("Enter Search Query: ");
+// convertQueryIntoVector(name);
 
-async function init() {
-  //1. load
-  const PDF_PATH = "./dsa.pdf";
-  const pdfLoader = new PDFLoader(PDF_PATH);
-  const rawDocs = await pdfLoader.load();
-  console.log(rawDocs.length);
+// async function init() {
+//   //1. load
+//   const PDF_PATH = "./dsa.pdf";
+//   const pdfLoader = new PDFLoader(PDF_PATH);
+//   const rawDocs = await pdfLoader.load();
+//   console.log(rawDocs.length);
 
-  // 2.   chunking kro
+//   // 2.   chunking kro
 
-  const textSplitter = new RecursiveCharacterTextSplitter({
-    chunkSize: 1000,
-    chunkOverlap: 200, //* can be 800 to 1800 normally 0-1000
-  });
-  const chunkedDocs = await textSplitter.splitDocuments(rawDocs);
-  //   console.log("chunkedDocs", chunkedDocs);
-  console.log("chunks completed");
+//   const textSplitter = new RecursiveCharacterTextSplitter({
+//     chunkSize: 1000,
+//     chunkOverlap: 200, //* can be 800 to 1800 normally 0-1000
+//   });
+//   const chunkedDocs = await textSplitter.splitDocuments(rawDocs);
+//   //   console.log("chunkedDocs", chunkedDocs);
+//   console.log("chunks completed");
 
-  // 3.  vector embedding model
+//   // 3.  vector embedding model
 
-  const embeddings = new GoogleGenerativeAIEmbeddings({
-    apiKey: process.env.GEMINI_API_KEY,
-    model: "text-embedding-004",
-  });
-  //   console.log("embeddings: ", embeddings);
-  console.log("embeddings model configured");
+//   const embeddings = new GoogleGenerativeAIEmbeddings({
+//     apiKey: process.env.GEMINI_API_KEY,
+//     model: "text-embedding-004",
+//   });
+//   //   console.log("embeddings: ", embeddings);
+//   console.log("embeddings model configured");
 
-  //4. database configure
-  //Initialize Pinecone Client
+//   //4. database configure
+//   //Initialize Pinecone Client
 
-  const pinecone = new Pinecone();
-  const pineconeIndex = pinecone.Index(PINECONE_INDEX_NAME!);
-  console.log("pinecone db configure");
+//   const pinecone = new Pinecone();
+//   const pineconeIndex = pinecone.Index(PINECONE_INDEX_NAME!);
+//   console.log("pinecone db configure");
 
-  //5. langchain (chunking,embedding,database)
+//   //5. langchain (chunking,embedding,database)
 
-  //   await PineconeStore.fromDocuments(chunkedDocs, embeddings, {
-  //     pineconeIndex,
-  //     maxConcurrency: 5, // no of chunks which do this process(chunks -> vector -> save in db)
-  //   });
-  console.log("data store successfully");
-}
+//   //   await PineconeStore.fromDocuments(chunkedDocs, embeddings, {
+//   //     pineconeIndex,
+//   //     maxConcurrency: 5, // no of chunks which do this process(chunks -> vector -> save in db)
+//   //   });
+//   console.log("data store successfully");
+// }
 // init();
 
 async function generateContent(prompt: string): Promise<string> {

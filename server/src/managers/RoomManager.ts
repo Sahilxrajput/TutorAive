@@ -1,57 +1,34 @@
 import { Router } from "mediasoup/node/lib/RouterTypes";
 import Room from "../classes/room";
 import Peer from "../classes/peer";
-import { addPeer, removePeer, peerRoom } from "./PeerManager";
+import { peerManager } from "./PeerManager";
+import { WebRtcTransport } from "mediasoup/node/lib/WebRtcTransportTypes";
 
-export const rooms = new Map<string, Room>(); // roomId -> Room
+const rooms = new Map<string, Room>(); // roomId -> Room
 
-/* -------------------- ROOM LIFECYCLE -------------------- */
+export const roomManager = {
+  createRoom(roomId: string, router: Router, host: Peer): Room {
+    if (rooms.has(roomId)) {
+      throw new Error("Room already exists");
+    }
 
-export function createRoom(roomId: string, router: Router, host: Peer): Room {
-  if (rooms.has(roomId)) {
-    throw new Error("Room already exists");
-  }
+    const room = new Room(roomId, router, host);
+    rooms.set(roomId, room);
 
-  const room = new Room(roomId, router, host);
-  rooms.set(roomId, room);
+    return room;
+  },
 
-  // PeerManager handles peer-room mapping
-  addPeer(host, roomId);
+  get(roomId: string) {
+    return rooms.get(roomId);
+  },
 
-  return room;
-}
+  add(room: Room) {
+    rooms.set(room.roomId, room);
+  },
 
-export function removeRoom(roomId: string): void {
-  rooms.delete(roomId);
-}
-
-export function getRoom(roomId: string): Room | undefined {
-  return rooms.get(roomId);
-}
-
-/* -------------------- ROOM MEMBERSHIP -------------------- */
-
-// export function joinRoom(roomId: string, peer: Peer): void {
-//   const room = rooms.get(roomId);
-//   if (!room) {
-//     throw new Error("Room not found");
-//   }
-
-//   addPeer(peer, roomId);
-// }
-
-export function leaveRoom(socketId: string): void {
-  const roomId = peerRoom.get(socketId);
-  if (!roomId) return;
-
-  const room = rooms.get(roomId);
-
-  // Delegate cleanup to PeerManager
-  removePeer(socketId);
-
-  //@todo : if host leaves, destroy room or transfer ownership
-
-  if (room && room.isEmpty()) {
+  delete(roomId: string) {
     rooms.delete(roomId);
-  }
-}
+  },
+};
+
+

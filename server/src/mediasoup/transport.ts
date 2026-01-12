@@ -1,14 +1,5 @@
 import { Router } from "mediasoup/node/lib/RouterTypes";
-import { mediaCodecs, webRtcTransport_options } from "../config/mediasoup";
-import { CreateWorker } from "./handlers/createWorker";
-
-export async function createRouter() {
-  const worker = await CreateWorker();
-  const router = await worker.createRouter({
-    mediaCodecs,
-  });
-  return router;
-}
+import { webRtcTransport_options } from "../config/mediasoup";
 
 export async function createWebRtcTransport(router: Router) {
   try {

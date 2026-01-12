@@ -1,6 +1,6 @@
-import React, { useEffect, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import { Device } from 'mediasoup-client'
-import type { AppData, Consumer, DtlsParameters, IceCandidate, IceParameters, MediaKind, Producer, ProducerCodecOptions, RtpCapabilities, RtpParameters, SctpParameters, Transport } from 'mediasoup-client/types';
+import type { AppData, DtlsParameters, IceCandidate, IceParameters, MediaKind, Producer, ProducerCodecOptions, RtpCapabilities, RtpParameters, SctpParameters, Transport } from 'mediasoup-client/types';
 import useSocketContext from '@/hooks/useSocketContext';
 import useAuth from '@/hooks/useAuth';
 
@@ -109,9 +109,9 @@ const Call = () => {
         goConnect(false)
     }
 
-    function goConnect(producerOrConsumer: boolean) {
-        isProducer = producerOrConsumer
-        return deviceRef.current === null ? joinRoom() : createTransport()
+    function goConnect(producer: boolean) {
+        isProducer = producer
+        return deviceRef.current === null ? joinRoom(producer) : createTransport()
     }
 
     const mute = () => {
@@ -122,7 +122,7 @@ const Call = () => {
     };
 
 
-    async function createConsumer(producerId: string, device?: Device | null, appData?: AppData) {
+    async function createConsumer(producerId: string, appData?: AppData) {
         if (!socket || !deviceRef.current || !consumerTransportRef.current) {
             return console.log("somthing is missing")
         }
@@ -179,15 +179,15 @@ const Call = () => {
     }
 
     //same fxn steps
-    const joinRoom = async () => {
+    const joinRoom = async (producer: boolean) => {
         try {
             console.log("join fxn called -->")
             if (!socket) {
                 console.log("socket not available")
                 return
-
             }
-            const { rtpCapabilities, producers } = await socket.emitWithAck('join-room', { roomId: 123, userId: user?._id, name: user?.firstName })
+            // @todo room id
+            const { rtpCapabilities, producers } = await socket.emitWithAck('join:live-session', { roomId: 123, userId: user?._id, name: user?.firstName, isTeacher: producer })
             console.log("rtpCapabilities : ", rtpCapabilities)
             // rtpCapabilities = res.rtpCapabilities
             //     creatDevice()
@@ -204,14 +204,14 @@ const Call = () => {
             await createTransport()
 
             console.log("========================after transport======================")
-            if (!isProducer && producers) {
-                for (const producerInfo of producers) {
-                    console.log("producerInfo : ", producerInfo)
-                    const producerId = producerInfo.id;
-                    const appData: AppData = producerInfo.appData;
-                    await createConsumer(producerId, device, appData);
-                }
-            }
+            // if (!isProducer && producers) {
+            //     for (const producerInfo of producers) {
+            //         console.log("producerInfo : ", producerInfo)
+            //         const producerId = producerInfo.id;
+            //         const appData: AppData = producerInfo.appData;
+            //         await createConsumer(producerId, device, appData);
+            //     }
+            // }
 
         } catch (error: any) {
             console.log(error)
@@ -266,7 +266,7 @@ const Call = () => {
                 if (res?.error) {
                     return console.log("tranpsort connect error : ", res.error)
                 }
-                // Tell the transport that parameters were transmitted.
+                //@todo Tell the transport that parameters were transmitted.
                 cb()
             } catch (error) {
                 console.log(error)
@@ -299,10 +299,9 @@ const Call = () => {
     }
 
     const createRecvTransport = async () => {
-        if (!socket || !deviceRef.current) return
+        if (!socket || !deviceRef.current) return console.log("device or socket on available for consumer")
 
         const downTransport = await socket.emitWithAck('createWebRtcTransport', { isSender: false, roomId: 123 })
-        // , (params: ITransportOptions) => {
         if (downTransport.error) {
             console.log(downTransport.error)
             return
@@ -346,7 +345,7 @@ const Call = () => {
         for (const producerInfo of producers) {
             // console.log("producerInfo : ", producerInfo)
             const producerId = producerInfo.id;
-            const appData: AppData = producerInfo.appData;
+            // const appData: AppData = producerInfo.appData;
             await createConsumer(producerId);
         }
 
@@ -467,9 +466,9 @@ const Call = () => {
         socket.on('connection-success', ({ socketId, existsProducer }) => {
             console.log(socketId, existsProducer)
         })
-        socket.on("joined - room", (data) => {
-            console.log(data.roomId,
-                data.peers)
+        socket.on("joined-room", (data) => {
+            console.log(data?.roomId,
+                data?.peers)
         })
 
     }, [socket, isConnected]);

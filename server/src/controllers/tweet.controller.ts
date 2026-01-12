@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import Tweet from "../models/tweet.model";
 import { cloudinary } from "../lib/cloudinary";
-import { emitTweetNotification } from "../sockets/class/class.emitter";
+import { emitTweetNotification } from "../sockets/emitters/notification.emitter";
 import { extractMentionedUserIds } from "../utils/extractMentionIds";
 import { Types } from "mongoose";
 import { Notification } from "../models/notification.model";
@@ -75,34 +75,33 @@ export const createTweet = async (req: Request, res: Response) => {
     console.log("tweet", tweet);
 
     if (mentionedUserIds.length > 0) {
-        for (const mentionId of mentionedUserIds) {
-            await addTweetNotificationJob({
-                userId: mentionId.toString(),
-                tweetId: tweet._id.toString(),
-                actorName: req.userName ?? "someone",
-                action: "mention",
-            });
-        }
+      for (const mentionId of mentionedUserIds) {
+        await addTweetNotificationJob({
+          userId: mentionId.toString(),
+          tweetId: tweet._id.toString(),
+          actorName: req.userName ?? "someone",
+          action: "mention",
+        });
+      }
     }
 
-        // emitTweetNotification({
-        //   userId: mentionId.toString(),
-        //   tweetId: tweet._id.toString(),
-        //   msg: `${req.userName} mentioned you in a post`,
-        // });
+    // emitTweetNotification({
+    //   userId: mentionId.toString(),
+    //   tweetId: tweet._id.toString(),
+    //   msg: `${req.userName} mentioned you in a post`,
+    // });
 
-
-      // Persist Notifications in Bulk (Tweet Mentions)
-      //   const notificationDocs = mentionedUserIds.map(
-      //     (userId: Types.ObjectId) => ({
-      //       user: userId,
-      //       type: "message", // correct semantic type
-      //       message: `You were mentioned in a tweet`,
-      //       data: {
-      //         tweetId: tweet._id,
-      //       },
-      //     })
-      //   );
+    // Persist Notifications in Bulk (Tweet Mentions)
+    //   const notificationDocs = mentionedUserIds.map(
+    //     (userId: Types.ObjectId) => ({
+    //       user: userId,
+    //       type: "message", // correct semantic type
+    //       message: `You were mentioned in a tweet`,
+    //       data: {
+    //         tweetId: tweet._id,
+    //       },
+    //     })
+    //   );
 
     //   if (notificationDocs.length > 0) {
     //     await Notification.insertMany(notificationDocs);

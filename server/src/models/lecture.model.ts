@@ -30,7 +30,10 @@ const lectureSession = new Schema<ILecture>(
     cancelReason: {
       type: String,
     },
-
+    isAttendanceLocked: {
+      type: Boolean,
+      default: false,
+    },
     status: {
       type: String,
       enum: [

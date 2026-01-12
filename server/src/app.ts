@@ -24,6 +24,7 @@ import lectureRouter from "./routes/lecture.route";
 import tweetRouter from "./routes/tweet.routes";
 import { initSocket } from "./sockets";
 import { createRedisWorker } from "./redis/worker";
+import attendanceRoutes from "./routes/attendence.routes";
 
 const PORT = process.env.PORT || 3000;
 
@@ -52,6 +53,7 @@ createRedisWorker();
 
 app.get("/", (_, res) => res.send("Socket.IO Server Running"));
 app.use("/api/assignments", assignmentRoutes);
+app.use("/api/attendance", attendanceRoutes);
 app.use("/api/auth", authRouter);
 app.use("/api/classrooms", classRouter);
 app.use("/api/invitations", invitationRouter);

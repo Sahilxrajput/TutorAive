@@ -10,7 +10,7 @@ import {
   LectureStatus,
   ILecture,
 } from "../types/type";
-import { emitLectureNotification } from "../sockets/class/class.emitter";
+import { emitLectureNotification } from "../sockets/emitters/notification.emitter";
 import { Notification } from "../models/notification.model";
 import { Types } from "mongoose";
 
@@ -400,4 +400,20 @@ export const getAllScheduleLecturesForClassroom = async (
   } catch (error) {
     handleError(res, error, "Failed to fetch scheduled classroom lectures.");
   }
+};
+export const attendanceLock = async (req: Request, res: Response) => {
+  const lecture = await Lecture.findById(req.params.id).select("createdBy");
+
+  if (!lecture) {
+    return res.status(404).json({ message: "Lecture not found" });
+  }
+
+  if (lecture.createdBy.toString() !== req.userId) {
+    return res.status(403).json({ message: "Forbidden" });
+  }
+
+  lecture.isAttendanceLocked = true;
+  await lecture.save();
+
+  return res.json({ success: true });
 };

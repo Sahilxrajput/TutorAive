@@ -40,4 +40,5 @@ router.get("/scheduled/my", getAllScheduleLecturesForStudent);
 // Get scheduled lectures for a specific classroom. Route param: classroomId
 router.get("/scheduled/:classroomId", getAllScheduleLecturesForClassroom);
 
+
 export default router;

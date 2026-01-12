@@ -5,7 +5,7 @@ import { useParams } from 'react-router-dom';
 const Note = () => {
 
     const { noteId } = useParams();
-    const { data: note, isLoading } = useNote(id!);
+    const { data: note, isLoading } = useNote(noteId!);
 
 
 

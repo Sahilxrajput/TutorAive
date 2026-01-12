@@ -29,52 +29,52 @@ import Call from "./pages/Call";
 
 const App: React.FC = () => {
 
-  return (
-    <Routes>
-      <Route path="/" element={<Layout />}>
-        <Route index element={<Home />} />
-        <Route path="chats" element={<Call />} />
-        {/* <Route path="chats" element={<ChatRoom />} /> */}
-        <Route path="editor" element={<Editor />} />
-        <Route path="notes" element={<Notes />} />
-        <Route path="notes/:noteId" element={<Note />} />
-        <Route path="notes/new" element={<SaveNotes />} />
-        <Route path="quizs" element={<Quiz />} />
-        <Route path="live" element={<LiveSession />} />
-        <Route path="community" element={<CommunityPage />} />
+    return (
+        <Routes>
+            <Route path="/" element={<Layout />}>
+                <Route index element={<Home />} />
+                <Route path="chats" element={<Call />} />
+                {/* <Route path="chats" element={<ChatRoom />} /> */}
+                <Route path="editor" element={<Editor />} />
+                <Route path="notes" element={<Notes />} />
+                <Route path="notes/:noteId" element={<Note />} />
+                <Route path="notes/new" element={<SaveNotes />} />
+                <Route path="quizs" element={<Quiz />} />
+                <Route path="live" element={<LiveSession />} />
+                <Route path="community" element={<CommunityPage />} />
 
-        {/* Browse all classrooms */}
-        <Route path="classrooms" element={<BrowseClassroom />} />
+                {/* Browse all classrooms */}
+                <Route path="classrooms" element={<BrowseClassroom />} />
 
-        {/* Individual classroom page */}
-        <Route path="classrooms/:classroomId" element={
-          <EnrolledRoute>
-            <ClassroomLayout />
-          </EnrolledRoute>
-        }>
-          <Route index element={<ClassroomOverview />} />
-          <Route path="notes" element={<Notes />} />
-                  <Route path="assignments" element={<AssignmentPage />} />
-          <Route path="leaderboard" element={<LeaderboardPage />} />
-        </Route>
+                {/* Individual classroom page */}
+                <Route path="classrooms/:classroomId" element={
+                    <EnrolledRoute>
+                        <ClassroomLayout />
+                    </EnrolledRoute>
+                }>
+                    <Route index element={<ClassroomOverview />} />
+                    <Route path="notes" element={<Notes />} />
+                    <Route path="assignments" element={<AssignmentPage />} />
+                    <Route path="leaderboard" element={<LeaderboardPage />} />
+                </Route>
 
-        {/* Protected dashboard */}
-        <Route
-          path="dashboard"
-          element={
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
-          }
-        />
-      </Route>
+                {/* Protected dashboard */}
+                <Route
+                    path="dashboard"
+                    element={
+                        <ProtectedRoute>
+                            <Dashboard />
+                        </ProtectedRoute>
+                    }
+                />
+            </Route>
 
-      <Route path="signin" element={<Signin />} />
-      <Route path="signup" element={<Signup />} />
-      <Route path="auth/success" element={<AuthSuccess />} />
-    </Routes>
+            <Route path="signin" element={<Signin />} />
+            <Route path="signup" element={<Signup />} />
+            <Route path="auth/success" element={<AuthSuccess />} />
+        </Routes>
 
-  );
+    );
 };
 
 export default App;

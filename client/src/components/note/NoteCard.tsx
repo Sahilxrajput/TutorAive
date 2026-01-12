@@ -5,10 +5,8 @@ import { Forward, Globe, Pin } from 'lucide-react';
 import useAuth from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
 import { formatLastUpdated } from '@/utils/splitDateTime';
-import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Button } from '../ui/button';
 import { useNavigate } from 'react-router-dom';
-import defaultAvtar from "@/assets/image/avatar.png"
 import { HoverCardDemo } from './HoverCardDemo';
 
 const NoteCard = ({ note }: { note: INote }) => {

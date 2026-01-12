@@ -1,25 +1,29 @@
 import { Producer, Transport, Consumer } from "mediasoup/node/lib/types";
+import Room from "./room";
 
 class Peer {
-  public name: string;
-  public userId: string;
-  public socketId: string;
-  public producer: {
+  public readonly userId: string;
+  public readonly socketId: string;
+  public readonly name: string;
+
+  public upTransport: Transport | null;
+  public downTransport: Transport | null;
+
+  public producers: {
     cam: Producer | null;
     mic: Producer | null;
     screen: Producer | null;
     saudio: Producer | null;
   };
-  public upTransport: Transport | null;
-  public downTransport: Transport | null;
-  public consumers: Consumer[];
+
+  public consumers: Map<string, Consumer>;
   public screen: boolean;
 
   constructor(name: string, socketId: string, userId: string) {
     this.userId = userId;
     this.name = name;
     this.socketId = socketId;
-    this.producer = {
+    this.producers = {
       cam: null,
       mic: null,
       screen: null,
@@ -27,9 +31,20 @@ class Peer {
     };
     this.upTransport = null;
     this.downTransport = null;
-    this.consumers = [];
+    this.consumers = new Map();
     this.screen = false;
   }
-}
 
+  addConsumer(consumer: Consumer) {
+    this.consumers.set(consumer.id, consumer);
+  }
+
+  getConsumer(consumerId: string) {
+    return this.consumers.get(consumerId);
+  }
+
+  removeConsumer(consumerId: string) {
+    this.consumers.delete(consumerId);
+  }
+}
 export default Peer;

@@ -1,5 +1,5 @@
 import type { INote } from '@/types/type';
-import  { useEffect, type JSX } from 'react'
+import  { type JSX } from 'react'
 import NoteCard from './NoteCard';
 
 interface Props {
