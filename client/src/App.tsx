@@ -56,6 +56,7 @@ const App: React.FC = () => {
                     <Route path="notes" element={<Notes />} />
                     <Route path="assignments" element={<AssignmentPage />} />
                     <Route path="leaderboard" element={<LeaderboardPage />} />
+                    <Route path="lecture/live/:lectureId" element={<LeaderboardPage />} />
                 </Route>
 
                 {/* Protected dashboard */}

@@ -1,5 +1,4 @@
 import { Queue } from "bullmq";
-import IORedis from "ioredis";
 import {
   IAssignmentNotificationJob,
   IClassNotificationJob,

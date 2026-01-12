@@ -1,6 +1,6 @@
 import React, { useState, type Dispatch, type SetStateAction } from "react";
 import { format } from "date-fns";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { Calendar as CalendarIcon } from "lucide-react";
 
@@ -38,7 +38,7 @@ export function StartClass({ showPopup, setShowPopup }: DateTimePickerProps) {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-
+    const navigate = useNavigate()
 
     const handleSchedule = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -100,6 +100,7 @@ export function StartClass({ showPopup, setShowPopup }: DateTimePickerProps) {
             console.log("data : ", data)
 
             if (data.success) {
+                navigate(`/classrooms/${classroomId}/lecture/live/${data.data._id}`);
                 toast.success(data.message);
                 setShowPopup(false);
             } else {

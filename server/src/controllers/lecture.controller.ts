@@ -10,7 +10,7 @@ import {
   LectureStatus,
   ILecture,
 } from "../types/type";
-import { emitLectureNotification } from "../sockets/emitters/notification.emitter";
+import { emitLectureNotification } from "../socket/emitters/notification.emitter";
 import { Notification } from "../models/notification.model";
 import { Types } from "mongoose";
 

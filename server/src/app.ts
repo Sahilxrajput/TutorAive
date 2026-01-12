@@ -22,7 +22,7 @@ import genearteQrCode from "./utils/generateQrCode";
 import notesRouter from "./routes/note.routes";
 import lectureRouter from "./routes/lecture.route";
 import tweetRouter from "./routes/tweet.routes";
-import { initSocket } from "./sockets";
+import { initSocket } from "./socket";
 import { createRedisWorker } from "./redis/worker";
 import attendanceRoutes from "./routes/attendence.routes";
 
@@ -43,8 +43,6 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-
-
 
 connectDB();
 app.use(passport.initialize());
@@ -78,7 +76,6 @@ app.get("/join", async (req, res) => {
 });
 
 console.log("Server restarted at", new Date().toISOString());
-
 
 server.listen(PORT, () =>
   console.log(` Server running on port http://localhost:${PORT}`)

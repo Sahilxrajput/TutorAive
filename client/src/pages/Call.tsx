@@ -1,6 +1,18 @@
 import { useEffect, useRef } from 'react'
 import { Device } from 'mediasoup-client'
-import type { AppData, DtlsParameters, IceCandidate, IceParameters, MediaKind, Producer, ProducerCodecOptions, RtpCapabilities, RtpParameters, SctpParameters, Transport } from 'mediasoup-client/types';
+import type {
+    AppData,
+    DtlsParameters,
+    IceCandidate,
+    IceParameters,
+    MediaKind,
+    Producer,
+    ProducerCodecOptions,
+    RtpCapabilities,
+    RtpParameters,
+    SctpParameters,
+    Transport
+} from 'mediasoup-client/types';
 import useSocketContext from '@/hooks/useSocketContext';
 import useAuth from '@/hooks/useAuth';
 
@@ -238,6 +250,11 @@ const Call = () => {
     //     appData:{}
     // }
 
+    const enterFullScreen = () => {
+        if (document.documentElement.requestFullscreen) {
+            document.documentElement.requestFullscreen();
+        }
+    };
 
     const createSendTransport = async () => {
         if (!socket) return
@@ -498,6 +515,7 @@ const Call = () => {
                 <button className='bg-pink-300 rounded-md py-4 text-sm' onClick={goConsume}>Join</button>
                 <button className='bg-pink-300 rounded-md py-4 text-sm' onClick={stop}>Stop</button>
                 <button className='bg-pink-300 rounded-md py-4 text-sm' onClick={mute}>unmute</button>
+                <button className='bg-pink-300 rounded-md py-4 text-sm' onClick={enterFullScreen}>full screen</button>
             </div>
         </div>
     );
