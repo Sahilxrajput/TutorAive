@@ -1,11 +1,17 @@
 import { Queue } from "bullmq";
-import { IAssignmentNotificationJob, IClassNotificationJob, ITweetNotificationJob, LectureStatus } from "../types/type";
+import IORedis from "ioredis";
+import {
+  IAssignmentNotificationJob,
+  IClassNotificationJob,
+  ITweetNotificationJob,
+  LectureStatus,
+} from "../types/type";
 
 export const notificationQueue = new Queue("notifications", {
   connection: {
-    host: "127.0.0.1",
-    // host: "localhost",
-    port: 6379,
+    host: process.env.REDIS_HOST,
+    port: Number(process.env.REDIS_PORT),
+    password: process.env.REDIS_PASSWORD,
   },
 });
 
@@ -15,7 +21,7 @@ export const addAssignmentNotificationJob = async ({
   assignmentId,
   title,
   dueDate,
-}:IAssignmentNotificationJob) => {
+}: IAssignmentNotificationJob) => {
   await notificationQueue.add(
     "assignment-notification",
     { assignmentId, classroomId, classroomTitle, title, dueDate },
@@ -61,7 +67,7 @@ export const addTweetNotificationJob = async ({
   tweetId,
   actorName,
   action,
-}:ITweetNotificationJob ) => {
+}: ITweetNotificationJob) => {
   await notificationQueue.add(
     "tweet-notification",
     {
@@ -83,8 +89,6 @@ export const addTweetNotificationJob = async ({
 
   console.log("added in tweet notification queue");
 };
-
-
 
 notificationQueue.on("waiting", (jobId) =>
   console.log(`class Job ${jobId} is waiting`)
