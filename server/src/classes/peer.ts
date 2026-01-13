@@ -16,7 +16,7 @@ class Peer {
     saudio: Producer | null;
   };
 
-  public consumers: Map<string, Consumer>;
+  public consumers: Map<string, Consumer>; // consumerId -> Consumer
   public screen: boolean;
 
   constructor(name: string, socketId: string, userId: string) {
@@ -44,7 +44,8 @@ class Peer {
   }
 
   removeConsumer(consumerId: string) {
-    this.consumers.delete(consumerId);
+    let a = this.consumers.delete(consumerId);
+    console.log("successfully removed", a);
   }
 }
 export default Peer;

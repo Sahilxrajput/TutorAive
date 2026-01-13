@@ -1,8 +1,8 @@
 import { Server as HttpServer } from "http";
 import { Server, Socket } from "socket.io";
 import { socketAuthMiddleware } from "../Middlewares/socketAuth";
-import { handleJoinLiveSession } from "./handlers/handleJoinLiveSession";
-import { Transport } from "mediasoup/node/lib/types";
+import { handleJoinLiveSession } from "./handlers/joinLiveSession.handler";
+import { Consumer, Transport } from "mediasoup/node/lib/types";
 import Attendance from "../models/attendence.model.";
 import { roomManager } from "../managers/RoomManager";
 import { handleCreateWebRtcTransport } from "./handlers/webrtcTransport.handler";
@@ -12,6 +12,7 @@ import { handleTransportProduce } from "./handlers/transportProduce.handler";
 import { handleConsume } from "./handlers/consume.handler";
 import { handleGetProducers } from "./handlers/getProducers.handler";
 import { handleConsumerResume } from "./handlers/consumerResume.handler";
+import { handleLeaveLiveSession } from "./handlers/leaveLiveSession.handler";
 
 export let io: Server | null = null;
 
@@ -40,7 +41,7 @@ export const initSocket = async (httpServer: HttpServer) => {
     socket.join(`user:${userId}`);
     // console.log(`User ${userId} joined user:${userId}`);
 
-    socket.on("join:live-session", handleJoinLiveSession(socket)); 
+    socket.on("join:live-session", handleJoinLiveSession(socket));
 
     socket.on("createWebRtcTransport", handleCreateWebRtcTransport(socket));
 
@@ -54,12 +55,10 @@ export const initSocket = async (httpServer: HttpServer) => {
 
     socket.on("get-producres", handleGetProducers());
 
+    socket.on("leave:live-session", handleLeaveLiveSession(socket));
+
     socket.on("join:classroom", (classroomId: string) => {
       socket.join(classroomId);
-    });
-
-    socket.on("leave:classroom", (classroomId: string) => {
-      socket.leave(classroomId);
     });
 
     socket.on("join-lecture", async ({ lectureId, classroomId }) => {

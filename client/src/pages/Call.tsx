@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Device } from 'mediasoup-client'
 import type {
     AppData,
@@ -19,9 +19,11 @@ import useAuth from '@/hooks/useAuth';
 const Call = () => {
 
     const { user } = useAuth();
-    const video1Ref = useRef<HTMLVideoElement | null>(null);
-    const video2Ref = useRef<HTMLVideoElement | null>(null);
+    const localVideoRef = useRef<HTMLVideoElement | null>(null);
+    const remoteVideoRef = useRef<HTMLVideoElement | null>(null);
     const streamRef = useRef<MediaStream | null>(null);
+    const [cam, setCam] = useState<boolean>(true);
+    const [mic, setMic] = useState<boolean>(true);
     const { socket, isConnected, } = useSocketContext();
     const producerTransportRef = useRef<Transport>(null)
     const consumerTransportRef = useRef<Transport>(null)
@@ -65,6 +67,12 @@ const Call = () => {
     //     },
     // };
 
+    const removeConsumer = () => {
+        if (!socket) return
+        socket.emit("leave:live-session", { roomId: 123 })
+        stop()
+    }
+
     async function start() {
         const stream = await navigator.mediaDevices.getUserMedia({
             video: true,
@@ -76,20 +84,120 @@ const Call = () => {
         //@todo apply constrain
 
         // attach stream to video element
-        if (video1Ref.current) {
-            video1Ref.current.srcObject = stream;
+        if (localVideoRef.current) {
+            localVideoRef.current.srcObject = stream;
         }
 
         goConnect(true)
     }
 
-    function stop() {
-        if (!streamRef.current) return;
+    function copyIdToClipboard() {
+        if (callIdRef.current) {
+            navigator.clipboard.writeText(callIdRef.current).then(() => {
+                // setIdCopied(true);
+                // setTimeout(() => setIdCopied(false), 2000);
+            });
+        }
+    }
 
+    function copyUrlToClipboard() {
+        const url = window.location.pathname
+        console.log("url: ", url)
+        const urlToCopy = `${import.meta.env.VITE_API_URL}/${url}`
+        navigator.clipboard.writeText(urlToCopy).then(() => {
+            // setUrlCopied(true);
+            // setTimeout(() => setUrlCopied(false), 2000);
+        });
+    }
+
+    async function toggleMic() {
+        const micProducer = micProducerRef.current;
+        if (!micProducer) return;
+        if (mic) {
+            streamRef.current?.getAudioTracks().forEach(track => track.stop());
+            const silentTrack = createSilentAudioTrack();
+            if (silentTrack) await micProducer.replaceTrack({ track: silentTrack });
+        } else {
+            const newMicTrack = await navigator.mediaDevices.getUserMedia({
+                audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
+            })
+                .then(s => s.getAudioTracks()[0]);
+            if (newMicTrack) await micProducer.replaceTrack({ track: newMicTrack });
+        }
+
+        setMic(!mic);
+    }
+
+    function createSilentAudioTrack() {
+        const ctx = new AudioContext();
+        const dst = ctx.createMediaStreamDestination();
+        const oscillator = ctx.createOscillator();
+        oscillator.connect(dst);
+        oscillator.frequency.value = 0.0001;
+        oscillator.start();
+        oscillator.stop(ctx.currentTime + 0.05);
+        return dst.stream.getAudioTracks()[0];
+    }
+
+    function createBlankVideoTrack(width = 1280, height = 720, fps = 30) {
+        const canvas = Object.assign(document.createElement('canvas'), { width, height });
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return null;
+
+        function draw() {
+            if (ctx) {
+                ctx.fillStyle = 'black';
+                ctx.fillRect(0, 0, width, height);
+                requestAnimationFrame(draw);
+            }
+        }
+        draw();
+
+        const stream = canvas.captureStream(fps);
+        return stream.getVideoTracks()[0];
+    }
+
+    async function toggleCam() {
+        const camProducer = camProducerRef.current;
+        if (!camProducer) return;
+        if (cam) {
+            streamRef.current?.getVideoTracks().forEach(track => track.stop());
+            const blankTrack = createBlankVideoTrack();
+            if (blankTrack) await camProducer.replaceTrack({ track: blankTrack });
+            if (blankTrack && localVideoRef.current) {
+                localVideoRef.current.srcObject = new MediaStream([blankTrack]);
+            }
+            streamRef.current = null;
+        }
+        else {
+            const newCamStream = await navigator.mediaDevices.getUserMedia({
+                video: { width: 1920, height: 1080, frameRate: { min: 30, ideal: 60 }, facingMode: "user" }
+            });
+            const localVideoTrack = newCamStream.getVideoTracks()[0];
+            if (localVideoTrack) {
+                await localVideoTrack.applyConstraints({
+                    width: 1920,
+                    height: 1080,
+                    frameRate: 60
+                }).catch(err => console.warn("applyConstraints failed:", err));
+            }
+            const newCamTrack = newCamStream.getVideoTracks()[0];
+            if (newCamTrack) await camProducer.replaceTrack({ track: newCamTrack });
+            if (localVideoRef.current && newCamTrack) {
+                localVideoRef.current.srcObject = new MediaStream([newCamTrack]);
+            }
+            streamRef.current = newCamStream;
+        }
+
+        setCam(!cam);
+    }
+
+    function leaveRoom() {
+        if (!streamRef.current) return;
         streamRef.current.getTracks().forEach(track => track.stop());
 
-        if (video1Ref.current) {
-            video1Ref.current.srcObject = null;
+        if (localVideoRef.current) {
+            localVideoRef.current.srcObject = null;
         }
 
         streamRef.current = null;
@@ -127,9 +235,9 @@ const Call = () => {
     }
 
     const mute = () => {
-        if (video1Ref.current) {
-            video1Ref.current.muted = true;
-            // video1Ref.current.volume = 1.0;
+        if (localVideoRef.current) {
+            localVideoRef.current.muted = true;
+            // localVideoRef.current.volume = 1.0;
         }
     };
 
@@ -155,14 +263,14 @@ const Call = () => {
         const consumer = await recvTransport.consume(res);
         console.log("consumer ==> ", consumer);
 
-        if (res.kind === 'video' && video2Ref.current) {
+        if (res.kind === 'video' && remoteVideoRef.current) {
             const stream = new MediaStream([consumer.track]);
 
-            video2Ref.current.srcObject = stream;
-            video2Ref.current.autoplay = true;
-            video2Ref.current.playsInline = true;
+            remoteVideoRef.current.srcObject = stream;
+            remoteVideoRef.current.autoplay = true;
+            remoteVideoRef.current.playsInline = true;
 
-            video2Ref.current
+            remoteVideoRef.current
                 .play()
                 .then(() => console.log("video playing"))
                 .catch(e => console.log("play blocked", e));
@@ -191,7 +299,7 @@ const Call = () => {
     }
 
     //same fxn steps
-    const joinRoom = async (producer: boolean) => {
+    const joinRoom = async () => {
         try {
             console.log("join fxn called -->")
             if (!socket) {
@@ -199,7 +307,7 @@ const Call = () => {
                 return
             }
             // @todo room id
-            const { rtpCapabilities, producers } = await socket.emitWithAck('join:live-session', { roomId: 123, userId: user?._id, name: user?.firstName, isTeacher: producer })
+            const { rtpCapabilities, producers } = await socket.emitWithAck('join:live-session', { roomId: 123, userId: user?._id, name: user?.firstName })
             console.log("rtpCapabilities : ", rtpCapabilities)
             // rtpCapabilities = res.rtpCapabilities
             //     creatDevice()
@@ -469,8 +577,8 @@ const Call = () => {
         console.log("coneumer ==> ", consumer);
         const { track } = consumer
 
-        if (video2Ref.current) {
-            video2Ref.current.srcObject = new MediaStream([track])
+        if (remoteVideoRef.current) {
+            remoteVideoRef.current.srcObject = new MediaStream([track])
         }
 
         socket.emit('consumer-resume', { consumerId: consumer.id, roomId: 123 })
@@ -497,13 +605,13 @@ const Call = () => {
             <div className='flex items-center justify-center gap-16'>
                 <video
                     className='h-75 w-125 border-4 rounded-xl'
-                    ref={video1Ref}
+                    ref={localVideoRef}
                     autoPlay
                     muted
                     playsInline
                 />
 
-                <video ref={video2Ref}
+                <video ref={remoteVideoRef}
                     className='h-75 w-125 border-4 rounded-xl'
                     muted
                 />
@@ -513,9 +621,11 @@ const Call = () => {
             <div className='grid grid-cols-3  gap-16'>
                 <button className='bg-pink-300 rounded-md py-4 text-sm' onClick={start}>Create</button>
                 <button className='bg-pink-300 rounded-md py-4 text-sm' onClick={goConsume}>Join</button>
-                <button className='bg-pink-300 rounded-md py-4 text-sm' onClick={stop}>Stop</button>
+                <button className='bg-pink-300 rounded-md py-4 text-sm' onClick={leaveRoom}>Stop</button>
                 <button className='bg-pink-300 rounded-md py-4 text-sm' onClick={mute}>unmute</button>
-                <button className='bg-pink-300 rounded-md py-4 text-sm' onClick={enterFullScreen}>full screen</button>
+                <button className='bg-pink-300 rounded-md py-4 text-sm' onClick={removeConsumer}>remove consumer</button>
+                <button className='bg-pink-300 rounded-md py-4 text-sm' onClick={toggleMic}>toggleMic</button>
+                <button className='bg-pink-300 rounded-md py-4 text-sm' onClick={toggleCam}>toggleCam</button>
             </div>
         </div>
     );

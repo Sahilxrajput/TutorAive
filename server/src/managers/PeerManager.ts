@@ -14,6 +14,4 @@ export const peerManager = {
   remove(socketId: string) {
     peers.delete(socketId);
   },
-
-  
 };

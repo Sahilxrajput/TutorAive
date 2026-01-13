@@ -6,21 +6,15 @@ import { createRouter } from "../../mediasoup/router";
 
 export const handleJoinLiveSession =
   (socket: Socket) => async (data: any, cb: any) => {
-    const { roomId, name, userId, isTeacher } = data;
+    const { roomId, name, userId } = data;
 
     let room = roomManager.get(roomId);
-
+    const isTeacher = socket.data.userRole === "instructor";
     // 1. Room does not exist
-    if (!room) {
-      if (!isTeacher) {
-        return cb({ error: "Room does not exist" });
-      }
-
+    if (!room || isTeacher) {
       const router = await createRouter();
 
       const peer = new Peer(name, socket.id, userId);
-
-        console.log("peer: ", peer);
 
       room = roomManager.createRoom(roomId, router, peer);
       peerManager.add(peer);
@@ -35,11 +29,14 @@ export const handleJoinLiveSession =
 
     // 2. Room exists → check duplicate peer
     if (room.hasPeer(userId)) {
+        console.log("User already joined this class");
       return cb({ error: "User already joined this class" });
     }
 
     // 3. Create peer only AFTER checks
     const peer = new Peer(name, socket.id, userId);
+
+    if(peer) console.log("peer create")
 
     room.addPeer(peer);
     peerManager.add(peer);
@@ -54,6 +51,5 @@ export const handleJoinLiveSession =
 
     cb({
       rtpCapabilities: room.router.rtpCapabilities,
-      // producers:
     });
   };

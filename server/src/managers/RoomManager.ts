@@ -1,8 +1,6 @@
 import { Router } from "mediasoup/node/lib/RouterTypes";
 import Room from "../classes/room";
 import Peer from "../classes/peer";
-import { peerManager } from "./PeerManager";
-import { WebRtcTransport } from "mediasoup/node/lib/WebRtcTransportTypes";
 
 const rooms = new Map<string, Room>(); // roomId -> Room
 
