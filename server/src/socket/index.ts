@@ -84,7 +84,7 @@ export const initSocket = async (httpServer: HttpServer) => {
 
     // socket.on("get-peers", (roomId) => onGetPeers(socket, roomId));
 
-    // socket.on("disconnect", () => onDisconnect(socket));
+    socket.on("disconnect", handleLeaveLiveSession(socket));
   });
 };
 

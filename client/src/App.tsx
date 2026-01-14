@@ -22,7 +22,8 @@ import LiveSession from "./pages/LiveSession";
 import CommunityPage from "./pages/CommunityPage";
 import SaveNotes from "./pages/SaveNotes";
 import Note from "./pages/Note";
-import Call from "./pages/Call";
+import LiveTeacherPage from "./pages/LiveTeacherPage";
+import LiveStudentPage from "./pages/LiveStudentPage";
 
 
 
@@ -33,14 +34,12 @@ const App: React.FC = () => {
         <Routes>
             <Route path="/" element={<Layout />}>
                 <Route index element={<Home />} />
-                <Route path="chats" element={<Call />} />
-                {/* <Route path="chats" element={<ChatRoom />} /> */}
+                <Route path="chats" element={<LiveSession />} />
                 <Route path="editor" element={<Editor />} />
                 <Route path="notes" element={<Notes />} />
                 <Route path="notes/:noteId" element={<Note />} />
                 <Route path="notes/new" element={<SaveNotes />} />
                 <Route path="quizs" element={<Quiz />} />
-                <Route path="live" element={<LiveSession />} />
                 <Route path="community" element={<CommunityPage />} />
 
                 {/* Browse all classrooms */}
@@ -54,9 +53,10 @@ const App: React.FC = () => {
                 }>
                     <Route index element={<ClassroomOverview />} />
                     <Route path="notes" element={<Notes />} />
+                    <Route path="stu" element={<LiveStudentPage />} />
                     <Route path="assignments" element={<AssignmentPage />} />
                     <Route path="leaderboard" element={<LeaderboardPage />} />
-                    <Route path="lecture/live/:lectureId" element={<LeaderboardPage />} />
+                    <Route path="lecture/live/:lectureId" element={<LiveSession />} /> // handle role wised page rendering
                 </Route>
 
                 {/* Protected dashboard */}

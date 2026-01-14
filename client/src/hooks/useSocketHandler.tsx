@@ -8,7 +8,6 @@ interface UseSocketReturn {
     isConnected: boolean;
     onlineUsers: IUser[];
     sendMessage: (message: string, roomId: string) => void;
-    emitCustomEvent: (event: string, payload: any) => void;
     disconnectSocket: () => void;
     reconnectSocket: () => void;
 }
@@ -113,12 +112,6 @@ const useSocketHandler = (user?: IUser): UseSocketReturn => {
         }
     }, []);
 
-    const emitCustomEvent = useCallback((event: string, payload: any) => {
-        if (socketRef.current) {
-            socketRef.current.emit(event, payload);
-        }
-    }, []);
-
     // --- Manual socket controls ---
     const disconnectSocket = useCallback(() => {
         cleanupSocket();
@@ -136,7 +129,6 @@ const useSocketHandler = (user?: IUser): UseSocketReturn => {
         isConnected,
         onlineUsers,
         sendMessage,
-        emitCustomEvent,
         disconnectSocket,
         reconnectSocket,
     };

@@ -3,15 +3,15 @@ import ClassroomSideBar from "./ClassroomSideBar";
 
 const ClassroomLayout = () => {
   return (
-    <div className="flex h-screen">
+      <div className="flex h-screen overflow-hidden">
 
       {/* Classroom-specific sidebar */}
       <ClassroomSideBar />
 
       {/* Main classroom content */}
-      <div className="flex-1  overflow-auto">
+      <main  className="flex-1 overflow-hidden">
         <Outlet />
-      </div>
+      </main>
     </div>
   );
 };

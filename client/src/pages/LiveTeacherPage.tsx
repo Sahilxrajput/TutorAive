@@ -15,18 +15,34 @@ import type {
 } from 'mediasoup-client/types';
 import useSocketContext from '@/hooks/useSocketContext';
 import useAuth from '@/hooks/useAuth';
+import { useParams } from 'react-router-dom';
+import { toast } from 'sonner';
+import VideoStage from '@/components/classroom/VideoStage';
+import ControlsBar from '@/components/classroom/ControlsBar';
+import SidebarTabs from '@/components/classroom/SidebarTabs';
 
-const Call = () => {
+const LiveTeacherPage = () => {
 
+
+    const [isMuted, setIsMuted] = useState(false);
+    const [isCamOff, setIsCamOff] = useState(false);
+    const [isSharing, setIsSharing] = useState(false);
+    const [openChat, setOpenChat] = useState(false)
+    const [viewerCount] = useState(42);
+
+    // -------------------------------------------------------
     const { user } = useAuth();
+    const { socket, isConnected, } = useSocketContext();
+    const { lectureId } = useParams<{
+        classroomId: string;
+        lectureId: string;
+    }>();
+
     const localVideoRef = useRef<HTMLVideoElement | null>(null);
-    const remoteVideoRef = useRef<HTMLVideoElement | null>(null);
     const streamRef = useRef<MediaStream | null>(null);
     const [cam, setCam] = useState<boolean>(true);
     const [mic, setMic] = useState<boolean>(true);
-    const { socket, isConnected, } = useSocketContext();
     const producerTransportRef = useRef<Transport>(null)
-    const consumerTransportRef = useRef<Transport>(null)
     const camProducerRef = useRef<Producer>(null);
     const micProducerRef = useRef<Producer>(null);
     const screenProducerRef = useRef<Producer>(null);
@@ -42,7 +58,6 @@ const Call = () => {
 
     // let rtpCapabilities: any;
     // let consumer: Consumer;
-    let isProducer: boolean = false;
 
     // let params = {
     //     encodings: [
@@ -65,15 +80,9 @@ const Call = () => {
     //     codecOptions: {
     //         videoGoogleStartBitrate: 1000,
     //     },
-    // };
+    // };        
 
-    const removeConsumer = () => {
-        if (!socket) return
-        socket.emit("leave:live-session", { roomId: 123 })
-        stop()
-    }
-
-    async function start() {
+    async function takePermission() {
         const stream = await navigator.mediaDevices.getUserMedia({
             video: true,
             audio: true,
@@ -87,32 +96,16 @@ const Call = () => {
         if (localVideoRef.current) {
             localVideoRef.current.srcObject = stream;
         }
-
-        goConnect(true)
     }
 
-    function copyIdToClipboard() {
-        if (callIdRef.current) {
-            navigator.clipboard.writeText(callIdRef.current).then(() => {
-                // setIdCopied(true);
-                // setTimeout(() => setIdCopied(false), 2000);
-            });
-        }
-    }
-
-    function copyUrlToClipboard() {
-        const url = window.location.pathname
-        console.log("url: ", url)
-        const urlToCopy = `${import.meta.env.VITE_API_URL}/${url}`
-        navigator.clipboard.writeText(urlToCopy).then(() => {
-            // setUrlCopied(true);
-            // setTimeout(() => setUrlCopied(false), 2000);
-        });
+    async function start() {
+        await (deviceRef.current === null ? joinRoom() : createSendTransport())
     }
 
     async function toggleMic() {
         const micProducer = micProducerRef.current;
         if (!micProducer) return;
+        setIsMuted(v => !v)
         if (mic) {
             streamRef.current?.getAudioTracks().forEach(track => track.stop());
             const silentTrack = createSilentAudioTrack();
@@ -160,6 +153,7 @@ const Call = () => {
     async function toggleCam() {
         const camProducer = camProducerRef.current;
         if (!camProducer) return;
+        setIsCamOff(v => !v)
         if (cam) {
             streamRef.current?.getVideoTracks().forEach(track => track.stop());
             const blankTrack = createBlankVideoTrack();
@@ -192,7 +186,7 @@ const Call = () => {
         setCam(!cam);
     }
 
-    function leaveRoom() {
+    const leaveRoom = () => {
         if (!streamRef.current) return;
         streamRef.current.getTracks().forEach(track => track.stop());
 
@@ -223,97 +217,19 @@ const Call = () => {
             micProducerRef.current.close();
             micProducerRef.current = null;
         }
+        if (!socket) return
+        socket.emit("leave:live-session", { roomId: lectureId })
+        stop()
     }
 
-    function goConsume() {
-        goConnect(false)
-    }
-
-    function goConnect(producer: boolean) {
-        isProducer = producer
-        return deviceRef.current === null ? joinRoom(producer) : createTransport()
-    }
-
-    const mute = () => {
-        if (localVideoRef.current) {
-            localVideoRef.current.muted = true;
-            // localVideoRef.current.volume = 1.0;
-        }
-    };
-
-
-    async function createConsumer(producerId: string, appData?: AppData) {
-        if (!socket || !deviceRef.current || !consumerTransportRef.current) {
-            return console.log("somthing is missing")
-        }
-        const res: { error?: string, id: string, producerId: string, kind: 'video' | 'audio', rtpParameters: RtpParameters } = await socket.emitWithAck('consume', {
-            roomId: 123,
-            producerId,
-            rtpCapabilities: deviceRef.current.rtpCapabilities
-        })
-
-        if (res.error) return console.log("error while consume", res.error);
-
-        console.log("Consume ITransportOptions :", res)
-        if (!consumerTransportRef.current) return console.log("consumerRef not exist")
-
-        const recvTransport = consumerTransportRef.current;
-        if (!recvTransport) return;
-
-        const consumer = await recvTransport.consume(res);
-        console.log("consumer ==> ", consumer);
-
-        if (res.kind === 'video' && remoteVideoRef.current) {
-            const stream = new MediaStream([consumer.track]);
-
-            remoteVideoRef.current.srcObject = stream;
-            remoteVideoRef.current.autoplay = true;
-            remoteVideoRef.current.playsInline = true;
-
-            remoteVideoRef.current
-                .play()
-                .then(() => console.log("video playing"))
-                .catch(e => console.log("play blocked", e));
-
-            socket.emit('consumer-resume', {
-                consumerId: consumer.id,
-                roomId: 123
-            });
-        } else if (res.kind === 'audio') {
-            //@check
-            const audioEl = document.createElement('audio');
-            audioEl.autoplay = true;
-            audioEl.srcObject = new MediaStream([consumer.track]);
-            // audioEl.controls = true;
-            audioEl.play().then(() => console.log("audio elm created successfully!")).catch(() => console.debug('audio play blocked'));
-            document.body.appendChild(audioEl);
-            socket.emit('consumer-resume', { roomId: 123, consumerId: consumer.id });
-        }
-
-        //@todo
-        // consumer.on('transportclose', () => {
-        //     consumedProducerIdsRef.current.delete(producerId);
-        //     remoteStreams.current.delete(producerId);
-        //     assignRemoteStreams();
-        // });
-    }
-
-    //same fxn steps
     const joinRoom = async () => {
         try {
-            console.log("join fxn called -->")
-            if (!socket) {
-                console.log("socket not available")
-                return
-            }
-            // @todo room id
-            const { rtpCapabilities, producers } = await socket.emitWithAck('join:live-session', { roomId: 123, userId: user?._id, name: user?.firstName })
-            console.log("rtpCapabilities : ", rtpCapabilities)
-            // rtpCapabilities = res.rtpCapabilities
-            //     creatDevice()
-            // }
+            if (!socket) return
 
-            // async function creatDevice() {
+            // @todo room id
+            const { rtpCapabilities, producers } = await socket.emitWithAck('join:live-session', { roomId: lectureId, userId: user?._id, name: user?.firstName })
+            console.log("rtpCapabilities : ", rtpCapabilities)
+
             const device = new Device()
             await device.load({
                 routerRtpCapabilities: rtpCapabilities
@@ -321,18 +237,9 @@ const Call = () => {
             deviceRef.current = device
             console.log('Device RTP Capabilities', device.rtpCapabilities)
 
-            await createTransport()
+            await createSendTransport()
 
             console.log("========================after transport======================")
-            // if (!isProducer && producers) {
-            //     for (const producerInfo of producers) {
-            //         console.log("producerInfo : ", producerInfo)
-            //         const producerId = producerInfo.id;
-            //         const appData: AppData = producerInfo.appData;
-            //         await createConsumer(producerId, device, appData);
-            //     }
-            // }
-
         } catch (error: any) {
             console.log(error)
             if (error.name === 'UnsupportedError')
@@ -340,17 +247,13 @@ const Call = () => {
         }
     }
 
-    function createTransport() {
-        return isProducer ? createSendTransport() : createRecvTransport()
-    }
-
-    interface ITransportOptions {
-        iceParameters: IceParameters,
-        iceCandidates: IceCandidate[],
-        dtlsParameters: DtlsParameters,
-        sctpParameters: SctpParameters,
-        error: any
-    }
+    // interface ITransportOptions {
+    //     iceParameters: IceParameters,
+    //     iceCandidates: IceCandidate[],
+    //     dtlsParameters: DtlsParameters,
+    //     sctpParameters: SctpParameters,
+    //     error: any
+    // }
 
     // interface ITransportProduceParameters{
     //     kind:MediaKind,
@@ -367,14 +270,13 @@ const Call = () => {
     const createSendTransport = async () => {
         if (!socket) return
 
-        const upTransport = await socket.emitWithAck('createWebRtcTransport', { isSender: true, roomId: 123 })
-        //  , (params: ITransportOptions) => {
+        const upTransport = await socket.emitWithAck('createWebRtcTransport', { isSender: true, roomId: lectureId })
         if (upTransport.error) {
             console.log(upTransport.error)
             return
         }
 
-        console.log("uptransport : ", upTransport)
+        console.log("uptransport: ", upTransport)
 
         if (!deviceRef.current) return console.log("device not found")
         const producerTransport = deviceRef.current.createSendTransport(upTransport); //@remind ? think should i pass a new object with param properties
@@ -383,7 +285,7 @@ const Call = () => {
         producerTransport.on('connect', async ({ dtlsParameters }: { dtlsParameters: DtlsParameters }, cb: () => void) => {
             try {
                 const res = await socket.emitWithAck('transport-connect', {
-                    roomId: 123, //@todo
+                    roomId: lectureId,
                     transportId: producerTransport.id,
                     dtlsParameters,
                 })
@@ -403,7 +305,7 @@ const Call = () => {
 
             try {
                 const { id, error } = await socket.emitWithAck('transport-produce', {
-                    roomId: 123,
+                    roomId: lectureId,
                     kind,
                     transportId: producerTransport.id,
                     rtpParameters,
@@ -421,59 +323,6 @@ const Call = () => {
 
         producerTransportRef.current = producerTransport;
         connectSendTransport()
-    }
-
-    const createRecvTransport = async () => {
-        if (!socket || !deviceRef.current) return console.log("device or socket on available for consumer")
-
-        const downTransport = await socket.emitWithAck('createWebRtcTransport', { isSender: false, roomId: 123 })
-        if (downTransport.error) {
-            console.log(downTransport.error)
-            return
-        }
-        console.log("Recv createWebRtcTransport : ", downTransport)
-
-        const consumerTransport = deviceRef.current.createRecvTransport(downTransport)
-        console.log("Recv create consumerTransport : ", consumerTransport)
-
-        consumerTransport.on('connect', async ({ dtlsParameters }: { dtlsParameters: DtlsParameters }, cb: () => void) => {
-            try {
-                const res = await socket.emitWithAck('transport-connect', {
-                    roomId: 123, //@todo
-                    transportId: consumerTransport.id,
-                    dtlsParameters,
-                })
-
-                if (res?.error) {
-                    return console.log("tranpsort connect error : ", res.error)
-                }
-                // producerIdRef.current = res.producerId
-
-                // Tell the transport that parameters were transmitted.
-                cb()
-            } catch (error) {
-                console.log(error)
-            }
-        })
-
-        consumerTransportRef.current = consumerTransport
-        // if (!producerTransportRef.current) return console.log("producer Ref not exist")
-        // console.log("producerRef", producerTransportRef.current.id)
-        // createConsumer(producerTransportRef.current.id);
-        // connectRecvTransport()
-        // }
-
-        const producers = await socket.emitWithAck('get-producres', { roomId: 123 })
-
-        console.log("producers : ", producers)
-
-        for (const producerInfo of producers) {
-            // console.log("producerInfo : ", producerInfo)
-            const producerId = producerInfo.id;
-            // const appData: AppData = producerInfo.appData;
-            await createConsumer(producerId);
-        }
-
     }
 
     const connectSendTransport = async () => {
@@ -550,85 +399,88 @@ const Call = () => {
         })
     }
 
-    const connectRecvTransport = async () => {
-        if (!socket || !deviceRef.current) return;
-        if (!producerTransportRef.current) return;
 
-        const res = await socket.emitWithAck('consume', {
-            rtpCapabilities: deviceRef.current.rtpCapabilities,
-            roomId: 123,// @todo
-            producerId: producerTransportRef.current
-        })
+    // useEffect(() => {
+    //     if (!socket || !isConnected) return;
 
-        if (res.error) {
-            console.log(res);
-            return
-        }
+    //     // future socket logic here
+    //     socket.on('connection-success', ({ socketId, existsProducer }) => {
+    //         console.log(socketId, existsProducer)
+    //     })
 
-        console.log("Consume ITransportOptions :", res)
-        if (!consumerTransportRef.current) return console.log("consumerRef not exist")
+    //     socket.on("peer-joined", ({ name }: {
+    //         name: string,
+    //     }) => {
+    //         console.log(name)
+    //         toast.info(`${name} joined session`)
+    //     })
 
-        const consumer = await consumerTransportRef.current.consume({
-            id: res.id,
-            producerId: res.producerId,
-            kind: res.kind,
-            rtpParameters: res.rtpParameters
-        })
-        console.log("coneumer ==> ", consumer);
-        const { track } = consumer
-
-        if (remoteVideoRef.current) {
-            remoteVideoRef.current.srcObject = new MediaStream([track])
-        }
-
-        socket.emit('consumer-resume', { consumerId: consumer.id, roomId: 123 })
-    }
-
-    useEffect(() => {
-        if (!socket || !isConnected) return;
-
-        // future socket logic here
-        socket.on('connection-success', ({ socketId, existsProducer }) => {
-            console.log(socketId, existsProducer)
-        })
-        socket.on("joined-room", (data) => {
-            console.log(data?.roomId,
-                data?.peers)
-        })
-
-    }, [socket, isConnected]);
+    // }, [socket, isConnected]);
 
     return (
-        <div className='flex flex-col items-center justify-center gap-12 pt-8'>
-            <h1>Call SFU MediaSoup</h1>
 
-            <div className='flex items-center justify-center gap-16'>
-                <video
-                    className='h-75 w-125 border-4 rounded-xl'
+
+        <div className="flex h-screen w-full bg-background text-foreground overflow-hidden font-sans">
+            <main className="flex-1 flex flex-col p-4 gap-4 relative">
+
+
+                <VideoStage
                     ref={localVideoRef}
-                    autoPlay
-                    muted
-                    playsInline
+                    isInstructor={true}
+                    viewerCount={viewerCount}
+                    isCamOff={isCamOff}
+                    isSharing={isSharing}
                 />
 
-                <video ref={remoteVideoRef}
-                    className='h-75 w-125 border-4 rounded-xl'
-                    muted
+                <button onClick={takePermission}>permission</button>
+                <button onClick={start}>start</button>
+
+                <ControlsBar
+                    onLeave={leaveRoom}
+                    isChatOpen={openChat}
+                    isMuted={isMuted}
+                    isCamOff={isCamOff}
+                    isSharing={isSharing}
+                    onToggleMute={toggleMic}
+                    onToggleCam={toggleCam}
+                    onToggleChat={() => setOpenChat(v => !v)}
+                    onToggleShare={() => setIsSharing(v => !v)} //@todo
                 />
+            </main>
 
-            </div>
-
-            <div className='grid grid-cols-3  gap-16'>
-                <button className='bg-pink-300 rounded-md py-4 text-sm' onClick={start}>Create</button>
-                <button className='bg-pink-300 rounded-md py-4 text-sm' onClick={goConsume}>Join</button>
-                <button className='bg-pink-300 rounded-md py-4 text-sm' onClick={leaveRoom}>Stop</button>
-                <button className='bg-pink-300 rounded-md py-4 text-sm' onClick={mute}>unmute</button>
-                <button className='bg-pink-300 rounded-md py-4 text-sm' onClick={removeConsumer}>remove consumer</button>
-                <button className='bg-pink-300 rounded-md py-4 text-sm' onClick={toggleMic}>toggleMic</button>
-                <button className='bg-pink-300 rounded-md py-4 text-sm' onClick={toggleCam}>toggleCam</button>
-            </div>
+            {openChat && <SidebarTabs />}
         </div>
     );
+
+    // return (
+    //     <div className='flex flex-col items-center justify-center gap-12 pt-8'>
+    //         <h1>Call SFU MediaSoup</h1>
+
+    //         <div className='flex items-center justify-center gap-16'>
+    //             <video
+    //                 className='h-75 w-125 border-4 rounded-xl'
+    //                 ref={localVideoRef}
+    //                 autoPlay
+    //                 muted
+    //                 playsInline
+    //             />
+
+    //             <video ref={remoteVideoRef}
+    //                 className='h-75 w-125 border-4 rounded-xl'
+    //                 muted
+    //             />
+
+    //         </div>
+
+    //         <div className='grid grid-cols-3  gap-16'>
+    //             <button className='bg-pink-300 rounded-md py-4 text-sm' onClick={start}>Create</button>
+    //             <button className='bg-pink-300 rounded-md py-4 text-sm' onClick={leaveRoom}>Stop</button>
+    //             <button className='bg-pink-300 rounded-md py-4 text-sm' onClick={removeConsumer}>remove consumer</button>
+    //             <button className='bg-pink-300 rounded-md py-4 text-sm' onClick={toggleMic}>toggleMic</button>
+    //             <button className='bg-pink-300 rounded-md py-4 text-sm' onClick={toggleCam}>toggleCam</button>
+    //         </div>
+    //     </div>
+    // );
 }
 
-export default Call;
+export default LiveTeacherPage;

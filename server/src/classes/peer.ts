@@ -5,6 +5,7 @@ class Peer {
   public readonly userId: string;
   public readonly socketId: string;
   public readonly name: string;
+  public roomId: string | null;
 
   public upTransport: Transport | null;
   public downTransport: Transport | null;
@@ -19,10 +20,21 @@ class Peer {
   public consumers: Map<string, Consumer>; // consumerId -> Consumer
   public screen: boolean;
 
-  constructor(name: string, socketId: string, userId: string) {
+  constructor({
+    name,
+    socketId,
+    userId,
+    roomId,
+  }: {
+    name: string;
+    socketId: string;
+    userId: string;
+    roomId: string;
+  }) {
     this.userId = userId;
     this.name = name;
     this.socketId = socketId;
+    this.roomId = roomId;
     this.producers = {
       cam: null,
       mic: null,

@@ -37,7 +37,7 @@ createRoot(document.getElementById('root')!).render(
               closeButton
             />
           </BrowserRouter>
-          <ReactQueryDevtools />
+          {/* <ReactQueryDevtools /> */}
         </SocketProvider>
       </AuthProvider>
     </QueryClientProvider>

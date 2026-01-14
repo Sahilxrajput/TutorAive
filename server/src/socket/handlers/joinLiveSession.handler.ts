@@ -14,7 +14,12 @@ export const handleJoinLiveSession =
     if (!room || isTeacher) {
       const router = await createRouter();
 
-      const peer = new Peer(name, socket.id, userId);
+      const peer = new Peer({
+        name,
+        socketId: socket.id,
+        userId,
+        roomId,
+      });
 
       room = roomManager.createRoom(roomId, router, peer);
       peerManager.add(peer);
@@ -29,14 +34,19 @@ export const handleJoinLiveSession =
 
     // 2. Room exists → check duplicate peer
     if (room.hasPeer(userId)) {
-        console.log("User already joined this class");
+      console.log("User already joined this class");
       return cb({ error: "User already joined this class" });
     }
 
     // 3. Create peer only AFTER checks
-    const peer = new Peer(name, socket.id, userId);
+    const peer = new Peer({
+      name,
+      socketId: socket.id,
+      userId,
+      roomId,
+    });
 
-    if(peer) console.log("peer create")
+    if (peer) console.log("peer create");
 
     room.addPeer(peer);
     peerManager.add(peer);

@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { MoreHorizontalIcon, Clock, Calendar, XCircle, Play, Type } from "lucide-react"
+import { MoreHorizontalIcon, Clock, Calendar, XCircle, Play, Type, MoreVertical } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
     Dialog,
@@ -23,12 +23,16 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import API from "@/lib/api"
 import { toast } from "sonner"
+import { useNavigate } from "react-router-dom"
+import type { ILecture } from "@/types/type"
 
-export function EventDropdownMenu({ eventId, classroomId }: { eventId: string, classroomId: string }) {
+export function EventDropdownMenu({ event }: { event: ILecture }) {
+    const classroomId = event.classroom._id ?? event.classroom
     const [dialogType, setDialogType] = useState<"delay" | "reschedule" | "cancel" | "title" | null>(null)
     const [title, setTitle] = useState("")
     const [reason, setReason] = useState("")
     const [timeValue, setTimeValue] = useState("")
+    const navigate = useNavigate();
 
     const closeDialog = () => {
         setDialogType(null)
@@ -45,7 +49,7 @@ export function EventDropdownMenu({ eventId, classroomId }: { eventId: string, c
             return toast.warning("Delay reason is required");
         }
 
-        const { data } = await API.put(`/classrooms/${classroomId}/lectures/${eventId}`, {
+        const { data } = await API.put(`/classrooms/${classroomId}/lectures/${event._id}`, {
             status: "delayed",
             delayTime: Number(timeValue),
             reason,
@@ -67,7 +71,7 @@ export function EventDropdownMenu({ eventId, classroomId }: { eventId: string, c
             return toast.warning("New time must be in the future");
         }
 
-        const { data } = await API.put(`/classrooms/${classroomId}/lectures/${eventId}`, {
+        const { data } = await API.put(`/classrooms/${classroomId}/lectures/${event._id}`, {
             status: "rescheduled",
             newStartTime: date.toISOString(),
             reason,
@@ -81,7 +85,7 @@ export function EventDropdownMenu({ eventId, classroomId }: { eventId: string, c
             return toast.warning("Cancel reason is required");
         }
 
-        const { data } = await API.put(`/classrooms/${classroomId}/lectures/${eventId}`, {
+        const { data } = await API.put(`/classrooms/${classroomId}/lectures/${event._id}`, {
             status: "cancelled",
             reason,
         });
@@ -119,12 +123,18 @@ export function EventDropdownMenu({ eventId, classroomId }: { eventId: string, c
             return alert("Title cannot be empty");
         }
 
-        const { data } = await API.put(`/classrooms/${classroomId}/lectures/${eventId}`, {
+        const { data } = await API.put(`/classrooms/${classroomId}/lectures/${event._id}`, {
             title: title.trim(),
         });
 
         console.log("Update data: ", data)
     };
+
+    const goLive = () => {
+        console.log("go live")
+        console.log(event)
+        navigate(`classrooms/${classroomId}/lecture/live/${event._id}`)
+    }
 
 
     return (
@@ -132,13 +142,15 @@ export function EventDropdownMenu({ eventId, classroomId }: { eventId: string, c
             <DropdownMenu modal={false}>
                 <DropdownMenuTrigger asChild>
                     <Button variant="outline" aria-label="Open menu" size="icon">
-                        <MoreHorizontalIcon className="h-4 w-4" />
+                        <MoreVertical className="h-4 w-4" />
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-48" align="end">
                     <DropdownMenuLabel>Class Actions</DropdownMenuLabel>
                     <DropdownMenuGroup>
-                        <DropdownMenuItem className="text-green-600">
+                        <DropdownMenuItem className="text-green-600"
+                            onSelect={goLive}
+                        >
                             <Play className="mr-2 h-4 w-4" /> Start Lecture
                         </DropdownMenuItem>
                         <DropdownMenuItem onSelect={() => setDialogType("delay")}>
