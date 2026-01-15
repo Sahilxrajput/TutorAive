@@ -9,6 +9,7 @@ interface ConsumerResumePayload {
 export const handleConsumerResume =
   (socket: Socket) =>
   async ({ roomId, consumerId }: ConsumerResumePayload) => {
+    console.log("resume enter");
     const room = roomManager.get(roomId);
     if (!room) {
       console.log("[consumer-resume] room not found:", roomId);

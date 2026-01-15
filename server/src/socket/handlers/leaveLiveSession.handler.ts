@@ -15,23 +15,36 @@ export const handleLeaveLiveSession = (socket: Socket) => async () => {
     return;
   }
 
-  console.log("before cleanup consumers:", peer.consumers.size);
+  const isHost = peer === room.getHost();
 
-  // 1. Close consumers first
-  for (const consumer of [...peer.consumers.values()]) {
-    try {
-      consumer.removeAllListeners();
-      consumer.close(); // IMPORTANT
-    } catch (err) {
-      console.error("error closing consumer", consumer.id, err);
+  // HOST LEAVES → END ROOM
+  if (isHost) {
+    console.log("[leave] host left, closing room:", room.roomId);
+
+    room.close(); // kick everyone, close router
+    roomManager.delete(room.roomId); // remove room reference
+
+    // remove all peers from peerManager
+    for (const p of room.getAllPeers()) {
+      peerManager.remove(p.socketId);
     }
+
+    return; // IMPORTANT: stop here
   }
 
+  // STUDENT LEAVES → CLEAN ONLY HIM
+  console.log("[leave] peer left:", peer.socketId);
+
+  // 1. consumers
+  for (const consumer of peer.consumers.values()) {
+    try {
+      consumer.removeAllListeners();
+      consumer.close();
+    } catch {}
+  }
   peer.consumers.clear();
 
-  console.log("after cleanup consumers:", peer.consumers.size);
-
-  // 2. Close producers explicitly
+  // 2. producers (students usually don’t have, but be safe)
   for (const key of Object.keys(peer.producers) as Array<
     keyof typeof peer.producers
   >) {
@@ -41,31 +54,29 @@ export const handleLeaveLiveSession = (socket: Socket) => async () => {
     try {
       producer.removeAllListeners();
       producer.close();
-      peer.producers[key] = null;
     } catch {}
+    peer.producers[key] = null;
   }
 
-  // 3. Close transports last
-  if (peer.downTransport) {
-    try {
-      peer.downTransport.removeAllListeners();
-      peer.downTransport.close();
-      peer.downTransport = null;
-    } catch {
-      peer.downTransport = null;
-    }
-  }
+  // 3. transports
   if (peer.upTransport) {
     try {
       peer.upTransport.removeAllListeners();
       peer.upTransport.close();
-      peer.upTransport = null;
-    } catch {
-      peer.upTransport = null;
-    }
+    } catch {}
+    peer.upTransport = null;
   }
 
-  // 4. Remove from room & peer manager
+  if (peer.downTransport) {
+    try {
+      peer.downTransport.removeAllListeners();
+      peer.downTransport.close();
+    } catch {}
+    peer.downTransport = null;
+  }
+
+  // 4. remove peer only
   room.removePeer(socket.id);
   peerManager.remove(socket.id);
 };
+

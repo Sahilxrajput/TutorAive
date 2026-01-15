@@ -27,6 +27,10 @@ class Room {
     return this.peers.get(socketId);
   }
 
+  getHost(): Peer | undefined {
+    return this.host;
+  }
+
   getAllPeers(): Peer[] {
     return [...this.peers.values()];
   }
@@ -54,25 +58,6 @@ class Room {
       }));
   }
 
-//   getProducer() {
-//     const producers: {
-//       id: string;
-//       kind: "video" | "audio";
-//       appData: AppData;
-//     }[] = [];
-
-//     Object.values(this.host.producers).forEach((producer) => {
-//       if (!producer) return;
-//       producers.push({
-//         id: producer.id,
-//         kind: producer.kind,
-//         appData: producer.appData,
-//       });
-//     });
-
-//     return producers;
-//   }
-
   getTransportById(transportId: string): Transport | null {
     for (const peer of this.getAllPeers()) {
       if (peer.upTransport?.id === transportId) {
@@ -86,5 +71,64 @@ class Room {
 
     return null;
   }
+
+  close() {
+    console.log("[room] closing room:", this.roomId);
+
+    // 1. Close all peers
+    for (const peer of this.peers.values()) {
+      // consumers
+      for (const consumer of peer.consumers.values()) {
+        try {
+          consumer.removeAllListeners();
+          consumer.close();
+        } catch {}
+      }
+      peer.consumers.clear();
+
+      // producers
+      for (const key of Object.keys(peer.producers) as Array<
+        keyof typeof peer.producers
+      >) {
+        const producer = peer.producers[key];
+        if (!producer) continue;
+
+        try {
+          producer.removeAllListeners();
+          producer.close();
+        } catch {}
+        peer.producers[key] = null;
+      }
+
+      // transports
+      if (peer.upTransport) {
+        try {
+          peer.upTransport.removeAllListeners();
+          peer.upTransport.close();
+        } catch {}
+        peer.upTransport = null;
+      }
+
+      if (peer.downTransport) {
+        try {
+          peer.downTransport.removeAllListeners();
+          peer.downTransport.close();
+        } catch {}
+        peer.downTransport = null;
+      }
+    }
+
+    // 2. Clear peers map
+    this.peers.clear();
+
+    // 3. Close router LAST
+    try {
+      this.router.close();
+    } catch {}
+
+    console.log("[room] room closed:", this.roomId);
+  }
 }
+
+
 export default Room;

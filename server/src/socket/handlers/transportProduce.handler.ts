@@ -1,13 +1,14 @@
 import { Socket } from "socket.io";
 import { roomManager } from "../../managers/RoomManager";
 import { peerManager } from "../../managers/PeerManager";
+import { AppData, RtpParameters } from "mediasoup/node/lib/types";
 
 interface TransportProducePayload {
   roomId: string;
   kind: "audio" | "video";
   transportId: string;
-  rtpParameters: any;
-  appData: any;
+  rtpParameters: RtpParameters;
+  appData: AppData;
 }
 
 export const handleTransportProduce =
@@ -60,6 +61,12 @@ export const handleTransportProduce =
         default:
           console.warn("unknown mediaTag:", appData.mediaTag);
       }
+
+      // THIS IS THE IMPORTANT PART
+      socket.to(roomId).emit("new-producer", {
+        producerId: producer.id,
+        appData: producer.appData,
+      });
 
       producer.on("transportclose", () => {
         console.log("transport for this producer closed");

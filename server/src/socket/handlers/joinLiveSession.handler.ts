@@ -46,8 +46,6 @@ export const handleJoinLiveSession =
       roomId,
     });
 
-    if (peer) console.log("peer create");
-
     room.addPeer(peer);
     peerManager.add(peer);
 

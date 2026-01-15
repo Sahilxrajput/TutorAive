@@ -6,8 +6,6 @@ const rooms = new Map<string, Room>(); // roomId -> Room
 
 export const roomManager = {
   createRoom(roomId: string, router: Router, host: Peer): Room {
-    const s = rooms.get(roomId);
-    console.log("room ==> ", s);
     if (rooms.has(roomId)) {
       throw new Error("Room already exists");
     }

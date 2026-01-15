@@ -47,6 +47,8 @@ export const handleConsume =
         return cb({ error: "cannot consume" });
       }
 
+      console.log("[consume] can consume producer:", producerId);
+
       const consumer = await transport.consume({
         producerId,
         rtpCapabilities,
@@ -54,6 +56,7 @@ export const handleConsume =
       });
 
       peer.addConsumer(consumer);
+      console.log("[consume]add in peer:");
 
       consumer.on("transportclose", () => {
         console.log("[consume] transport closed for consumer:", consumer.id);

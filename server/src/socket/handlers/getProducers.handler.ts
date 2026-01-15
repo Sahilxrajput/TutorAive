@@ -1,4 +1,3 @@
-import { Socket } from "socket.io";
 import { roomManager } from "../../managers/RoomManager";
 
 interface GetProducersPayload {
@@ -16,6 +15,7 @@ export const handleGetProducers =
       }
 
       const producers = room.getTeacherProducers();
+      console.log("producers ==> ", producers)
       cb(producers);
     } catch (error) {
       console.error("[get-producers] error:", error);

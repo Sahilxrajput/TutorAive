@@ -40,6 +40,8 @@ const LiveTeacherPage = () => {
 
     const localVideoRef = useRef<HTMLVideoElement | null>(null);
     const streamRef = useRef<MediaStream | null>(null);
+    const screenVideoRef = useRef<HTMLVideoElement | null>(null);
+    const screenStreamRef = useRef<MediaStream | null>(null);
     const [cam, setCam] = useState<boolean>(true);
     const [mic, setMic] = useState<boolean>(true);
     const producerTransportRef = useRef<Transport>(null)
@@ -96,7 +98,9 @@ const LiveTeacherPage = () => {
         if (localVideoRef.current) {
             localVideoRef.current.srcObject = stream;
         }
+        start()
     }
+
 
     async function start() {
         await (deviceRef.current === null ? joinRoom() : createSendTransport())
@@ -182,45 +186,47 @@ const LiveTeacherPage = () => {
             }
             streamRef.current = newCamStream;
         }
-
         setCam(!cam);
     }
-
+    
     const leaveRoom = () => {
-        if (!streamRef.current) return;
-        streamRef.current.getTracks().forEach(track => track.stop());
+        if (!socket) return;
 
+        // 1. Notify server FIRST
+        socket.emit("leave:live-session", { roomId: lectureId });
+
+        // 2. Stop screen share cleanly
+        stopScreenShare();
+
+        // 3. Close producers (DO NOT stop tracks here)
+        if (camProducerRef.current) {
+            camProducerRef.current.close();
+            camProducerRef.current = null;
+        }
+
+        if (micProducerRef.current) {
+            micProducerRef.current.close();
+            micProducerRef.current = null;
+        }
+
+        // 4. Stop local media tracks ONCE
+        if (streamRef.current) {
+            streamRef.current.getTracks().forEach(track => track.stop());
+            streamRef.current = null;
+        }
+
+        // 5. Clear video element
         if (localVideoRef.current) {
             localVideoRef.current.srcObject = null;
         }
 
-        streamRef.current = null;
+        // 6. Reset device if you plan to rejoin
+        deviceRef.current = null;
 
-        if (screenProducerRef.current) {
-            screenProducerRef.current.track?.stop();
-            screenProducerRef.current.close();
-            screenProducerRef.current = null;
-        }
-        if (saudioProducerRef.current) {
-            saudioProducerRef.current.track?.stop();
-            saudioProducerRef.current.close();
-            saudioProducerRef.current = null;
-        }
+        // 7. Stop client-side consumers / listeners
+        stop();
+    };
 
-        if (camProducerRef.current) {
-            camProducerRef.current.track?.stop();
-            camProducerRef.current.close();
-            camProducerRef.current = null;
-        }
-        if (micProducerRef.current) {
-            micProducerRef.current.track?.stop();
-            micProducerRef.current.close();
-            micProducerRef.current = null;
-        }
-        if (!socket) return
-        socket.emit("leave:live-session", { roomId: lectureId })
-        stop()
-    }
 
     const joinRoom = async () => {
         try {
@@ -326,78 +332,174 @@ const LiveTeacherPage = () => {
     }
 
     const connectSendTransport = async () => {
+        if (!producerTransportRef.current || !streamRef.current) {
+            console.log("producerTransport / streamRef missing");
+            return;
+        }
 
-        if (!producerTransportRef.current || !streamRef.current) return console.log("producerTransport / streamRef Ref doesn't exist")
+        // MIC
+        const micTrack = streamRef.current.getAudioTracks()[0];
+        if (micTrack) {
+            micProducerRef.current = await producerTransportRef.current.produce({
+                track: micTrack,
+                appData: { mediaTag: "mic-audio" },
+                codecOptions: {
+                    opusMaxPlaybackRate: 48000,
+                    opusStereo: true,
+                },
+                encodings: [{ maxBitrate: 128000 }],
+            });
+        }
 
-        micProducerRef.current = await producerTransportRef.current.produce({
-            track: streamRef.current.getAudioTracks()[0],
-            appData: { mediaTag: 'mic-audio' },
-            codecOptions: {
-                opusMaxPlaybackRate: 48000,
-                opusStereo: true,
-            },
-            encodings: [{ maxBitrate: 128000 }]
+        // CAM
+        const camTrack = streamRef.current.getVideoTracks()[0];
+        if (camTrack) {
+            camProducerRef.current = await producerTransportRef.current.produce({
+                track: camTrack,
+                appData: { mediaTag: "cam-video" },
+                encodings: [
+                    { rid: "low", maxBitrate: 200000, scaleResolutionDownBy: 4, maxFramerate: 15 },
+                    { rid: "medium", maxBitrate: 800000, scaleResolutionDownBy: 2, maxFramerate: 30 },
+                    { rid: "high", maxBitrate: 3500000, maxFramerate: 60 },
+                ],
+                codecOptions: { videoGoogleStartBitrate: 2000 },
+            });
+
+            camProducerRef.current.on("trackended", () => {
+                console.log("[cam] track ended");
+            });
+
+            camProducerRef.current.on("transportclose", () => {
+                console.log("[cam] transport closed");
+            });
+        }
+    };
+
+    const startScreenShare = async () => {
+        if (!producerTransportRef.current) return;
+        setIsSharing(true)
+
+        const screenStream = await navigator.mediaDevices.getDisplayMedia({
+            video: { width: 1920, height: 1080, frameRate: { ideal: 60, max: 60 }, displaySurface: 'monitor' },
+            audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false, sampleRate: 48000 }
         });
 
-        camProducerRef.current = await producerTransportRef.current.produce({
-            track: streamRef.current?.getVideoTracks()[0],
-            encodings: [
-                {
-                    rid: 'low',
-                    maxBitrate: 200000,
-                    scaleResolutionDownBy: 4,
-                    maxFramerate: 15
+        screenStreamRef.current = screenStream;
+
+        // attach stream to video element
+        if (screenVideoRef.current) {
+            screenVideoRef.current.srcObject = screenStream;
+        }
+
+        const screenVideoTrack = screenStream.getVideoTracks()[0];
+        let screenAudioTrack = screenStream.getAudioTracks()[0];
+
+
+        if (screenVideoTrack) {
+            await screenVideoTrack.applyConstraints({
+                width: 1920,
+                height: 1080,
+                frameRate: { ideal: 60, max: 60 },
+            }).catch(err => console.warn("applyConstraints failed:", err));
+        }
+        if (!producerTransportRef.current) {
+            console.warn('Send transport not available.');
+            screenStream.getTracks().forEach(track => track.stop());
+            return;
+        }
+
+        // to handle run time error when peer just cancel or deny from sharing screen
+        if (!screenAudioTrack) {
+            screenAudioTrack = createSilentAudioTrack();
+        }
+
+        // IMPORTANT: detect manual stop
+        if (screenVideoTrack) {
+            screenVideoTrack.onended = () => {
+                stopScreenShare();
+            };
+        }
+
+        // IMPORTANT: detect manual stop
+        if (screenAudioTrack) {
+            screenAudioTrack.onended = () => {
+                stopScreenShare();
+            };
+        }
+
+        // SCREEN VIDEO
+        if (screenVideoTrack) {
+            screenProducerRef.current = await producerTransportRef.current.produce({
+                track: screenVideoTrack,
+                encodings: [
+                    {
+                        maxBitrate: 4_000_000,
+                        maxFramerate: 30,
+                        priority: 'high',
+                        networkPriority: 'high',
+                        scaleResolutionDownBy: 1,
+                    }
+                ],
+                codecOptions: {
+                    videoGoogleStartBitrate: 2000,
+                    videoGoogleMaxBitrate: 4000,
+                    videoGoogleMinBitrate: 1000,
                 },
-                {
-                    rid: 'medium',
-                    maxBitrate: 800000,
-                    scaleResolutionDownBy: 2,
-                    maxFramerate: 30
+                appData: { mediaTag: 'screen-video' },
+            });
+
+            screenProducerRef.current.on('trackended', () => startScreenShare());
+        }
+
+        // SCREEN AUDIO 
+        if (screenAudioTrack) {
+            saudioProducerRef.current = await producerTransportRef.current.produce({
+                track: screenAudioTrack,
+                appData: { mediaTag: "screen-audio" },
+                codecOptions: {
+                    opusMaxPlaybackRate: 48000,
+                    opusStereo: true,
                 },
-                {
-                    rid: 'high',
-                    maxBitrate: 3500000,
-                    maxFramerate: 60
-                }
-            ],
-            codecOptions: { videoGoogleStartBitrate: 2000 },
-            appData: { mediaTag: 'cam-video' },
-            // track: streamRef.current?.getVideoTracks()[0],
-            // encodings: [
-            //     {
-            //         rid: 'r0',
-            //         maxBitrate: 100000,
-            //         scalabilityMode: 'S1T3',
-            //     },
-            //     {
-            //         rid: 'r1',
-            //         maxBitrate: 300000,
-            //         scalabilityMode: 'S1T3',
-            //     },
-            //     {
-            //         rid: 'r2',
-            //         maxBitrate: 900000,
-            //         scalabilityMode: 'S1T3',
-            //     },
-            // ],
-            // codecOptions: {
-            //     videoGoogleStartBitrate: 1000
-            // }
-        })
-
-        //@note
-        camProducerRef.current.on('trackended', () => {
-            console.log('track ended')
-
-            // close video track @todo
-        })
-
-        camProducerRef.current.on('transportclose', () => {
-            console.log('transport ended')
-
-            // close video track @todo
-        })
+                encodings: [{ maxBitrate: 128000 }]
+            });
+            saudioProducerRef.current.on('trackended', () => startScreenShare());
+        }
     }
+
+    const stopScreenShare = () => {
+        // If screen was never started, do nothing
+        if (!screenProducerRef.current && !screenStreamRef.current) return;
+        setIsSharing(false)
+        console.log("[screen] stopped");
+
+        // 1. Notify server FIRST
+        if (socket) {
+            socket.emit("stop-screen-share", { roomId: lectureId });
+            setIsSharing(false)
+        }
+
+        // detach stream to video element
+        if (screenVideoRef.current) {
+            screenVideoRef.current.srcObject = null;
+        }
+
+        // 2. Close producers
+        if (screenProducerRef.current) {
+            screenProducerRef.current.close();
+            screenProducerRef.current = null;
+        }
+
+        if (saudioProducerRef.current) {
+            saudioProducerRef.current.close();
+            saudioProducerRef.current = null;
+        }
+
+        // 3. Stop tracks
+        if (screenStreamRef.current) {
+            screenStreamRef.current.getTracks().forEach(t => t.stop());
+            screenStreamRef.current = null;
+        }
+    };
 
 
     // useEffect(() => {
@@ -418,22 +520,19 @@ const LiveTeacherPage = () => {
     // }, [socket, isConnected]);
 
     return (
-
-
         <div className="flex h-screen w-full bg-background text-foreground overflow-hidden font-sans">
             <main className="flex-1 flex flex-col p-4 gap-4 relative">
-
-
                 <VideoStage
-                    ref={localVideoRef}
+                    videoRef={localVideoRef}
+                    screenRef={screenVideoRef}
                     isInstructor={true}
                     viewerCount={viewerCount}
                     isCamOff={isCamOff}
                     isSharing={isSharing}
                 />
 
-                <button onClick={takePermission}>permission</button>
-                <button onClick={start}>start</button>
+                {/* <button className='absolute bg-red-500 top-12 left-1/2' onClick={takePermission}>permission</button> */}
+                <button className='absolute bg-red-500 top-12 left-1/3 ' onClick={takePermission}>start</button>
 
                 <ControlsBar
                     onLeave={leaveRoom}
@@ -444,43 +543,13 @@ const LiveTeacherPage = () => {
                     onToggleMute={toggleMic}
                     onToggleCam={toggleCam}
                     onToggleChat={() => setOpenChat(v => !v)}
-                    onToggleShare={() => setIsSharing(v => !v)} //@todo
+                    onToggleShare={() => isSharing ? stopScreenShare() : startScreenShare()} //@todo
                 />
             </main>
 
             {openChat && <SidebarTabs />}
         </div>
     );
-
-    // return (
-    //     <div className='flex flex-col items-center justify-center gap-12 pt-8'>
-    //         <h1>Call SFU MediaSoup</h1>
-
-    //         <div className='flex items-center justify-center gap-16'>
-    //             <video
-    //                 className='h-75 w-125 border-4 rounded-xl'
-    //                 ref={localVideoRef}
-    //                 autoPlay
-    //                 muted
-    //                 playsInline
-    //             />
-
-    //             <video ref={remoteVideoRef}
-    //                 className='h-75 w-125 border-4 rounded-xl'
-    //                 muted
-    //             />
-
-    //         </div>
-
-    //         <div className='grid grid-cols-3  gap-16'>
-    //             <button className='bg-pink-300 rounded-md py-4 text-sm' onClick={start}>Create</button>
-    //             <button className='bg-pink-300 rounded-md py-4 text-sm' onClick={leaveRoom}>Stop</button>
-    //             <button className='bg-pink-300 rounded-md py-4 text-sm' onClick={removeConsumer}>remove consumer</button>
-    //             <button className='bg-pink-300 rounded-md py-4 text-sm' onClick={toggleMic}>toggleMic</button>
-    //             <button className='bg-pink-300 rounded-md py-4 text-sm' onClick={toggleCam}>toggleCam</button>
-    //         </div>
-    //     </div>
-    // );
 }
 
 export default LiveTeacherPage;

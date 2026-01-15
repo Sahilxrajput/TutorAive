@@ -24,6 +24,8 @@ export const handleCreateWebRtcTransport =
     const transport = await createWebRtcTransport(room.router);
     if (!transport) return cb({ error: "error while creating transport" });
 
+    console.log("transport created successfully")
+
     if (isSender) {
       peer.upTransport = transport;
     } else {

@@ -5,16 +5,19 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Badge } from "../ui/badge";
 import useAuth from "@/hooks/useAuth";
 import { motion } from "framer-motion"
+import { cn } from "@/lib/utils";
 
 interface VideoStageProps {
     isInstructor: boolean;
+    screenRef: React.RefObject<HTMLVideoElement | null>;
+    videoRef: React.RefObject<HTMLVideoElement | null>;
     isSharing?: boolean;
     isCamOff?: boolean;
     viewerCount: number;
 }
 
-const VideoStage = forwardRef<HTMLVideoElement, VideoStageProps>(
-    ({ isInstructor, isSharing, isCamOff, viewerCount }, videoRef) => {
+const VideoStage =
+    ({ isInstructor, isSharing, isCamOff, viewerCount, screenRef, videoRef }: VideoStageProps) => {
         const { user } = useAuth();
         const containerRef = useRef<HTMLDivElement>(null);
 
@@ -26,7 +29,7 @@ const VideoStage = forwardRef<HTMLVideoElement, VideoStageProps>(
                 {/* Instructor header */}
                 {isInstructor && (
                     <div className="absolute top-2 left-0 right-0 flex items-center justify-between px-4">
-                        <Badge className="bg-red-400 w-14 flex items-center gap-1">
+                        <Badge className="bg-red-400 w-14 flex items-center gap-1 animate-pulse">
                             <span className="bg-white rounded-full h-2 w-2" />
                             Live
                         </Badge>
@@ -40,7 +43,7 @@ const VideoStage = forwardRef<HTMLVideoElement, VideoStageProps>(
 
                 {/* Main stage */}
                 <div className="text-zinc-500 flex flex-col items-center">
-                    {isSharing ? (
+                    {!isSharing ? (
                         <MonitorUp size={64} className="mb-4 text-blue-500 animate-pulse" />
                     ) : (
                         <Video size={64} className="mb-4" />
@@ -50,8 +53,19 @@ const VideoStage = forwardRef<HTMLVideoElement, VideoStageProps>(
                     </p>
                 </div>
 
+                {/* Screen share */}
+                <video
+                    ref={screenRef}
+                    autoPlay
+                    playsInline
+                    className={cn(
+                        "absolute inset-0 w-full h-full object-contain",
+                        !isSharing && "hidden"
+                    )}
+                />
+
+
                 {/* Self preview */}
-                {/* <div className="absolute bottom-6 right-6 w-56 aspect-video bg-zinc-900 rounded-xl border border-white/10 shadow-2xl overflow-hidden"> */}
                 <motion.div
                     drag
                     dragConstraints={containerRef}
@@ -76,7 +90,7 @@ const VideoStage = forwardRef<HTMLVideoElement, VideoStageProps>(
                             autoPlay
                             muted
                             playsInline
-                            className="w-full h-full object-cover pointer-events-none"
+                            className={cn("w-full h-full object-cover pointer-events-none", isSharing && "border-4 border-red-400")}
                         />
                     )}
 
@@ -87,6 +101,5 @@ const VideoStage = forwardRef<HTMLVideoElement, VideoStageProps>(
             </Card>
         );
     }
-);
 
 export default VideoStage;
