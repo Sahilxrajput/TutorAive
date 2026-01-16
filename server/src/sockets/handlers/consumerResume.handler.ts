@@ -30,4 +30,10 @@ export const handleConsumerResume =
 
     console.log("[consumer-resume] resuming consumer:", consumerId);
     await consumer.resume();
+
+    socket
+      .to(peer.roomId!)
+      .emit("join:live-lecture", {
+        message: `${socket.data.userName} joined the room`,
+      });
   };

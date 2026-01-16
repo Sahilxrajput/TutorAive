@@ -13,7 +13,10 @@ import { handleConsume } from "./handlers/consume.handler";
 import { handleGetProducers } from "./handlers/getProducers.handler";
 import { handleConsumerResume } from "./handlers/consumerResume.handler";
 import { handleLeaveLiveSession } from "./handlers/leaveLiveSession.handler";
-import { pollManager } from "../managers/pollManager";
+import { registerQnaSocket } from "./qna.socket";
+import { registerChatSocket } from "./chat.socket";
+import { registerPollSocket } from "./poll.socket";
+import { registerSystemSocket } from "./system.socket";
 
 export let io: Server | null = null;
 
@@ -58,38 +61,23 @@ export const initSocket = async (httpServer: HttpServer) => {
 
     socket.on("leave:live-session", handleLeaveLiveSession(socket));
 
-    socket.on("poll:create", ({ lectureId, question, options }) => {
-      const poll = {
-        _id: crypto.randomUUID(),
-        question,
-        options: options.map((text: string) => ({
-          _id: crypto.randomUUID(),
-          text,
-          votes: 0,
-        })),
-        isActive: true,
-        totalVotes: 0,
-      };
-      pollManager.add(poll);
-      classroom.to(lectureId).emit("poll:created", poll);
-    });
+    // socket.on("lecture:join", ({ lectureId, user }) => {
+    //   socket.join(lectureId);
 
-    socket.on("poll:vote", ({ lectureId, pollId, optionId }) => {
-        console.log("data received from poll  created fxn")
-        console.log(lectureId + " "+ pollId +" "+ optionId)
-      const poll = pollManager.get(pollId);
-      if (!poll || !poll.isActive) return;
+    //   emitSystemMessage(
+    //     io,
+    //     lectureId,
+    //     `${user.userName} joined the live class`
+    //   );
+    // });
 
-      const option = poll.options.find((o) => o._id === optionId);
-      if (!option) return;
 
-      option.votes += 1;
-      poll.totalVotes += 1;
+    // registered Sockets
+    registerQnaSocket(socket);
+    registerChatSocket(socket)
+    registerPollSocket(socket)
+    registerSystemSocket(socket);
 
-      pollManager.update(poll);
-
-      classroom.to(lectureId).emit("poll:updated", poll);
-    });
 
     socket.on("join:classroom", (classroomId: string) => {
       socket.join(classroomId);
@@ -113,10 +101,6 @@ export const initSocket = async (httpServer: HttpServer) => {
         }
       );
     });
-
-    // socket.on("leave-room", () => onLeaveRoom(socket));
-
-    // socket.on("get-peers", (roomId) => onGetPeers(socket, roomId));
 
     socket.on("disconnect", handleLeaveLiveSession(socket));
   });

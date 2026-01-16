@@ -7,7 +7,7 @@ import {
   emitAssignmentNotification,
   emitLectureNotification,
   emitTweetNotification,
-} from "../socket/emitters/notification.emitter";
+} from "../sockets/emitters/notification.emitter";
 
 export function createRedisWorker() {
   const worker = new Worker(

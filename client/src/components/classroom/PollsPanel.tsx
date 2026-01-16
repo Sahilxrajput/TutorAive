@@ -22,32 +22,6 @@ interface Poll {
     totalVotes: number;
 }
 
-// const mockPolls: Poll[] = [
-//     {
-//         _id: "1",
-//         question: "What topic should we cover next?",
-//         options: [
-//             { _id: "1a", text: "Advanced Functions", votes: 15 },
-//             { _id: "1b", text: "Data Structures", votes: 22 },
-//             { _id: "1c", text: "Algorithms", votes: 18 },
-//             { _id: "1d", text: "Design Patterns", votes: 9 },
-//         ],
-//         isActive: true,
-//         totalVotes: 64,
-//     },
-//     {
-//         _id: "2",
-//         question: "Was today's pace appropriate?",
-//         options: [
-//             { _id: "2a", text: "Too fast", votes: 5 },
-//             { _id: "2b", text: "Just right", votes: 28 },
-//             { _id: "2c", text: "Too slow", votes: 3 },
-//         ],
-//         isActive: false,
-//         totalVotes: 36,
-//     },
-// ];
-
 interface PollsPanelProps {
     isTeacher?: boolean;
 }

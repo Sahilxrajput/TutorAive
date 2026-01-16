@@ -6,7 +6,7 @@ import QnAPanel from "./QnAPanel";
 import ChatPanel from "./ChatPanel";
 
 
-const SidebarTabs = ({isTeacher }:{isTeacher?:boolean}) => {
+const SidebarTabs = ({isTeacher = false }:{isTeacher:boolean}) => {
     return (
         <motion.div
             draggable="true"

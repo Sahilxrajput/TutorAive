@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import useAuth from "@/hooks/useAuth";
 import useSocketContext from "@/hooks/useSocketContext";
 import { Device } from "mediasoup-client";
@@ -124,7 +124,7 @@ const LiveStudentPage = () => {
         }
     }
 
-    async function createConsumer(producerId: string, appData: AppData) {
+    const createConsumer = useCallback(async (producerId: string, appData: AppData) => {
         if (!socket || !deviceRef.current || !consumerTransportRef.current) {
             return console.log("somthing is missing")
         }
@@ -238,14 +238,14 @@ const LiveStudentPage = () => {
         //     remoteStreams.current.delete(producerId);
         //     assignRemoteStreams();
         // });
-    }
+    }, [lectureId, socket])
 
     function attachScreenStream() {
         if (!screenVideoRef.current) {
             console.log("screenVideoRef is not available")
             return;
         }
-        if (!screenVideoConsumerRef.current){
+        if (!screenVideoConsumerRef.current) {
             console.log("screenVideoConsumerRef is not available")
             return;
         }
@@ -269,14 +269,14 @@ const LiveStudentPage = () => {
         if (!socket) return;
 
         socket.on("new-producer", ({ producerId, appData }) => {
-            console.log("[new producer received]", producerId, appData);
             createConsumer(producerId, appData);
         });
 
         return () => {
             socket.off("new-producer");
         };
-    }, [socket]);
+    }, [socket, createConsumer]);
+
 
 
     return (

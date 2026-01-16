@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import Tweet from "../models/tweet.model";
 import { cloudinary } from "../lib/cloudinary";
-import { emitTweetNotification } from "../socket/emitters/notification.emitter";
+import { emitTweetNotification } from "../sockets/emitters/notification.emitter";
 import { extractMentionedUserIds } from "../utils/extractMentionIds";
 import { Types } from "mongoose";
 import { Notification } from "../models/notification.model";

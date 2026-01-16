@@ -22,7 +22,7 @@ import genearteQrCode from "./utils/generateQrCode";
 import notesRouter from "./routes/note.routes";
 import lectureRouter from "./routes/lecture.route";
 import tweetRouter from "./routes/tweet.routes";
-import { initSocket } from "./socket";
+import { initSocket } from "./sockets";
 import { createRedisWorker } from "./redis/worker";
 import attendanceRoutes from "./routes/attendence.routes";
 

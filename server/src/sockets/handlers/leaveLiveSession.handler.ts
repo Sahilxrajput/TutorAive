@@ -1,6 +1,7 @@
 import { Socket } from "socket.io";
 import { peerManager } from "../../managers/PeerManager";
 import { roomManager } from "../../managers/RoomManager";
+import { clearLectureStore } from "../../store/liveStore";
 
 export const handleLeaveLiveSession = (socket: Socket) => async () => {
   const peer = peerManager.get(socket.id);
@@ -21,16 +22,22 @@ export const handleLeaveLiveSession = (socket: Socket) => async () => {
   if (isHost) {
     console.log("[leave] host left, closing room:", room.roomId);
 
-    room.close(); // kick everyone, close router
-    roomManager.delete(room.roomId); // remove room reference
-
     // remove all peers from peerManager
     for (const p of room.getAllPeers()) {
       peerManager.remove(p.socketId);
     }
 
+    room.close(); // kick everyone, close router
+    roomManager.delete(room.roomId); // remove room reference
+
+    //! clear Inmemory data of chats, poll and qna
+    clearLectureStore(peer.roomId);
+
     return; // IMPORTANT: stop here
   }
+
+  // leave socket room
+  socket.leave(peer.roomId);
 
   // STUDENT LEAVES → CLEAN ONLY HIM
   console.log("[leave] peer left:", peer.socketId);
@@ -78,5 +85,8 @@ export const handleLeaveLiveSession = (socket: Socket) => async () => {
   // 4. remove peer only
   room.removePeer(socket.id);
   peerManager.remove(socket.id);
+
+
+
 };
 
