@@ -25,6 +25,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import API from "@/lib/api";
 import { useNotifications } from "@/tanStack/hooks/useNotifications";
 import type { INotification } from "@/types/type";
+import { cn } from "@/lib/utils";
 
 export function NotificationSidebar() {
     const [notifications, setNotifications] = useState<INotification[]>([]);
@@ -135,35 +136,9 @@ export function NotificationSidebar() {
                             )}
 
                             {filteredNotifications.map(item => (
-                                // <div
-                                //     key={item._id}
-                                //     className={`flex gap-3 p-3 rounded-lg border transition ${item.isRead
-                                //         ? "bg-background"
-                                //         : "bg-muted/40"
-                                //         }`}
-                                // >
-                                //     <div className="p-2 h-8 aspect-square rounded-full bg-muted">
-                                //         {getIcon(item.type)}
-                                //     </div>
-
-                                //     <div className="flex-1">
-                                //         <p className="text-sm font-medium">{item.message}</p>
-                                //         <p className="text-xs text-muted-foreground">
-                                //             {new Date(item.createdAt).toLocaleString()}
-                                //         </p>
-                                //     </div>
-
-                                //     {!item.isRead && (
-                                //         // <div>
-                                //         <span className="h-2 w-2 rounded-full bg-blue-500 mt-2" />
-                                //         // </div>
-                                //     )}
-                                // </div>
-
                                 <div
                                     key={item._id}
-                                    className={`flex gap-3 p-3 rounded-lg border transition ${item.isRead ? "bg-background" : "bg-muted/40"
-                                        }`}
+                                    className={cn("flex gap-3 p-3 rounded-lg border transition", item.isRead ? "bg-background" : " bg-muted/40")}
                                 >
                                     <div className="p-2 h-8 aspect-square rounded-full bg-muted">
                                         {getIcon(item.type)}

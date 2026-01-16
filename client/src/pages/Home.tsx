@@ -11,12 +11,14 @@ import { BookHeartIcon, Bookmark, Clock, Rocket } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import useSocketContext from '@/hooks/useSocketContext';
+import EventList from '@/components/home/EventList';
 
 const Home = () => {
     const [date, setDate] = useState<Date | undefined>(new Date());
     const [scheduleLecture, setScheduleLecture] = useState<ILecture[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [pendingAssignments, setPendingAssignments] = useState<number>(0)
+    const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
     const { isInstructor, user } = useAuth()
     const { socket } = useSocketContext()
@@ -96,7 +98,7 @@ const Home = () => {
 
         const handleClassUpdate = (payload: LectureUpdatePayload) => {
             console.log("payload : ", payload)
-            // setScheduleLecture()
+            // @todo setScheduleLecture()
             switch (payload.status) {
                 case "live":
                     toast.success(`lecture ${payload.title} is live now`);
@@ -170,10 +172,25 @@ const Home = () => {
         };
     }, [socket]);
 
+    const handleDateSelect = (date: Date) => {
+        // clicking same date again = unselect
+        if (
+            selectedDate &&
+            date.toDateString() === selectedDate.toDateString()
+        ) {
+            setSelectedDate(null);
+            return;
+        }
+
+        setSelectedDate(date);
+    };
+
+    const handleCalendarBlur = () => {
+        setSelectedDate(null);
+    };
 
     return (
         <main className="h-screen flex p-4">
-
             {/* left side */}
             <section className="flex-1 flex gap-6 flex-col">
                 <div className="w-full h-3/10 bg-yellow-600 shadow-md hover:shadow-lg rounded-lg"></div>
@@ -187,16 +204,18 @@ const Home = () => {
             </section>
 
             {/* right side */}
-            <section className="w-1/4 p-8 space-y-6 flex flex-col overflow-y-auto scrollbar-hide">
-                <Input type="text" placeholder="Search Something..." className="border-black border-2" />
+            <section className="w-1/4 px-8 space-y-6 flex flex-col overflow-y-auto scrollbar-hide">
+                <Input type="text" placeholder="Search Something..." />
                 <Calendar
                     buttonVariant={'link'}
                     mode="single"
                     selected={date}
+                    onDayClick={handleDateSelect}
+                    onDayBlur={handleCalendarBlur}
                     onSelect={setDate}
                     className="rounded-lg border w-full text-gray-700 shadow-sm"
                     captionLayout="label"
-                />
+                     />
                 <h1 className="text-lg font-semibold border-b pb-1 mb-2">Upcoming Schedule</h1>
 
                 <div className="w-full flex flex-col space-y-2">
@@ -209,12 +228,19 @@ const Home = () => {
                             </div>
                         ))
                     ) : scheduleLecture.length > 0 ? (
-                        scheduleLecture.map((e: ILecture) => (
-                            <EventCard key={e._id}
-                                event={e}
-                                onOpen={() => { }}
-                                onDelete={deleteScheduleLecture} />
-                        ))
+                        // scheduleLecture.map((e: ILecture) => (
+                        //     <EventCard key={e._id}
+                        //         event={e}
+                        //         onOpen={() => { }}
+                        //     // onDelete={deleteScheduleLecture} 
+                        //     />
+                        // ))
+                        <EventList
+                            events={scheduleLecture}
+                            selectedDate={selectedDate}
+                            // onOpen={handleOpenLecture}
+                            onOpen={() => { }}
+                        />
                     ) : (
                         <p className="text-gray-500 text-center">No upcoming lectures</p>
                     )}

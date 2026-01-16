@@ -1,10 +1,12 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Plus, Check, BarChart2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
+import useSocketContext from "@/hooks/useSocketContext";
+import { useParams } from "react-router-dom";
 
 interface PollOption {
     _id: string;
@@ -18,84 +20,85 @@ interface Poll {
     options: PollOption[];
     isActive: boolean;
     totalVotes: number;
-    userVote?: string;
 }
 
-const mockPolls: Poll[] = [
-    {
-        _id: "1",
-        question: "What topic should we cover next?",
-        options: [
-            { _id: "1a", text: "Advanced Functions", votes: 15 },
-            { _id: "1b", text: "Data Structures", votes: 22 },
-            { _id: "1c", text: "Algorithms", votes: 18 },
-            { _id: "1d", text: "Design Patterns", votes: 9 },
-        ],
-        isActive: true,
-        totalVotes: 64,
-    },
-    {
-        _id: "2",
-        question: "Was today's pace appropriate?",
-        options: [
-            { _id: "2a", text: "Too fast", votes: 5 },
-            { _id: "2b", text: "Just right", votes: 28 },
-            { _id: "2c", text: "Too slow", votes: 3 },
-        ],
-        isActive: false,
-        totalVotes: 36,
-        userVote: "2b",
-    },
-];
+// const mockPolls: Poll[] = [
+//     {
+//         _id: "1",
+//         question: "What topic should we cover next?",
+//         options: [
+//             { _id: "1a", text: "Advanced Functions", votes: 15 },
+//             { _id: "1b", text: "Data Structures", votes: 22 },
+//             { _id: "1c", text: "Algorithms", votes: 18 },
+//             { _id: "1d", text: "Design Patterns", votes: 9 },
+//         ],
+//         isActive: true,
+//         totalVotes: 64,
+//     },
+//     {
+//         _id: "2",
+//         question: "Was today's pace appropriate?",
+//         options: [
+//             { _id: "2a", text: "Too fast", votes: 5 },
+//             { _id: "2b", text: "Just right", votes: 28 },
+//             { _id: "2c", text: "Too slow", votes: 3 },
+//         ],
+//         isActive: false,
+//         totalVotes: 36,
+//     },
+// ];
 
 interface PollsPanelProps {
     isTeacher?: boolean;
 }
 
 export default function PollsPanel({ isTeacher = false }: PollsPanelProps) {
-    const [polls, setPolls] = useState<Poll[]>(mockPolls);
+    const [polls, setPolls] = useState<Poll[]>([]);
     const [isCreating, setIsCreating] = useState(false);
     const [newQuestion, setNewQuestion] = useState("");
     const [newOptions, setNewOptions] = useState(["", ""]);
+    const [userVotes, setUserVotes] = useState<Record<string, string>>({});    // pollId -> optionId
+    const { socket } = useSocketContext()
+    const { lectureId } = useParams<{
+        classroomId: string;
+        lectureId: string;
+    }>();
 
     const handleVote = (pollId: string, optionId: string) => {
-        setPolls(
-            polls.map((poll) => {
-                if (poll._id === pollId && !poll.userVote) {
-                    return {
-                        ...poll,
-                        options: poll.options.map((opt) =>
-                            opt._id === optionId ? { ...opt, votes: opt.votes + 1 } : opt
+        if (userVotes[pollId]) return;
+
+        // optimistic UI for counts
+        setPolls(prev =>
+            prev.map(p =>
+                p._id === pollId
+                    ? {
+                        ...p,
+                        options: p.options.map(o =>
+                            o._id === optionId ? { ...o, votes: o.votes + 1 } : o
                         ),
-                        totalVotes: poll.totalVotes + 1,
-                        userVote: optionId,
-                    };
-                }
-                return poll;
-            })
+                        totalVotes: p.totalVotes + 1,
+                    }
+                    : p
+            )
         );
+
+        // user-specific state (NOT shared)
+        setUserVotes(prev => ({ ...prev, [pollId]: optionId }));
+
+        if (!socket || !lectureId) return
+        socket.emit("poll:vote", { pollId, lectureId, optionId })
     };
 
     const handleCreatePoll = () => {
-        if (!newQuestion.trim() || newOptions.filter((o) => o.trim()).length < 2) {
-            return;
-        }
+        if (!newQuestion.trim() || newOptions.filter(o => o.trim()).length < 2) return;
+        if (!socket || !lectureId) return;
 
-        const poll: Poll = {
-            _id: Date.now().toString(),
+        socket.emit("poll:create", {
+            lectureId,
             question: newQuestion,
-            options: newOptions
-                .filter((o) => o.trim())
-                .map((text, index) => ({
-                    _id: `${Date.now()}-${index}`,
-                    text,
-                    votes: 0,
-                })),
-            isActive: true,
-            totalVotes: 0,
-        };
+            options: newOptions.filter(o => o.trim()),
+        });
 
-        setPolls([poll, ...polls]);
         setNewQuestion("");
         setNewOptions(["", ""]);
         setIsCreating(false);
@@ -107,9 +110,32 @@ export default function PollsPanel({ isTeacher = false }: PollsPanelProps) {
         }
     };
 
+    useEffect(() => {
+        if (!socket) return;
+
+        const onPollCreated = (poll: Poll) => {
+            setPolls(prev => [poll, ...prev]);
+        };
+
+        const onPollUpdated = (updatedPoll: Poll) => {
+            setPolls(prev =>
+                prev.map(p => (p._id === updatedPoll._id ? updatedPoll : p))
+            );
+        };
+
+        socket.on("poll:created", onPollCreated);
+        socket.on("poll:updated", onPollUpdated);
+
+        return () => {
+            socket.off("poll:created", onPollCreated);
+            socket.off("poll:updated", onPollUpdated);
+        };
+    }, [socket]);
+
+
     return (
         <div className="flex flex-col h-full">
-            <div className="p-4 border-b border-border">
+            {isTeacher && <div className="p-4 border-b border-border">
                 {isCreating ? (
                     <div className="space-y-3">
                         <Input
@@ -167,10 +193,18 @@ export default function PollsPanel({ isTeacher = false }: PollsPanelProps) {
                         Create Poll
                     </Button>
                 )}
-            </div>
+            </div>}
 
             <ScrollArea className="flex-1 px-4 min-h-0">
                 <div className="space-y-4 py-4">
+                    
+                    {polls.length === 0 && (
+                        <div className="text-center text-muted-foreground py-10">
+                            <p className="font-medium">No polls yet</p>
+                            <p className="text-xs">Polls will appear here once created</p>
+                        </div>
+                    )}
+
                     {polls.map((poll) => (
                         <div
                             key={poll._id}
@@ -196,16 +230,18 @@ export default function PollsPanel({ isTeacher = false }: PollsPanelProps) {
                                         poll.totalVotes > 0
                                             ? Math.round((option.votes / poll.totalVotes) * 100)
                                             : 0;
-                                    const isSelected = poll.userVote === option._id;
-                                    const showResults = poll.userVote || !poll.isActive;
+
+                                    const myVote = userVotes[poll._id];
+                                    const isSelected = myVote === option._id;
+                                    const showResults = !!myVote || !poll.isActive;
 
                                     return (
                                         <button
                                             key={option._id}
                                             onClick={() =>
-                                                poll.isActive && !poll.userVote && handleVote(poll._id, option._id)
+                                                poll.isActive && handleVote(poll._id, option._id)
                                             }
-                                            disabled={!poll.isActive || !!poll.userVote}
+                                            disabled={!poll.isActive || Boolean(myVote)}
                                             className={cn(
                                                 "poll-option w-full py-2 px-4  border-2 rounded-lg text-left transition-all",
                                                 isSelected && "border-primary/30 bg-primary/10",

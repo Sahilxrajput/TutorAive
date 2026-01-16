@@ -547,7 +547,7 @@ const LiveTeacherPage = () => {
                 />
             </main>
 
-            {openChat && <SidebarTabs />}
+            {openChat && <SidebarTabs isTeacher={!!user && user.role === "instructor"} />}
         </div>
     );
 }

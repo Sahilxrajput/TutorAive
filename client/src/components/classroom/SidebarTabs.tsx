@@ -6,7 +6,7 @@ import QnAPanel from "./QnAPanel";
 import ChatPanel from "./ChatPanel";
 
 
-const SidebarTabs = () => {
+const SidebarTabs = ({isTeacher }:{isTeacher?:boolean}) => {
     return (
         <motion.div
             draggable="true"
@@ -65,7 +65,7 @@ const SidebarTabs = () => {
                     <QnAPanel />
                 </TabsContent>
                 <TabsContent value="poll" className="flex-1 m-0 min-h-0">
-                    <PollsPanel />
+                    <PollsPanel isTeacher={isTeacher} />
                 </TabsContent>
             </Tabs>
         </motion.div>
