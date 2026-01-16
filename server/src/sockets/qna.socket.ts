@@ -5,6 +5,7 @@ export const registerQnaSocket = (socket: Socket) => {
   socket.on(
     "qna:ask",
     ({ lectureId, question, userId, userName, userProfilePicture }, cb) => {
+        if (socket.data.activeRoomId !== lectureId) return;
       const qnaRoom = liveQnA.get(lectureId) ?? new Map();
 
       const q: LiveQuestion = {
@@ -28,6 +29,8 @@ export const registerQnaSocket = (socket: Socket) => {
   );
 
   socket.on("qna:upvote", ({ lectureId, questionId, userId }) => {
+    if (socket.data.activeRoomId !== lectureId) return;
+    
     const qnaRoom = liveQnA.get(lectureId);
     if (!qnaRoom) return;
 
@@ -46,6 +49,8 @@ export const registerQnaSocket = (socket: Socket) => {
   });
 
   socket.on("qna:mark-answered", ({ lectureId, questionId }) => {
+    if (socket.data.activeRoomId !== lectureId) return;
+    
     const qnaRoom = liveQnA.get(lectureId);
     if (!qnaRoom) return;
 
@@ -60,6 +65,8 @@ export const registerQnaSocket = (socket: Socket) => {
   });
 
   socket.on("qna:sync", ({ lectureId }, cb) => {
+    if (socket.data.activeRoomId !== lectureId) return;
+  
     const qnaRoom = liveQnA.get(lectureId);
     cb({
       questions: qnaRoom ? [...qnaRoom.values()] : [],
@@ -67,6 +74,8 @@ export const registerQnaSocket = (socket: Socket) => {
   });
 
   socket.on("class:finish", async ({ lectureId }) => {
+    if (socket.data.activeRoomId !== lectureId) return;
+   
     const qnaRoom = liveQnA.get(lectureId);
     if (!qnaRoom) return;
 

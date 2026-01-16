@@ -1,53 +1,58 @@
 import { Socket } from "socket.io";
 import { LiveChatMessage, liveChats } from "../store/liveStore";
 
-export const  registerChatSocket = (socket: Socket) => {
+export const registerChatSocket = (socket: Socket) => {
+  socket.on("chat:sync", ({ lectureId }, cb) => {
+    if (socket.data.activeRoomId !== lectureId) return;
 
-   socket.on("chat:sync", ({ lectureId }, cb) => {
-     const messages = liveChats.get(lectureId) ?? [];
-     cb({ messages });
-   });
+    const messages = liveChats.get(lectureId) ?? [];
+    cb({ messages });
+  });
 
-   socket.on("chat:send", ({ lectureId, message, user }, cb) => {
-     if (!message?.trim()) return;
+  socket.on("chat:send", ({ lectureId, message, user }, cb) => {
+    if (socket.data.activeRoomId !== lectureId) return;
+    if (!message?.trim()) return;
 
-     const msg: LiveChatMessage = {
-       _id: crypto.randomUUID(),
-       lectureId,
-       userId: user._id,
-       userName: user.userName,
-       userProfilePicture: user.profilePicture,
-       role: user.role, // "student" | "instructor"
-       message,
-       createdAt: new Date(),
-     };
+    console.log("socket.data.activeRoomId: ", socket.data.activeRoomId);
 
-     const chat = liveChats.get(lectureId) ?? [];
-     chat.push(msg);
-     liveChats.set(lectureId, chat);
+    const msg: LiveChatMessage = {
+      _id: crypto.randomUUID(),
+      lectureId,
+      userId: user._id,
+      userName: user.userName,
+      userProfilePicture: user.profilePicture,
+      role: user.role, // "student" | "instructor"
+      message,
+      createdAt: new Date(),
+    };
 
-     // send to everyone INCLUDING sender
-     socket.to(lectureId).emit("chat:new", msg); //@note in or to
+    const chat = liveChats.get(lectureId) ?? [];
+    chat.push(msg);
+    liveChats.set(lectureId, chat);
 
-     cb?.({ msg });
-   });
+    // send to everyone INCLUDING sender
+    socket.to(lectureId).emit("chat:new", msg); //@note in or to
 
-   socket.on("class:finish", async ({ lectureId }) => {
-     const chat = liveChats.get(lectureId);
-     if (!chat) return;
+    cb?.({ msg });
+  });
 
-     const chats = chat.map((m) => ({
-       lectureId,
-       userId: m.userId,
-       userName: m.userName,
-       role: m.role,
-       message: m.message,
-       createdAt: m.createdAt,
-     }));
+  socket.on("class:finish", async ({ lectureId }) => {
+    if (socket.data.activeRoomId !== lectureId) return;
+
+    const chat = liveChats.get(lectureId);
+    if (!chat) return;
+
+    const chats = chat.map((m) => ({
+      lectureId,
+      userId: m.userId,
+      userName: m.userName,
+      role: m.role,
+      message: m.message,
+      createdAt: m.createdAt,
+    }));
 
     //  await ChatMessageModel.insertMany(chats);
 
-     liveChats.delete(lectureId);
-   });
-
+    liveChats.delete(lectureId);
+  });
 };

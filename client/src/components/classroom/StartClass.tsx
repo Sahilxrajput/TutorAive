@@ -2,7 +2,7 @@ import React, { useState, type Dispatch, type SetStateAction } from "react";
 import { format } from "date-fns";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
-import { Calendar as CalendarIcon } from "lucide-react";
+import { Calendar as CalendarIcon, Trash } from "lucide-react";
 
 import { CardContent, CardHeader } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -17,6 +17,8 @@ import {
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import API from "@/lib/api";
+import { AlertConfirmDialog } from "../AlertConfirmDialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "../ui/alert-dialog";
 
 function combineDateWithTime(date: Date, time: string) {
     const [hours, minutes] = time.split(":").map(Number);

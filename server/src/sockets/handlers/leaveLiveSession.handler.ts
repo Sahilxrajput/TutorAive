@@ -2,6 +2,7 @@ import { Socket } from "socket.io";
 import { peerManager } from "../../managers/PeerManager";
 import { roomManager } from "../../managers/RoomManager";
 import { clearLectureStore } from "../../store/liveStore";
+import Lecture from "../../models/lecture.model";
 
 export const handleLeaveLiveSession = (socket: Socket) => async () => {
   const peer = peerManager.get(socket.id);
@@ -21,22 +22,31 @@ export const handleLeaveLiveSession = (socket: Socket) => async () => {
   // HOST LEAVES → END ROOM
   if (isHost) {
     console.log("[leave] host left, closing room:", room.roomId);
+    await Lecture.findByIdAndUpdate(peer.roomId, {
+      status: "completed",
+    });
 
     // remove all peers from peerManager
     for (const p of room.getAllPeers()) {
       peerManager.remove(p.socketId);
     }
 
+    //! clear Inmemory data of chats, poll and qna
     room.close(); // kick everyone, close router
     roomManager.delete(room.roomId); // remove room reference
-
-    //! clear Inmemory data of chats, poll and qna
     clearLectureStore(peer.roomId);
+    delete socket.data.activeRoomId;
+
+    socket.to(peer.roomId).emit("host:leave");
+
+    // leave socket room
+    socket.leave(peer.roomId);
 
     return; // IMPORTANT: stop here
   }
 
   // leave socket room
+  delete socket.data.activeRoomId;
   socket.leave(peer.roomId);
 
   // STUDENT LEAVES → CLEAN ONLY HIM
@@ -85,8 +95,4 @@ export const handleLeaveLiveSession = (socket: Socket) => async () => {
   // 4. remove peer only
   room.removePeer(socket.id);
   peerManager.remove(socket.id);
-
-
-
 };
-

@@ -29,8 +29,6 @@ const LiveTeacherPage = () => {
     const [isSharing, setIsSharing] = useState(false);
     const [openChat, setOpenChat] = useState(false)
     const [viewerCount] = useState(42);
-
-    // -------------------------------------------------------
     const { user } = useAuth();
     const { socket, isConnected, } = useSocketContext();
     const { lectureId } = useParams<{
@@ -50,41 +48,9 @@ const LiveTeacherPage = () => {
     const screenProducerRef = useRef<Producer>(null);
     const saudioProducerRef = useRef<Producer>(null);
     const deviceRef = useRef<Device>(null);
-    const callIdRef = useRef<string>(null)
 
-    // interface IProducerOptions {
-    //     encodings: RTCRtpEncodingParameters[],
-    //     codecOptions: ProducerCodecOptions,
-    //     track?: MediaStreamTrack
-    // }
 
-    // let rtpCapabilities: any;
-    // let consumer: Consumer;
-
-    // let params = {
-    //     encodings: [
-    //         {
-    //             rid: 'r0',
-    //             maxBitrate: 100000,
-    //             scalabilityMode: 'S1T3',
-    //         },
-    //         {
-    //             rid: 'r1',
-    //             maxBitrate: 300000,
-    //             scalabilityMode: 'S1T3',
-    //         },
-    //         {
-    //             rid: 'r2',
-    //             maxBitrate: 900000,
-    //             scalabilityMode: 'S1T3',
-    //         },
-    //     ],
-    //     codecOptions: {
-    //         videoGoogleStartBitrate: 1000,
-    //     },
-    // };        
-
-    async function takePermission() {
+    async function start() {
         const stream = await navigator.mediaDevices.getUserMedia({
             video: true,
             audio: true,
@@ -98,11 +64,6 @@ const LiveTeacherPage = () => {
         if (localVideoRef.current) {
             localVideoRef.current.srcObject = stream;
         }
-        start()
-    }
-
-
-    async function start() {
         await (deviceRef.current === null ? joinRoom() : createSendTransport())
     }
 
@@ -188,7 +149,7 @@ const LiveTeacherPage = () => {
         }
         setCam(!cam);
     }
-    
+
     const leaveRoom = () => {
         if (!socket) return;
 
@@ -501,24 +462,6 @@ const LiveTeacherPage = () => {
         }
     };
 
-
-    // useEffect(() => {
-    //     if (!socket || !isConnected) return;
-
-    //     // future socket logic here
-    //     socket.on('connection-success', ({ socketId, existsProducer }) => {
-    //         console.log(socketId, existsProducer)
-    //     })
-
-    //     socket.on("peer-joined", ({ name }: {
-    //         name: string,
-    //     }) => {
-    //         console.log(name)
-    //         toast.info(`${name} joined session`)
-    //     })
-
-    // }, [socket, isConnected]);
-
     return (
         <div className="flex h-screen w-full bg-background text-foreground overflow-hidden font-sans">
             <main className="flex-1 flex flex-col p-4 gap-4 relative">
@@ -531,8 +474,7 @@ const LiveTeacherPage = () => {
                     isSharing={isSharing}
                 />
 
-                {/* <button className='absolute bg-red-500 top-12 left-1/2' onClick={takePermission}>permission</button> */}
-                <button className='absolute bg-red-500 top-12 left-1/3 ' onClick={takePermission}>start</button>
+                <button className='absolute bg-red-500 top-12 left-1/3 ' onClick={start}>start</button>
 
                 <ControlsBar
                     onLeave={leaveRoom}

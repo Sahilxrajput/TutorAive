@@ -2,8 +2,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import useAuth from "@/hooks/useAuth";
 import useSocketContext from "@/hooks/useSocketContext";
 import { Device } from "mediasoup-client";
-import type { AppData, Consumer, DtlsParameters, RtpParameters, Transport } from "mediasoup-client/types";
-import { useParams } from "react-router-dom";
+import type { AppData, Consumer, DtlsParameters, RtpCapabilities, RtpParameters, Transport } from "mediasoup-client/types";
+import { useNavigate, useParams } from "react-router-dom";
 import SidebarTabs from "@/components/classroom/SidebarTabs";
 import VideoStage from "@/components/classroom/VideoStage";
 import ControlBarForStudent from "./ControlBarForStudent";
@@ -12,7 +12,7 @@ import { toast } from "sonner";
 const LiveStudentPage = () => {
     const [openChat, setOpenChat] = useState(false)
     const [viewerCount] = useState(42);
-    const { user } = useAuth();
+    const { user, isInstructor } = useAuth();
     const { socket } = useSocketContext();
     const { lectureId } = useParams<{
         classroomId: string;
@@ -26,11 +26,15 @@ const LiveStudentPage = () => {
     const screenVideoConsumerRef = useRef<Consumer | null>(null);
     const screenAudioConsumerRef = useRef<Consumer | null>(null);
     const [isSharing, setIsSharing] = useState(false);
+    const navigate = useNavigate();
 
 
     function leaveRoom() {
-        if (!teacherVideoRef.current || !socket) return;
-        socket.emit("leave:live-session", { roomId: lectureId })
+        if (!socket) return;
+        socket.emit("leave:live-session")
+        navigate("/")
+
+        if (!teacherVideoRef.current) return
         teacherVideoRef.current.srcObject = null;
         teacherVideoRef.current = null;
 
@@ -57,8 +61,14 @@ const LiveStudentPage = () => {
                 console.log("socket not available")
                 return
             }
-            const { rtpCapabilities } = await socket.emitWithAck('join:live-session', { roomId: lectureId, userId: user?._id, name: user?.firstName })
+            const { rtpCapabilities, allowed, reason }: { rtpCapabilities:RtpCapabilities, allowed:boolean, reason:string } = await socket.emitWithAck('join:live-session', { roomId: lectureId, userId: user?._id, name: user?.firstName })
             console.log("rtpCapabilities : ", rtpCapabilities)
+
+            if (!allowed){
+                toast.error(reason)
+                navigate("/")
+                return
+            }
 
             const device = new Device()
             await device.load({
@@ -156,8 +166,8 @@ const LiveStudentPage = () => {
 
             teacherVideoRef.current
                 .play()
-                .then(() => toast.success("video playing"))
-                .catch(e => toast.error("play blocked"));
+                .then()
+                .catch();
 
             socket.emit('consumer-resume', {
                 consumerId: consumer.id,
@@ -272,6 +282,10 @@ const LiveStudentPage = () => {
             createConsumer(producerId, appData);
         });
 
+        socket.on("host:leave", () => {
+            leaveRoom()
+        })
+
         return () => {
             socket.off("new-producer");
         };
@@ -302,7 +316,7 @@ const LiveStudentPage = () => {
                 />
             </main>
 
-            {openChat && <SidebarTabs />}
+            {openChat && <SidebarTabs isTeacher={isInstructor} />}
         </div>
     );
 };

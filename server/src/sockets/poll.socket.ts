@@ -9,6 +9,8 @@ interface VotePoll {
 
 export const registerPollSocket = (socket: Socket) => {
   socket.on("poll:create", ({ lectureId, question, options }) => {
+    if (socket.data.activeRoomId !== lectureId) return;
+    
     const poll: LivePoll = {
       _id: crypto.randomUUID(),
       question,
@@ -34,6 +36,8 @@ export const registerPollSocket = (socket: Socket) => {
 
   socket.on("poll:vote", ({ lectureId, pollId, optionId }: VotePoll) => {
     const userId = socket.data.userId;
+    if (socket.data.activeRoomId !== lectureId) return;
+
     const lecturePolls = livePolls.get(lectureId);
     if (!lecturePolls) return;
 

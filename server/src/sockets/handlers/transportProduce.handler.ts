@@ -25,7 +25,6 @@ export const handleTransportProduce =
   ) => {
     try {
       console.log("request to create producer");
-
       const room = roomManager.get(roomId);
       if (!room) return cb({ error: "room not found" });
 

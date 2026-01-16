@@ -1,7 +1,6 @@
 import { Server as HttpServer } from "http";
 import { Server, Socket } from "socket.io";
 import { socketAuthMiddleware } from "../Middlewares/socketAuth";
-import { handleJoinLiveSession } from "./handlers/joinLiveSession.handler";
 import { Consumer, Transport } from "mediasoup/node/lib/types";
 import Attendance from "../models/attendence.model.";
 import { roomManager } from "../managers/RoomManager";
@@ -45,7 +44,7 @@ export const initSocket = async (httpServer: HttpServer) => {
     socket.join(`user:${userId}`);
     // console.log(`User ${userId} joined user:${userId}`);
 
-    socket.on("join:live-session", handleJoinLiveSession(socket));
+    // socket.on("join:live-session", handleJoinLiveSession(socket));
 
     socket.on("createWebRtcTransport", handleCreateWebRtcTransport(socket));
 
@@ -71,13 +70,11 @@ export const initSocket = async (httpServer: HttpServer) => {
     //   );
     // });
 
-
     // registered Sockets
     registerQnaSocket(socket);
-    registerChatSocket(socket)
-    registerPollSocket(socket)
+    registerChatSocket(socket);
+    registerPollSocket(socket);
     registerSystemSocket(socket);
-
 
     socket.on("join:classroom", (classroomId: string) => {
       socket.join(classroomId);
