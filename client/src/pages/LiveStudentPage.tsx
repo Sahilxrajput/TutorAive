@@ -8,6 +8,7 @@ import SidebarTabs from "@/components/classroom/SidebarTabs";
 import VideoStage from "@/components/classroom/VideoStage";
 import ControlBarForStudent from "./ControlBarForStudent";
 import { toast } from "sonner";
+import { useFullscreen } from "@/hooks/useFullscreen";
 
 
 interface IJoinRoom {
@@ -33,6 +34,9 @@ const LiveStudentPage = () => {
     const screenAudioConsumerRef = useRef<Consumer | null>(null);
     const [isSharing, setIsSharing] = useState(false);
     const navigate = useNavigate();
+
+
+
 
     const clearStram = () => {
         if (!teacherVideoRef.current) return
@@ -304,11 +308,9 @@ const LiveStudentPage = () => {
         };
     }, [socket, createConsumer]);
 
-
-
     return (
         <div className="flex h-screen w-full bg-background text-foreground overflow-hidden font-sans">
-            <main className="flex-1 flex flex-col p-4 gap-4 relative">
+            <main className="flex-1 flex flex-col gap-4 relative">
 
 
                 <VideoStage
@@ -322,11 +324,14 @@ const LiveStudentPage = () => {
 
                 <button className="absolute right-1/2 top-12 bg-red-500" onClick={goConnect}>start</button>
 
+                {/* {isFullscreen && ( */}
                 <ControlBarForStudent
                     isChatOpen={openChat}
                     onLeave={leaveRoom}
                     onToggleChat={() => setOpenChat(v => !v)}
                 />
+                {/* )} */}
+
             </main>
 
             {openChat && <SidebarTabs isTeacher={isInstructor} />}

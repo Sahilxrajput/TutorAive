@@ -1,5 +1,6 @@
 import { Button } from '@/components/ui/button';
-import { Copy, MessageCircle, PhoneOff, Share2 } from 'lucide-react';
+import { useFullscreen } from '@/hooks/useFullscreen';
+import { Copy, Maximize, MessageCircle, Minimize, PhoneOff, Share2 } from 'lucide-react';
 import { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 
@@ -17,10 +18,8 @@ const ControlBarForStudent = ({
 }: Props) => {
 
     const url = useParams()
+    const { isFullScreen, toggle } = useFullscreen();
 
-    useEffect(() => {
-        console.log("para: ", url)
-    }, [])
 
     function copyUrlToClipboard() {
         console.log("url: ", url)
@@ -44,6 +43,14 @@ const ControlBarForStudent = ({
 
                 <Button onClick={onShare} variant={isChatOpen ? "default" : "ghost"} className="rounded-full h-12 w-12">
                     <Share2 />
+                </Button>
+
+                <Button onClick={toggle} variant="ghost" className='rounded-full h-12 w-12'>
+                    {isFullScreen ? (
+                        <Minimize className="h-5 w-5" />
+                    ) : (
+                        <Maximize className="h-5 w-5" />
+                    )}
                 </Button>
 
 

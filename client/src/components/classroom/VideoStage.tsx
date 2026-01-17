@@ -1,4 +1,4 @@
-import { forwardRef, useRef } from "react";
+import { useRef,  } from "react";
 import { MonitorUp, Users, Video } from "lucide-react";
 import { Card } from "../ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
@@ -6,6 +6,7 @@ import { Badge } from "../ui/badge";
 import useAuth from "@/hooks/useAuth";
 import { motion } from "framer-motion"
 import { cn } from "@/lib/utils";
+import { useFullscreen } from "@/hooks/useFullscreen";
 
 interface VideoStageProps {
     isInstructor: boolean;
@@ -20,11 +21,14 @@ const VideoStage =
     ({ isInstructor, isSharing, isCamOff, viewerCount, screenRef, videoRef }: VideoStageProps) => {
         const { user } = useAuth();
         const containerRef = useRef<HTMLDivElement>(null);
+        const { isFullScreen } = useFullscreen()
+
+
 
         return (
             <Card
                 ref={containerRef}
-                className="flex-1 bg-black border-none overflow-hidden relative flex items-center justify-center"
+                className="flex-1 bg-black border-none overflow-hidden relative flex rounded-none items-center justify-center"
             >
                 {/* Instructor header */}
                 {isInstructor && (
@@ -76,7 +80,7 @@ const VideoStage =
                       shadow-2xl overflow-hidden cursor-grab active:cursor-grabbing"
                 >
 
-                    {isCamOff ? (
+                    {isCamOff && isFullScreen ? (
                         <div className="w-full h-full flex items-center justify-center">
                             <Avatar className="h-16 w-16 border-2 border-primary">
                                 {/* @todo teacher img not consumer's */}
@@ -85,13 +89,16 @@ const VideoStage =
                             </Avatar>
                         </div>
                     ) : (
-                        <motion.video
-                            ref={videoRef}
-                            autoPlay
-                            muted
-                            playsInline
-                            className={cn("w-full h-full object-cover pointer-events-none", isSharing && "border-4 border-red-400")}
-                        />
+                            <motion.video
+                                ref={videoRef}
+                                autoPlay
+                                muted
+                                playsInline
+                                className={cn(
+                                    "w-full h-full object-cover",
+                                    isFullScreen && "fixed inset-0 w-screen h-screen z-50"
+                                )}
+                            />
                     )}
 
                     <Badge className="absolute bottom-2 left-2 bg-black/60 text-[10px]">
