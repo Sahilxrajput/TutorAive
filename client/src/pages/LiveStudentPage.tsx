@@ -9,6 +9,12 @@ import VideoStage from "@/components/classroom/VideoStage";
 import ControlBarForStudent from "./ControlBarForStudent";
 import { toast } from "sonner";
 
+
+interface IJoinRoom {
+    rtpCapabilities: RtpCapabilities,
+    error?: string
+}
+
 const LiveStudentPage = () => {
     const [openChat, setOpenChat] = useState(false)
     const [viewerCount] = useState(42);
@@ -28,12 +34,7 @@ const LiveStudentPage = () => {
     const [isSharing, setIsSharing] = useState(false);
     const navigate = useNavigate();
 
-
-    function leaveRoom() {
-        if (!socket) return;
-        socket.emit("leave:live-session")
-        navigate("/")
-
+    const clearStram = () => {
         if (!teacherVideoRef.current) return
         teacherVideoRef.current.srcObject = null;
         teacherVideoRef.current = null;
@@ -50,22 +51,34 @@ const LiveStudentPage = () => {
         stop()
     }
 
+    function leaveRoom() {
+        if (!socket) return;
+        socket.emit("leave:live-session")
+        // navigate("/")
+        clearStram()
+    }
+
     function goConnect() {
         return deviceRef.current === null ? joinRoom() : createRecvTransport()
     }
 
     const joinRoom = async () => {
         try {
-            console.log("join fxn called -->")
             if (!socket) {
-                console.log("socket not available")
                 return
             }
-            const { rtpCapabilities, allowed, reason }: { rtpCapabilities:RtpCapabilities, allowed:boolean, reason:string } = await socket.emitWithAck('join:live-session', { roomId: lectureId, userId: user?._id, name: user?.firstName })
+
+            const Payload = {
+                roomId: lectureId,
+                userId: user?._id,
+                name: user?.firstName
+            }
+
+            const { rtpCapabilities, error }: IJoinRoom = await socket.emitWithAck('join:live-session', Payload)
             console.log("rtpCapabilities : ", rtpCapabilities)
 
-            if (!allowed){
-                toast.error(reason)
+            if (error) {
+                toast.error(error)
                 navigate("/")
                 return
             }
@@ -282,8 +295,8 @@ const LiveStudentPage = () => {
             createConsumer(producerId, appData);
         });
 
-        socket.on("host:leave", () => {
-            leaveRoom()
+        socket.on("live-session:closed", () => {
+            clearStram()
         })
 
         return () => {

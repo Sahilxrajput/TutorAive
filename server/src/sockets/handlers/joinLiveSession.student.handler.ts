@@ -16,16 +16,18 @@ export const handleStudentJoinLiveSession =
     const lecture = await Lecture.findById(roomId).select("status");
 
     if (!lecture) {
-      return cb({ allowed: false, error: "Lecture not found" });
+      return cb({ error: "Lecture not found" });
     }
 
     if (lecture.status !== "live") {
-      return cb({ allowed: false, error: "Lecture not started yet" });
+      return cb({ error: "Lecture not started yet" });
     }
 
     const room = roomManager.get(roomId);
+    console.log("room stu: ", roomId)
+    console.log("room manager: ", room)
     if (!room) {
-      return cb({ allowed: false, error: "Live room not available" });
+      return cb({ error: "Live room not available" });
     }
 
     if (room.hasPeer(userId)) {
@@ -53,6 +55,5 @@ export const handleStudentJoinLiveSession =
 
     cb({
       rtpCapabilities: room.router.rtpCapabilities,
-      allowed: true,
     });
   };

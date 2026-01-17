@@ -11,11 +11,14 @@ import { handleTransportProduce } from "./handlers/transportProduce.handler";
 import { handleConsume } from "./handlers/consume.handler";
 import { handleGetProducers } from "./handlers/getProducers.handler";
 import { handleConsumerResume } from "./handlers/consumerResume.handler";
-import { handleLeaveLiveSession } from "./handlers/leaveLiveSession.handler";
+import { leaveStudentLiveSession } from "./handlers/leaveStudentLiveSession";
 import { registerQnaSocket } from "./qna.socket";
 import { registerChatSocket } from "./chat.socket";
 import { registerPollSocket } from "./poll.socket";
 import { registerSystemSocket } from "./system.socket";
+import { handleInstructorJoinLiveSession } from "./handlers/joinLiveSession.instructor.handler.ts";
+import { handleStudentJoinLiveSession } from "./handlers/joinLiveSession.student.handler.ts";
+import { leaveInstructorLiveSession } from "./handlers/leaveInstructorLiveSession";
 
 export let io: Server | null = null;
 
@@ -34,6 +37,7 @@ export const initSocket = async (httpServer: HttpServer) => {
   classroom.on("connection", (socket: Socket) => {
     console.log("Somthing connected!", socket.id);
     const userId = socket.data.userId;
+    const isInstructor = socket.data.userRole === "instructor";
 
     if (!userId) {
       console.error("Socket connected WITHOUT userId");
@@ -44,7 +48,12 @@ export const initSocket = async (httpServer: HttpServer) => {
     socket.join(`user:${userId}`);
     // console.log(`User ${userId} joined user:${userId}`);
 
-    // socket.on("join:live-session", handleJoinLiveSession(socket));
+    socket.on(
+      "join:live-session",
+      isInstructor
+        ? handleInstructorJoinLiveSession(socket)
+        : handleStudentJoinLiveSession(socket),
+    );
 
     socket.on("createWebRtcTransport", handleCreateWebRtcTransport(socket));
 
@@ -58,7 +67,12 @@ export const initSocket = async (httpServer: HttpServer) => {
 
     socket.on("get-producres", handleGetProducers());
 
-    socket.on("leave:live-session", handleLeaveLiveSession(socket));
+    socket.on(
+      "leave:live-session",
+      isInstructor
+        ? leaveInstructorLiveSession(socket)
+        : leaveStudentLiveSession(socket),
+    );
 
     // socket.on("lecture:join", ({ lectureId, user }) => {
     //   socket.join(lectureId);
@@ -86,7 +100,7 @@ export const initSocket = async (httpServer: HttpServer) => {
         {
           status: "present",
           joinTime: new Date(),
-        }
+        },
       );
     });
 
@@ -95,11 +109,16 @@ export const initSocket = async (httpServer: HttpServer) => {
         { lectureId, classroom: classroomId, student: userId },
         {
           leaveTime: new Date(),
-        }
+        },
       );
     });
 
-    socket.on("disconnect", handleLeaveLiveSession(socket));
+    socket.on(
+      "disconnect",
+      isInstructor
+        ? leaveInstructorLiveSession(socket)
+        : leaveStudentLiveSession(socket),
+    );
   });
 };
 

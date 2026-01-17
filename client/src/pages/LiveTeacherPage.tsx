@@ -15,11 +15,17 @@ import type {
 } from 'mediasoup-client/types';
 import useSocketContext from '@/hooks/useSocketContext';
 import useAuth from '@/hooks/useAuth';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import VideoStage from '@/components/classroom/VideoStage';
 import ControlsBar from '@/components/classroom/ControlsBar';
 import SidebarTabs from '@/components/classroom/SidebarTabs';
+
+
+interface IRoomCreate {
+    rtpCapabilities: RtpCapabilities,
+    error?: string,
+}
 
 const LiveTeacherPage = () => {
 
@@ -48,6 +54,7 @@ const LiveTeacherPage = () => {
     const screenProducerRef = useRef<Producer>(null);
     const saudioProducerRef = useRef<Producer>(null);
     const deviceRef = useRef<Device>(null);
+    const navigate = useNavigate();
 
 
     async function start() {
@@ -191,11 +198,17 @@ const LiveTeacherPage = () => {
 
     const joinRoom = async () => {
         try {
-            if (!socket) return
+            if (!socket || !user) return
 
-            // @todo room id
-            const { rtpCapabilities, producers } = await socket.emitWithAck('join:live-session', { roomId: lectureId, userId: user?._id, name: user?.firstName })
-            console.log("rtpCapabilities : ", rtpCapabilities)
+            const Payload = { roomId: lectureId, userId: user._id, name: user.firstName }
+
+            const { rtpCapabilities, error }: IRoomCreate = await socket.emitWithAck('join:live-session', Payload)
+
+            if (error) {
+                toast.info(error)
+                navigate("/")
+                return;
+            }
 
             const device = new Device()
             await device.load({
