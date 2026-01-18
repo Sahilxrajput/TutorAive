@@ -67,7 +67,7 @@ const Navbar = () => {
                 stiffness: 400,
                 damping: 35,
             }}
-            className=" fixed top-0 left-0 right-0 z-50 h-14 flex items-center justify-between px-6">
+            className=" fixed top-0 left-0 right-0 z-50 h-14 flex items-center justify-between px-6 pointer-event-none:">
             {/* Logo */}
             <Link
                 to="/"

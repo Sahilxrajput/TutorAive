@@ -1,7 +1,9 @@
 import useAuth from "@/hooks/useAuth";
 import LiveStudentPage from "@/pages/LiveStudentPage";
 import LiveTeacherPage from "@/pages/LiveTeacherPage";
+import { useEffect } from "react";
 import { useParams, Navigate } from "react-router-dom";
+import { toast } from "sonner";
 
 const LiveSession = () => {
     const { classroomId, lectureId } = useParams<{ classroomId: string, lectureId: string }>();

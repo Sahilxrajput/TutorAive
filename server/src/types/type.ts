@@ -175,6 +175,16 @@ export interface INote extends Document {
   createdAt?: Date;
   updatedAt?: Date;
 }
+
+export interface IPayment extends Document {
+  user: Types.ObjectId;
+  classroom: Types.ObjectId;
+  orderId: string;
+  paymentId: string;
+  amount: number;
+  status: "created" | "paid" | "failed";
+}
+
 export interface IEnrollment extends Document {
   user: Types.ObjectId;
   classroom?: Types.ObjectId;
