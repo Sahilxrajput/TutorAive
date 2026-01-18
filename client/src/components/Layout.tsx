@@ -1,42 +1,24 @@
 import { Outlet } from 'react-router-dom'
 import { motion } from "framer-motion";
-import Sidebar from './Sidebar';
-import { cn } from '@/lib/utils';
+import Navbar from './Navbar';
 import { useFullscreen } from '@/hooks/useFullscreen';
-import { useEffect, useState } from 'react';
+import { useIsMobile } from '@/hooks/use-mobile';
+import MobileNavBar from './MobileNavbar';
 
 const Layout = () => {
     const { isFullScreen } = useFullscreen();
-    const [isSidebarOpen, setIsSidebarOpen] = useState(true)
-
-    useEffect(() => {
-        const handler = (e: KeyboardEvent) => {
-            // ignore typing
-            const target = e.target as HTMLElement;
-            if (
-                target.tagName === "INPUT" ||
-                target.tagName === "TEXTAREA" ||
-                target.isContentEditable
-            ) {
-                return;
-            }
-
-            if (e.ctrlKey && e.key.toLowerCase() === "b") {
-                e.preventDefault();
-                setIsSidebarOpen(v => !v);
-            }
-        };
-
-        window.addEventListener("keydown", handler);
-        return () => window.removeEventListener("keydown", handler);
-    }, []);
-
-
+    const isMobile = useIsMobile();
 
     return (
-        <div className="flex min-h-screen transition-colors duration-500">
-            {!isFullScreen && isSidebarOpen && <Sidebar />}
-            <main className="flex-1">
+        <div className="flex min-h-screen transition-colors flex-col duration-500">
+            {/* Desktop sidebar */}
+            {!isFullScreen && !isMobile && <Navbar />}
+
+            {/* Mobile sidebar (overlay) */}
+            {!isFullScreen && isMobile && (
+                <MobileNavBar />
+            )}
+            <main className="flex-1 bg-muted/30" >
                 <motion.div
                     key={location.pathname}
                     initial={{ opacity: 0, y: 10 }}

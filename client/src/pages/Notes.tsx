@@ -34,7 +34,7 @@ export default function Notes() {
 
   // ---------- MAIN RETURN ----------
   return (
-    <div className="min-h-screen bg-muted/30 px-8 py-8 max-w-full mx-auto flex flex-col gap-8">
+    <div className="min-h-screen px-8 py-6 max-w-full mx-auto flex flex-col gap-8">
       {/* Header */}
       <div className="flex w-full justify-between items-center flex-wrap gap-2">
         <div className="space-x-2 flex items-center justify-center">

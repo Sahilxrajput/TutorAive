@@ -1,3 +1,4 @@
+import { useOutletContext } from "react-router-dom";
 import API from '@/lib/api';
 import EventCard from '@/components/home/EventCard';
 import LearningCard from '@/components/home/LeaningCard';
@@ -7,11 +8,13 @@ import { Skeleton } from '@/components/ui/skeleton';
 import useAuth from '@/hooks/useAuth';
 import type { AssignmentPayload, LectureUpdatePayload, ILecture } from '@/types/type';
 import { formatDateTime } from '@/utils/splitDateTime';
-import { BookHeartIcon, Bookmark, Clock, Rocket } from 'lucide-react';
+import { BookHeartIcon, Bookmark, Clock, Menu, Rocket } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import useSocketContext from '@/hooks/useSocketContext';
 import EventList from '@/components/home/EventList';
+
+
 
 const Home = () => {
     const [date, setDate] = useState<Date | undefined>(new Date());
@@ -19,9 +22,9 @@ const Home = () => {
     const [loading, setLoading] = useState<boolean>(true);
     const [pendingAssignments, setPendingAssignments] = useState<number>(0)
     const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-
     const { isInstructor, user } = useAuth()
     const { socket } = useSocketContext()
+
 
     const detectPath = useCallback(
         function detectPath() {
@@ -158,7 +161,6 @@ const Home = () => {
         }
     }, [socket]);
 
-
     useEffect(() => {
         if (!socket) return;
 
@@ -190,24 +192,56 @@ const Home = () => {
     };
 
     return (
-        <main className="h-screen flex p-4">
-            {/* left side */}
-            <section className="flex-1 flex gap-6 flex-col">
-                <div className="w-full h-3/10 bg-yellow-600 shadow-md hover:shadow-lg rounded-lg"></div>
-                <div className="flex items-center justify-between">
-                    <LearningCard title="Pending Assignment" Icon={BookHeartIcon} number={pendingAssignments} iconColor="green" />
-                    <LearningCard title="Certificates Earned" Icon={Bookmark} number={2} iconColor="blue" />
-                    <LearningCard title="Scheduled Class" Icon={Rocket} number={3} iconColor="green" />
-                    <LearningCard title="Streak (Days)" Icon={Rocket} number={3} iconColor="blue" />
-                    <LearningCard title="Hours Learned" Icon={Clock} number={18.5} iconColor="green" />
+        <main className="min-h-screen flex flex-col lg:flex-row gap-4 px-4">
+
+            {/* LEFT SIDE */}
+            <section className="flex-1 flex flex-col gap-6">
+                {/* Top banner */}
+                <div className="w-full h-40 sm:h-48 lg:h-60 bg-yellow-600 shadow-md hover:shadow-lg rounded-lg" />
+
+                {/* Cards */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+                    <LearningCard
+                        title="Pending Assignment"
+                        Icon={BookHeartIcon}
+                        number={pendingAssignments}
+                        iconColor="green"
+                    />
+                    <LearningCard
+                        title="Certificates Earned"
+                        Icon={Bookmark}
+                        number={2}
+                        iconColor="blue"
+                    />
+                    <LearningCard
+                        title="Scheduled Class"
+                        Icon={Rocket}
+                        number={3}
+                        iconColor="green"
+                    />
+                    <LearningCard
+                        title="Streak (Days)"
+                        Icon={Rocket}
+                        number={3}
+                        iconColor="blue"
+                    />
+                    <LearningCard
+                        title="Hours Learned"
+                        Icon={Clock}
+                        number={18.5}
+                        iconColor="green"
+                    />
                 </div>
             </section>
 
-            {/* right side */}
-            <section className="w-1/4 px-8 space-y-6 flex flex-col overflow-y-auto scrollbar-hide">
+            {/* RIGHT SIDE */}
+            <section
+                className="w-full lg:w-1/4 px-2 sm:px-4 lg:px-6 space-y-6 flex flex-col overflow-y-auto scrollbar-hide"
+            >
                 <Input type="text" placeholder="Search Something..." />
+
                 <Calendar
-                    buttonVariant={'link'}
+                    buttonVariant="link"
                     mode="single"
                     selected={date}
                     onDayClick={handleDateSelect}
@@ -215,34 +249,34 @@ const Home = () => {
                     onSelect={setDate}
                     className="rounded-lg border w-full text-gray-700 shadow-sm"
                     captionLayout="label"
-                     />
-                <h1 className="text-lg font-semibold border-b pb-1 mb-2">Upcoming Schedule</h1>
+                />
 
-                <div className="w-full flex flex-col space-y-2">
-                    {loading ? (
+                <h1 className="text-lg font-semibold border-b pb-1">
+                    Upcoming Schedule
+                </h1>
+
+                <div className="flex flex-col space-y-2">
+                    {!loading ? (
                         Array.from({ length: 4 }).map((_, i) => (
-                            <div key={i} className="p-2 border rounded-md shadow-sm space-y-2 flex flex-col items-center justify-center">
+                            <div
+                                key={i}
+                                className="p-3 border rounded-md shadow-sm space-y-2"
+                            >
                                 <Skeleton className="h-4 w-1/2" />
-                                <Skeleton className="h-4 w-8/10" />
-                                <Skeleton className="h-4 w-7/10" />
+                                <Skeleton className="h-4 w-4/5" />
+                                <Skeleton className="h-4 w-3/4" />
                             </div>
                         ))
                     ) : scheduleLecture.length > 0 ? (
-                        // scheduleLecture.map((e: ILecture) => (
-                        //     <EventCard key={e._id}
-                        //         event={e}
-                        //         onOpen={() => { }}
-                        //     // onDelete={deleteScheduleLecture} 
-                        //     />
-                        // ))
                         <EventList
                             events={scheduleLecture}
                             selectedDate={selectedDate}
-                            // onOpen={handleOpenLecture}
                             onOpen={() => { }}
                         />
                     ) : (
-                        <p className="text-gray-500 text-center">No upcoming lectures</p>
+                        <p className="text-gray-500 text-center">
+                            No upcoming lectures
+                        </p>
                     )}
                 </div>
             </section>

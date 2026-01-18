@@ -34,13 +34,12 @@ const App: React.FC = () => {
         <Routes>
             <Route path="/" element={<Layout />}>
                 <Route index element={<Home />} />
-                <Route path="chats" element={<LiveSession />} />
+                <Route path="community" element={<CommunityPage />} />
                 <Route path="editor" element={<Editor />} />
                 <Route path="notes" element={<Notes />} />
                 <Route path="notes/:noteId" element={<Note />} />
                 <Route path="notes/new" element={<SaveNotes />} />
                 <Route path="quizs" element={<Quiz />} />
-                <Route path="community" element={<CommunityPage />} />
 
                 {/* Browse all classrooms */}
                 <Route path="classrooms" element={<BrowseClassroom />} />

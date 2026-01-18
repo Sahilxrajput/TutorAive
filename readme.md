@@ -92,3 +92,7 @@ const stats = await Assignment.aggregate([
 #26D9D9
 #0E1422
 #0B0F1C
+
+<!-- :dark -->
+#1F1F1F
+#003049
