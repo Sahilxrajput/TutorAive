@@ -22,17 +22,16 @@ import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
 import API from "@/lib/api";
 import { toast } from "sonner";
-import useAuth from "@/hooks/useAuth";
+import type { IClassroom } from "@/types/type";
 
 export default function BrowseClassroom() {
     const navigate = useNavigate();
-    const { user } = useAuth();
 
     const [search, setSearch] = useState("");
     const [selectedTags, setSelectedTags] = useState("All");
-    const [selectedCourse, setSelectedCourse] = useState<any>(null);
+    const [selectedCourse, setSelectedCourse] = useState<IClassroom | null>(null);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
-    const [courses, setCourses] = useState<any[]>([]);
+    const [courses, setCourses] = useState<IClassroom[]>([]);
     const [enrolledCourses, setEnrolledCourses] = useState<string[]>([]);
 
     useEffect(() => {
@@ -52,8 +51,7 @@ export default function BrowseClassroom() {
                 if (!Array.isArray(data)) {
                     data = [];
                 }
-                //  Use IDs, not titles, for consistent matching
-                setEnrolledCourses(data.map((c: any) => c._id));
+                setEnrolledCourses(data.map((c: IClassroom) => c._id));
             } catch (error) {
                 console.log(error);
             }
@@ -146,7 +144,7 @@ export default function BrowseClassroom() {
         return matchesSearch && matchesTags;
     });
 
-    const handleEnrollClick = (classroom: any) => {
+    const handleEnrollClick = (classroom: IClassroom) => {
         if (enrolledCourses.includes(classroom._id)) {
             navigate(`/classrooms/${classroom._id}`);
             return;
@@ -179,7 +177,7 @@ export default function BrowseClassroom() {
     };
 
     return (
-        <div className="w-full flex flex-col items-center justify-center p-6">
+        <div className="w-full py-8 p flex flex-col items-center justify-center">
             {/* Search Bar */}
             <section className="flex flex-col sm:flex-row w-full max-w-2xl items-center gap-3 mb-6">
                 <Input
@@ -253,7 +251,7 @@ export default function BrowseClassroom() {
                 </>
             )}
 
-            {/* 🩵 Available Courses Section */}
+            {/*  Available Courses Section */}
             <h2 className="text-xl font-semibold mt-8 mb-4 text-blue-600">
                 Available Courses
             </h2>

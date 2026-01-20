@@ -477,7 +477,7 @@ const LiveTeacherPage = () => {
 
     return (
         <div className="flex h-screen w-full bg-background text-foreground overflow-hidden font-sans">
-            <main className="flex-1 flex flex-col p-4 gap-4 relative">
+            <main className="flex-1 flex flex-col gap-4 relative">
                 <VideoStage
                     videoRef={localVideoRef}
                     screenRef={screenVideoRef}

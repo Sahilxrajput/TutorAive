@@ -38,6 +38,7 @@ export interface ISocketContextValue {
 }
 
 export interface IClassroom {
+  _id: string;
   title: string;
   description?: string;
   price?: number;

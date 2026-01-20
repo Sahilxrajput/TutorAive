@@ -5,6 +5,7 @@ export const useFullscreen = () => {
     !!document.fullscreenElement,
   );
 
+  // sync fullscreen state
   useEffect(() => {
     const handler = () => {
       setIsFullScreen(!!document.fullscreenElement);
@@ -28,11 +29,33 @@ export const useFullscreen = () => {
 
   const toggle = useCallback(async () => {
     if (document.fullscreenElement) {
-      await document.exitFullscreen();
+      await exit();
     } else {
-      await document.documentElement.requestFullscreen();
+      await enter();
     }
-  }, []);
+  }, [enter, exit]);
+
+  // F key shortcut
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement;
+
+      const isTyping =
+        target.tagName === "INPUT" ||
+        target.tagName === "TEXTAREA" ||
+        target.isContentEditable;
+
+      if (isTyping) return;
+
+      if (e.key.toLowerCase() === "f") {
+        e.preventDefault();
+        toggle();
+      }
+    };
+
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [toggle]);
 
   return {
     isFullScreen,

@@ -1,8 +1,8 @@
 import { Button } from '@/components/ui/button';
 import { useFullscreen } from '@/hooks/useFullscreen';
-import { Copy, Maximize, MessageCircle, Minimize, PhoneOff, Share2 } from 'lucide-react';
-import { useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { Maximize, MessageCircle, Minimize, PhoneOff, Share2 } from 'lucide-react';
+import {  useState } from 'react';
+import { toast } from 'sonner';
 
 type Props = {
     isChatOpen: boolean;
@@ -17,22 +17,31 @@ const ControlBarForStudent = ({
     onLeave
 }: Props) => {
 
-    const url = useParams()
     const { isFullScreen, toggle } = useFullscreen();
+    const [urlCopied, setUrlCopied] = useState(false);
 
 
     function copyUrlToClipboard() {
-        console.log("url: ", url)
-        const urlToCopy = `${import.meta.env.VITE_API_URL}/${url}`
-        navigator.clipboard.writeText(urlToCopy).then(() => {
-            // setUrlCopied(true);
-            // setTimeout(() => setUrlCopied(false), 2000);
-        });
+        const urlToCopy = window.location.href;
+
+        navigator.clipboard
+            .writeText(urlToCopy)
+            .then(() => {
+                setUrlCopied(true);
+
+                toast.success("Copied", {
+                    duration: 2000, 
+                });
+
+                setTimeout(() => setUrlCopied(false), 2000);
+            })
+            .catch(() =>
+                toast.warning("Something went wrong", {
+                    duration: 2000,
+                })
+            );
     }
 
-    const onShare = () => {
-
-    }
 
     return (
         <footer className="flex justify-center py-4 absolute bottom-2 right-1/2 left-1/2">
@@ -41,7 +50,7 @@ const ControlBarForStudent = ({
                     {isChatOpen ? <MessageCircle /> : <MessageCircle />}
                 </Button>
 
-                <Button onClick={onShare} variant={isChatOpen ? "default" : "ghost"} className="rounded-full h-12 w-12">
+                <Button onClick={copyUrlToClipboard} variant={urlCopied ? "default" : "ghost"} className="rounded-full h-12 w-12">
                     <Share2 />
                 </Button>
 

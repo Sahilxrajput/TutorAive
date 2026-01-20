@@ -8,9 +8,9 @@ export const useHideSidebar = () => {
   const { isFullScreen } = useFullscreen();
   const isMobile = useIsMobile();
 
-  const isLiveLecture = useMatch(
-    "/classrooms/:classroomId/lecture/live/:lectureId",
-  );
+//   const isLiveLecture = useMatch(
+//     "/classrooms/:classroomId/lecture/live/:lectureId",
+//   );
 
   // user-controlled toggle
   const [userHidden, setUserHidden] = useState(false);
@@ -36,7 +36,7 @@ export const useHideSidebar = () => {
   }, [toggleSidebar]);
 
   // system rules override user toggle
-  const hideSidebar = isFullScreen || !!isLiveLecture || userHidden;
+  const hideSidebar = isFullScreen || userHidden;
 
   return {
     hideSidebar,

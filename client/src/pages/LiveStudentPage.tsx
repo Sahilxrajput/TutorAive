@@ -8,7 +8,6 @@ import SidebarTabs from "@/components/classroom/SidebarTabs";
 import VideoStage from "@/components/classroom/VideoStage";
 import ControlBarForStudent from "./ControlBarForStudent";
 import { toast } from "sonner";
-import { useFullscreen } from "@/hooks/useFullscreen";
 
 
 interface IJoinRoom {
@@ -324,13 +323,11 @@ const LiveStudentPage = () => {
 
                 <button className="absolute right-1/2 top-12 bg-red-500" onClick={goConnect}>start</button>
 
-                {/* {isFullscreen && ( */}
                 <ControlBarForStudent
                     isChatOpen={openChat}
                     onLeave={leaveRoom}
                     onToggleChat={() => setOpenChat(v => !v)}
                 />
-                {/* )} */}
 
             </main>
 
