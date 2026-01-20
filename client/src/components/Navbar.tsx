@@ -2,52 +2,49 @@ import { Link, useLocation } from "react-router-dom";
 import {
     Baby,
     BookOpen,
-    MessageCircle,
     Twitch,
     Compass,
     LucideOctagon,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
-import useAuth from "@/hooks/useAuth";
 import { NotificationSidebar } from "./notification/NotificationSidebar";
-import useHideOnScroll from "@/hooks/useHideOnScroll";
 
 interface Indicator {
-    left: number;
-    width: number;
+    top: number;
+    height: number;
     opacity: number;
 }
 
 const navItems = [
-    { to: "/notes", icon: BookOpen },
+    { to: "/", icon: LucideOctagon },
     { to: "/classrooms", icon: Compass },
-    { to: "/chats", icon: MessageCircle },
+    { to: "/notes", icon: BookOpen },
     { to: "/community", icon: Twitch },
 ];
 
-const Navbar = () => {
-    const { user } = useAuth();
+const Sidebar = () => {
     const location = useLocation();
     const containerRef = useRef<HTMLDivElement>(null);
-    const hidden = useHideOnScroll();
+    const activeElRef = useRef<HTMLElement | null>(null);
+
 
     const [indicator, setIndicator] = useState<Indicator>({
-        left: 0,
-        width: 0,
+        top: 0,
+        height: 0,
         opacity: 0,
     });
 
     const moveIndicator = (el: HTMLElement) => {
-        const { width } = el.getBoundingClientRect();
+        const { height } = el.getBoundingClientRect();
         setIndicator({
-            left: el.offsetLeft,
-            width,
+            top: el.offsetTop,
+            height,
             opacity: 1,
         });
     };
 
-    // Sync indicator with active route on load / refresh
+    // Sync indicator with active route
     useEffect(() => {
         if (!containerRef.current) return;
 
@@ -55,83 +52,62 @@ const Navbar = () => {
             `[data-path='${location.pathname}']`
         ) as HTMLElement | null;
 
-        if (activeEl) moveIndicator(activeEl);
+        if (activeEl) {
+            activeElRef.current = activeEl;
+            moveIndicator(activeEl);
+        }
     }, [location.pathname]);
 
+
     return (
-        <motion.nav
-            initial={{ y: 0 }}
-            animate={{ y: hidden ? "-100%" : "0%" }}
-            transition={{
-                type: "spring",
-                stiffness: 400,
-                damping: 35,
-            }}
-            className=" fixed top-0 left-0 right-0 z-50 h-14 flex items-center justify-between px-6 pointer-event-none:">
-            {/* Logo */}
-            <Link
-                to="/"
-                className="relative flex items-center rounded-full p-2 border border-white/20 text-amber-800 bg-white/10 backdrop-blur-xl shadow-xl shadow-black/10 before:absolute before:inset-0 before:rounded-full before:bg-gradient-to-b before:from-white/20 before:to-transparent before:pointer-events-none"
-            >
-                <LucideOctagon />
-            </Link>
+        <aside className="h-screen w-16 border-r-2 flex flex-col items-center justify-between text-[#1F0322] py-4 relative">
+                {/* Nav items */}
+                <div
+                    ref={containerRef}
+                    onPointerLeave={() => {
+                        if (activeElRef.current) {
+                            moveIndicator(activeElRef.current);
+                        }
+                    }}
+                    className="relative w-full flex flex-col items-center gap-6"
+                >
+                    <Cursor indicator={indicator} />
 
-            {/* Center Nav */}
-            <motion.div
-                className="relative flex items-center gap-6 rounded-full px-4 py-1 border border-amber-800 bg-white/10 backdrop-blur-xl shadow-xl shadow-black/10 before:absolute before:inset-0 before:rounded-full before:bg-gradient-to-b before:from-white/20 before:to-transparent before:pointer-events-none"
-                onPointerLeave={() => {
-                    setIndicator((prev) => ({ ...prev, opacity: 0 }));
-                }}
-                ref={containerRef}
-            >
-                <Cursor indicator={indicator} />
+                    {navItems.map(({ to, icon: Icon }) => (
+                        <Link
+                            key={to}
+                            to={to}
+                            data-path={to}
+                            onPointerEnter={(e) =>
+                                moveIndicator(e.currentTarget)
+                            }
+                            className="relative z-10 h-10 w-10 py-6 flex items-center justify-center hover:text-[#DA4167] transition-colors ease-in-out duration-500 "
+                        >
+                            <Icon size={24} />
+                        </Link>
+                    ))}
+                </div>
 
-                {navItems.map(({ to, icon: Icon }) => (
-                    <Link
-                        key={to}
-                        to={to}
-                        data-path={to}
-                        onPointerEnter={(e) => moveIndicator(e.currentTarget)}
-                        className="relative z-10 flex h-10 w-10 items-center justify-center hover:text-white text-amber-800 transition-colors duration-200 ease-out "
-                    >
-                        <Icon size={20} />
-                    </Link>
-                ))}
-            </motion.div>
-
-            {/* Right Actions */}
-            <div
-                className="relative flex items-center gap-6 rounded-full px-4 py-1 border border-amber-800 text-amber-800 bg-white/10 backdrop-blur-xl shadow-xl shadow-black/10 before:absolute before:inset-0 before:rounded-full before:bg-gradient-to-b before:from-white/20 before:to-transparent before:pointer-events-none"
-            >
+            {/* Bottom section */}
+            <div className="flex flex-col items-center gap-4">
                 <NotificationSidebar />
-
-                {!user ? (
-                    <Link
-                        to="/signin"
-                        className="flex h-10 w-10 items-center justify-center"
-                    >
-                        <Baby />
-                    </Link>
-                ) : (
-                    <Link to="/profile">
-                        <img
-                            src={user.profilePicture}
-                            alt="Profile"
-                            className="h-8 w-8 rounded-full object-cover"
-                        />
-                    </Link>
-                )}
+                <Link
+                    to="/profile"
+                    className="h-10 w-10 flex items-center justify-center"
+                >
+                    <Baby />
+                </Link>
             </div>
-        </motion.nav >
+        </aside>
     );
 };
 
 const Cursor = ({ indicator }: { indicator: Indicator }) => (
     <motion.div
-        className="absolute h-10 rounded-full bg-primary z-0"
+        className="absolute w-full aspect-square rounded-lg bg-primary/30 border-primary border-2 z-0"
         animate={indicator}
-        transition={{ type: "spring", stiffness: 500, damping: 30 }}
+        transition={{ type: "spring", stiffness: 400, damping: 35 }}
     />
 );
 
-export default Navbar;
+export default Sidebar;

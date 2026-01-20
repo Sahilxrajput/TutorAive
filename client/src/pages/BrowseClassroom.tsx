@@ -129,7 +129,6 @@ export default function BrowseClassroom() {
         }
     }
 
-
     // All unique tags
     const allTags = courses.flatMap((c) => c.tags || []);
     const uniqueTag = ["All", ...Array.from(new Set(allTags)).slice(0, 8)];
@@ -242,8 +241,8 @@ export default function BrowseClassroom() {
                                         <Button
                                             size="sm"
                                             className="w-full bg-green-600 hover:bg-green-700 text-white"
-                                            // onClick={() => navigate(`/classrooms/${classroom._id}`)}
-                                            onClick={() => onPayment(5, classroom._id)}
+                                            onClick={() => navigate(`/classrooms/${classroom._id}`)}
+                                            // onClick={() => onPayment(5, classroom._id)}
                                         >
                                             Go to Course
                                         </Button>

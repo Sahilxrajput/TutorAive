@@ -7,7 +7,7 @@ import ChatRoom from "./pages/ChatRoom";
 import Home from "./pages/Home";
 import Signup from "./pages/signup";
 import Signin from "./pages/signin";
-import Notes from "./pages/Notes";
+import BrowseNotes from "./pages/BrowseNotes";
 import ClassroomLayout from "./components/classroom/ClassroomLayout";
 import BrowseClassroom from "./pages/BrowseClassroom";
 import Layout from "./components/Layout";
@@ -36,9 +36,11 @@ const App: React.FC = () => {
                 <Route index element={<Home />} />
                 <Route path="community" element={<CommunityPage />} />
                 <Route path="editor" element={<Editor />} />
-                <Route path="notes" element={<Notes />} />
-                <Route path="notes/:noteId" element={<Note />} />
-                <Route path="notes/new" element={<SaveNotes />} />
+                <Route path="notes" >
+                    <Route index element={<BrowseNotes />} />
+                    <Route path=":noteId" element={<Note />} />
+                    <Route path="new" element={<SaveNotes />} />
+                </Route>
                 <Route path="quizs" element={<Quiz />} />
 
                 {/* Browse all classrooms */}
@@ -51,8 +53,7 @@ const App: React.FC = () => {
                     </EnrolledRoute>
                 }>
                     <Route index element={<ClassroomOverview />} />
-                    <Route path="notes" element={<Notes />} />
-                    <Route path="stu" element={<LiveStudentPage />} />
+                    <Route path="notes" element={<BrowseNotes />} />
                     <Route path="assignments" element={<AssignmentPage />} />
                     <Route path="leaderboard" element={<LeaderboardPage />} />
                     <Route path="lecture/live/:lectureId" element={<LiveSession />} /> // handle role wised page rendering

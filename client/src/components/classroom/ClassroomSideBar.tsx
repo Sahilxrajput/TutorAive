@@ -9,7 +9,6 @@ import { PdfUploadDialog } from "../PdfUpload";
 const ClassroomSideBar = () => {
     const [isHide, setIsHide] = useState<boolean>(false);
     const [showPopup, setShowPopup] = useState<boolean>(false)
-    // const [classType, setClassType] = useState<"live" | "schedule">("live")
     const { user } = useAuth()
 
     const pathDetector = (item: string) => {

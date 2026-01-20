@@ -14,7 +14,7 @@ import NotesGrid from "@/components/note/NotesGrid";
 import { useClearTrash, useNotes } from "@/tanStack/hooks/useNotes";
 import NoteSkelton from "@/components/note/NoteSkelton";
 
-export default function Notes() {
+export default function BrowseNotes() {
   const [status, setStatus] = useState<"active" | "other" | "archived" | "trashed" | "pinned">("active");
   const navItem = ["other", "active", "archived", "trashed", "pinned"]
 

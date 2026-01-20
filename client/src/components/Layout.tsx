@@ -1,28 +1,21 @@
-import { Outlet, useMatch } from 'react-router-dom'
+import { Outlet, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import Navbar from './Navbar';
-import { useFullscreen } from '@/hooks/useFullscreen';
-import { useIsMobile } from '@/hooks/use-mobile';
-import MobileNavBar from './MobileNavbar';
-import { cn } from '@/lib/utils';
+import Navbar from "./Navbar";
+import MobileNavBar from "./MobileNavbar";
+import { cn } from "@/lib/utils";
+import { useHideSidebar } from "@/hooks/useHideSidebar";
 
 const Layout = () => {
-    const { isFullScreen } = useFullscreen();
-    const isMobile = useIsMobile();
-    const isLiveLecture = useMatch(
-        "/classrooms/:classroomId/lecture/live/:lectureId"
-    );
+    const { hideSidebar, isMobile } = useHideSidebar();
+    const location = useLocation();
 
     return (
-        <div className="flex min-h-screen transition-colors flex-col duration-500">
-            {/* Desktop sidebar */}
-            {!isFullScreen && !isMobile && !isLiveLecture && <Navbar />}
-
-            {/* Mobile sidebar (overlay) */}
-            {!isFullScreen && isMobile && (
-                <MobileNavBar />
+        <div className="flex h-screen overflow-hidden transition-colors duration-500">
+            {!hideSidebar && (
+                isMobile ? <MobileNavBar /> : <Navbar />
             )}
-            <main className={cn("flex-1 bg-muted/30",  !isLiveLecture &&"pt-8")} >
+
+            <main className={cn("flex-1 overflow-y-auto bg-muted/30")}>
                 <motion.div
                     key={location.pathname}
                     initial={{ opacity: 0, y: 10 }}
@@ -33,8 +26,7 @@ const Layout = () => {
                 </motion.div>
             </main>
         </div>
+    );
+};
 
-    )
-}
-
-export default Layout
+export default Layout;

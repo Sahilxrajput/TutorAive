@@ -9,7 +9,6 @@ import useSocketContext from "@/hooks/useSocketContext";
 import { useParams } from "react-router-dom";
 import useAuth from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
-import { toast } from "sonner";
 
 export interface LiveChatMessage {
     _id: string;

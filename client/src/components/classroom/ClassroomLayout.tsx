@@ -7,15 +7,18 @@ const ClassroomLayout = () => {
     const isLiveLecture = useMatch(
         "/classrooms/:classroomId/lecture/live/:lectureId"
     );
-    
+
     return (
         <div className="flex h-screen overflow-hidden">
+            {/* Sidebar */}
+            {!isFullScreen && !isLiveLecture && (
+                <aside className="w-64 shrink-0">
+                    <ClassroomSideBar />
+                </aside>
+            )}
 
-            {/* Classroom-specific sidebar */}
-            {!isFullScreen && !isLiveLecture && <ClassroomSideBar />}
-
-            {/* Main classroom content */}
-            <main className="flex-1 overflow-hidden">
+            {/* Scroll container */}
+            <main className="flex-1 overflow-y-auto">
                 <Outlet />
             </main>
         </div>
