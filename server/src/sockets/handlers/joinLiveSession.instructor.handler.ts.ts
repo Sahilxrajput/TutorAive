@@ -26,11 +26,12 @@ export const handleInstructorJoinLiveSession =
       return cb({ error: "You are not authorized" });
     }
 
+    // @todo
     // 3. Status guards
-    if (lecture.status === "live") {
-      console.log("[join] lecture already live");
-      return cb({ error: "lecture already live" });
-    }
+    // if (lecture.status === "live") {
+    //   console.log("[join] lecture already live");
+    //   return cb({ error: "lecture already live" });
+    // }
 
     if (lecture.status === "cancelled" || lecture.status === "completed") {
       return cb({ error: `Lecture is ${lecture.status}` });

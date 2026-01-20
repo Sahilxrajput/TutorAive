@@ -32,7 +32,7 @@ const LiveTeacherPage = () => {
 
     const [isMuted, setIsMuted] = useState(false);
     const [isCamOff, setIsCamOff] = useState(false);
-    const [isSharing, setIsSharing] = useState(false);
+    const [isScreenSharing, setIsScreenSharing] = useState(false);
     const [openChat, setOpenChat] = useState(false)
     const [viewerCount] = useState(42);
     const { user } = useAuth();
@@ -62,7 +62,6 @@ const LiveTeacherPage = () => {
             video: true,
             audio: true,
         });
-
         // save stream
         streamRef.current = stream;
         //@todo apply constrain
@@ -241,12 +240,6 @@ const LiveTeacherPage = () => {
     //     appData:{}
     // }
 
-    const enterFullScreen = () => {
-        if (document.documentElement.requestFullscreen) {
-            document.documentElement.requestFullscreen();
-        }
-    };
-
     const createSendTransport = async () => {
         if (!socket) return
 
@@ -351,7 +344,7 @@ const LiveTeacherPage = () => {
 
     const startScreenShare = async () => {
         if (!producerTransportRef.current) return;
-        setIsSharing(true)
+        setIsScreenSharing(true)
 
         const screenStream = await navigator.mediaDevices.getDisplayMedia({
             video: { width: 1920, height: 1080, frameRate: { ideal: 60, max: 60 }, displaySurface: 'monitor' },
@@ -443,13 +436,13 @@ const LiveTeacherPage = () => {
     const stopScreenShare = () => {
         // If screen was never started, do nothing
         if (!screenProducerRef.current && !screenStreamRef.current) return;
-        setIsSharing(false)
+        setIsScreenSharing(false)
         console.log("[screen] stopped");
 
         // 1. Notify server FIRST
         if (socket) {
             socket.emit("stop-screen-share", { roomId: lectureId });
-            setIsSharing(false)
+            setIsScreenSharing(false)
         }
 
         // detach stream to video element
@@ -484,21 +477,22 @@ const LiveTeacherPage = () => {
                     isInstructor={true}
                     viewerCount={viewerCount}
                     isCamOff={isCamOff}
-                    isSharing={isSharing}
+                    isScreenSharing={isScreenSharing}
                 />
 
                 <button className='absolute bg-red-500 top-12 left-1/3 ' onClick={start}>start</button>
+
 
                 <ControlsBar
                     onLeave={leaveRoom}
                     isChatOpen={openChat}
                     isMuted={isMuted}
                     isCamOff={isCamOff}
-                    isSharing={isSharing}
+                    isScreenSharing={isScreenSharing}
                     onToggleMute={toggleMic}
                     onToggleCam={toggleCam}
                     onToggleChat={() => setOpenChat(v => !v)}
-                    onToggleShare={() => isSharing ? stopScreenShare() : startScreenShare()} //@todo
+                    onToggleShare={() => isScreenSharing ? stopScreenShare() : startScreenShare()} //@todo
                 />
             </main>
 

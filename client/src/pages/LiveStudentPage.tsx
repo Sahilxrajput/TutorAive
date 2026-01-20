@@ -27,14 +27,13 @@ const LiveStudentPage = () => {
 
     const teacherVideoRef = useRef<HTMLVideoElement | null>(null);
     const screenVideoRef = useRef<HTMLVideoElement | null>(null);
+    const screenStreamRef = useRef<MediaStream | null>(null);
     const deviceRef = useRef<Device>(null);
     const consumerTransportRef = useRef<Transport>(null)
     const screenVideoConsumerRef = useRef<Consumer | null>(null);
     const screenAudioConsumerRef = useRef<Consumer | null>(null);
-    const [isSharing, setIsSharing] = useState(false);
+    const [isScreenSharing, setIsScreenSharing] = useState(false);
     const navigate = useNavigate();
-
-
 
 
     const clearStram = () => {
@@ -182,8 +181,6 @@ const LiveStudentPage = () => {
 
             teacherVideoRef.current
                 .play()
-                .then()
-                .catch();
 
             socket.emit('consumer-resume', {
                 consumerId: consumer.id,
@@ -222,7 +219,7 @@ const LiveStudentPage = () => {
                 screenAudioConsumerRef.current = null;
 
                 // 3. Update UI state
-                setIsSharing(false);
+                setIsScreenSharing(false);
             });
 
 
@@ -244,7 +241,7 @@ const LiveStudentPage = () => {
                 screenAudioConsumerRef.current = null;
 
                 // 3. Update UI state
-                setIsSharing(false);
+                setIsScreenSharing(false);
             });
 
 
@@ -267,16 +264,12 @@ const LiveStudentPage = () => {
     }, [lectureId, socket])
 
     function attachScreenStream() {
-        if (!screenVideoRef.current) {
-            console.log("screenVideoRef is not available")
-            return;
-        }
         if (!screenVideoConsumerRef.current) {
             console.log("screenVideoConsumerRef is not available")
             return;
         }
 
-        console.log("screenVideoConsumerRef: ", screenAudioConsumerRef.current)
+        setIsScreenSharing(true); 
 
         const stream = new MediaStream();
         stream.addTrack(screenVideoConsumerRef.current.track);
@@ -284,12 +277,23 @@ const LiveStudentPage = () => {
         if (screenAudioConsumerRef.current) {
             stream.addTrack(screenAudioConsumerRef.current.track);
         }
-
-        screenVideoRef.current.srcObject = stream;
-        screenVideoRef.current.muted = false;
-        screenVideoRef.current.play().catch(() => { });
-        setIsSharing(true); // 🔥 THIS is the trigger
+        screenStreamRef.current = stream;
+        
+        setIsScreenSharing(true);
+        
     }
+
+    useEffect(() => {
+        if (!isScreenSharing) return;
+        if (!screenVideoRef.current) return;
+        if (!screenStreamRef.current) return;
+
+        screenVideoRef.current.srcObject = screenStreamRef.current;
+        screenVideoRef.current.muted = false;
+
+        screenVideoRef.current.play().catch(() => { });
+    }, [isScreenSharing]);
+
 
     useEffect(() => {
         if (!socket) return;
@@ -311,15 +315,13 @@ const LiveStudentPage = () => {
         <div className="flex h-screen w-full bg-background text-foreground overflow-hidden font-sans">
             <main className="flex-1 flex flex-col gap-4 relative">
 
-
                 <VideoStage
-                    isSharing={isSharing}
+                    isScreenSharing={isScreenSharing}
                     screenRef={screenVideoRef}
                     videoRef={teacherVideoRef}
                     isInstructor={false}
                     viewerCount={viewerCount}
                 />
-
 
                 <button className="absolute right-1/2 top-12 bg-red-500" onClick={goConnect}>start</button>
 

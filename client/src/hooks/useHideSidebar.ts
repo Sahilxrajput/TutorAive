@@ -1,12 +1,10 @@
 // hooks/useHideSidebar.ts
 import { useMatch } from "react-router-dom";
 import { useFullscreen } from "@/hooks/useFullscreen";
-import { useIsMobile } from "@/hooks/use-mobile";
 import { useCallback, useEffect, useState } from "react";
 
 export const useHideSidebar = () => {
   const { isFullScreen } = useFullscreen();
-  const isMobile = useIsMobile();
 
 //   const isLiveLecture = useMatch(
 //     "/classrooms/:classroomId/lecture/live/:lectureId",
@@ -41,7 +39,6 @@ export const useHideSidebar = () => {
   return {
     hideSidebar,
     toggleSidebar,
-    isMobile,
     userHidden,
   };
 };

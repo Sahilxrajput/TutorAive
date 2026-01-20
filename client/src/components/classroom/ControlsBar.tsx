@@ -8,7 +8,7 @@ type Props = {
     isMuted: boolean;
     isCamOff: boolean;
     isChatOpen: boolean;
-    isSharing: boolean;
+    isScreenSharing: boolean;
     onToggleMute: () => void;
     onToggleChat: () => void;
     onToggleCam: () => void;
@@ -20,7 +20,7 @@ const ControlsBar = ({
     isMuted,
     isChatOpen,
     isCamOff,
-    isSharing,
+    isScreenSharing,
     onToggleMute,
     onToggleCam,
     onToggleChat,
@@ -71,7 +71,7 @@ const ControlsBar = ({
                     {isCamOff ? <VideoOff /> : <Video />}
                 </Button>
 
-                <Button onClick={onToggleShare} variant={isSharing ? "default" : "ghost"} className="rounded-full h-12 w-12">
+                <Button onClick={onToggleShare} variant={isScreenSharing ? "default" : "ghost"} className="rounded-full h-12 w-12">
                     <MonitorUp />
                 </Button>
 

@@ -9,6 +9,8 @@ import {
 import { motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import { NotificationSidebar } from "./notification/NotificationSidebar";
+import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
+import useAuth from "@/hooks/useAuth";
 
 interface Indicator {
     top: number;
@@ -23,11 +25,11 @@ const navItems = [
     { to: "/community", icon: Twitch },
 ];
 
-const Sidebar = () => {
+const SideBar = () => {
     const location = useLocation();
     const containerRef = useRef<HTMLDivElement>(null);
     const activeElRef = useRef<HTMLElement | null>(null);
-
+    const { user } = useAuth();
 
     const [indicator, setIndicator] = useState<Indicator>({
         top: 0,
@@ -61,41 +63,49 @@ const Sidebar = () => {
 
     return (
         <aside className="h-screen w-16 border-r-2 flex flex-col items-center justify-between text-[#1F0322] py-4 relative">
-                {/* Nav items */}
-                <div
-                    ref={containerRef}
-                    onPointerLeave={() => {
-                        if (activeElRef.current) {
-                            moveIndicator(activeElRef.current);
-                        }
-                    }}
-                    className="relative w-full flex flex-col items-center gap-6"
-                >
-                    <Cursor indicator={indicator} />
+            {/* Nav items */}
+            <div
+                ref={containerRef}
+                onPointerLeave={() => {
+                    if (activeElRef.current) {
+                        moveIndicator(activeElRef.current);
+                    }
+                }}
+                className="relative w-full flex flex-col items-center gap-6"
+            >
+                <Cursor indicator={indicator} />
 
-                    {navItems.map(({ to, icon: Icon }) => (
-                        <Link
-                            key={to}
-                            to={to}
-                            data-path={to}
-                            onPointerEnter={(e) =>
-                                moveIndicator(e.currentTarget)
-                            }
-                            className="relative z-10 h-10 w-10 py-6 flex items-center justify-center hover:text-[#DA4167] transition-colors ease-in-out duration-500 "
-                        >
-                            <Icon size={24} />
-                        </Link>
-                    ))}
-                </div>
+                {navItems.map(({ to, icon: Icon }) => (
+                    <Link
+                        key={to}
+                        to={to}
+                        data-path={to}
+                        onPointerEnter={(e) =>
+                            moveIndicator(e.currentTarget)
+                        }
+                        className="relative z-10 h-10 w-10 py-6 flex items-center justify-center hover:text-[#DA4167] transition-colors ease-in-out duration-500 "
+                    >
+                        <Icon size={24} />
+                    </Link>
+                ))}
+            </div>
 
             {/* Bottom section */}
             <div className="flex flex-col items-center gap-4">
                 <NotificationSidebar />
                 <Link
-                    to="/profile"
+                    to="/dashboard"
                     className="h-10 w-10 flex items-center justify-center"
                 >
-                    <Baby />
+                    {user ? <Avatar className="h-10 w-10 border rounded-full flex items-center justify-center">
+                        <AvatarImage className="rounded-full" src={user?.profilePicture} />
+                        <AvatarFallback>
+                            {"US"}
+                        </AvatarFallback>
+                    </Avatar>
+                        :
+                        <Baby />
+                    }
                 </Link>
             </div>
         </aside>
@@ -110,4 +120,4 @@ const Cursor = ({ indicator }: { indicator: Indicator }) => (
     />
 );
 
-export default Sidebar;
+export default SideBar;
