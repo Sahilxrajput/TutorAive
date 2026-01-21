@@ -1,4 +1,3 @@
-// /components/note-actions/dialogs/RemoveCollaboratorDialog.tsx
 import {
     Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
     DialogFooter, DialogClose
@@ -6,6 +5,15 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import type { Dispatch, SetStateAction } from "react";
+
+interface Props {
+    open: () => void
+    onClose: () => void
+    userId: string
+    setUserId: Dispatch<SetStateAction<string>>
+    onSubmit: () => void
+}
 
 export default function RemoveCollaboratorDialog({
     open,
@@ -13,7 +21,7 @@ export default function RemoveCollaboratorDialog({
     userId,
     setUserId,
     onSubmit,
-}) {
+}: Props) {
     return (
         <Dialog open={open} onOpenChange={onClose}>
             <DialogContent>

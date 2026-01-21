@@ -1,14 +1,9 @@
 // hooks/useHideSidebar.ts
-import { useMatch } from "react-router-dom";
 import { useFullscreen } from "@/hooks/useFullscreen";
 import { useCallback, useEffect, useState } from "react";
 
 export const useHideSidebar = () => {
   const { isFullScreen } = useFullscreen();
-
-//   const isLiveLecture = useMatch(
-//     "/classrooms/:classroomId/lecture/live/:lectureId",
-//   );
 
   // user-controlled toggle
   const [userHidden, setUserHidden] = useState(false);

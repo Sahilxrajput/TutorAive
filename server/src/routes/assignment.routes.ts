@@ -9,16 +9,16 @@ import {
   cloudinarySignature,
   saveAssignment,
 } from "../controllers/assignment.controller";
-import authMiddleware from "../Middlewares/auth.middleware";
-import { isInstructor } from "../Middlewares/Instructor.middleware";
+import authMiddleware from "../middlewares/auth.middleware";
+import { isInstructor } from "../middlewares/Instructor.middleware";
 import { upload } from "../lib/cloudinary";
-import { isEnrolled } from "../Middlewares/isEnrolled.middleware";
+import { isEnrolled } from "../middlewares/isEnrolled.middleware";
 import {
   classroomIdParamValidator,
   idParamValidator,
   saveAssignmentValidator,
 } from "../validators/classroom.validator";
-import { handleValidation } from "../Middlewares/handleValidation";
+import { handleValidation } from "../middlewares/handleValidation";
 import { body, param } from "express-validator";
 
 const router = express.Router();
@@ -29,7 +29,6 @@ router.use(authMiddleware);
 
 //get all assignments of a student pending  + submitted
 router.get("/student/:studentId", getAssignmentsOfStudent); //isuser isself , isinsructor
-
 
 router.get("/:id", isEnrolled, getAssignmentById);
 
@@ -42,7 +41,7 @@ router.post(
   "/:classroomId/save",
   saveAssignmentValidator,
   handleValidation, // This middleware should check validationResult(req)
-  saveAssignment
+  saveAssignment,
 );
 //get all assignments of classroom -> for instructor
 router.get("/classroom/:classroomId", getAssignmentsByClassroomId);

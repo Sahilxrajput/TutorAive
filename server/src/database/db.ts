@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import Classroom from "../models/classroom.model";
 
 const connectDB = async () => {
   try {

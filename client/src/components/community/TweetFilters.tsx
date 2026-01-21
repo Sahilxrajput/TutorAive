@@ -1,15 +1,31 @@
 import { Button } from "@/components/ui/button";
+import type { Dispatch, SetStateAction } from "react";
 
 interface Props {
     active: string;
-    setActive: (v: string) => void;
+    setActive: Dispatch<SetStateAction<TweetFilter>>
 }
 
-const filters = ["all", "general", "mentorship", "problem", "news", "repost"];
+export type TweetFilter =
+    | "all"
+    | "general"
+    | "mentorship"
+    | "problem"
+    | "news"
+    | "repost";
 
+
+const filters:  TweetFilter[] = [
+    "all",
+    "general",
+    "mentorship",
+    "problem",
+    "news",
+    "repost",
+];
 export default function TweetFilters({ active, setActive }: Props) {
     return (
-        <div className="flex gap-3 pb-2 pt-4 w-full bg-card sticky mb-4 left-0 top-0 z-30">
+        <div className="flex gap-3 px-6 pt-2 absolute left-6 top-0 z-20">
             {filters.map(f => (
                 <Button
                     key={f}

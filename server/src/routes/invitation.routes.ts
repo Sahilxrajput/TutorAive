@@ -6,8 +6,8 @@ import {
   useInvitation,
   deleteInvitation,
 } from "../controllers/invitation.controller";
-import authMiddleware from "../Middlewares/auth.middleware";
-import {isInstructor} from "../Middlewares/Instructor.middleware";
+import authMiddleware from "../middlewares/auth.middleware";
+import { isInstructor } from "../middlewares/Instructor.middleware";
 
 const router = express.Router();
 

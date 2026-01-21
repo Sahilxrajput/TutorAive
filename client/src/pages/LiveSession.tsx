@@ -1,9 +1,7 @@
 import useAuth from "@/hooks/useAuth";
 import LiveStudentPage from "@/pages/LiveStudentPage";
 import LiveTeacherPage from "@/pages/LiveTeacherPage";
-import { useEffect } from "react";
 import { useParams, Navigate } from "react-router-dom";
-import { toast } from "sonner";
 
 const LiveSession = () => {
     const { classroomId, lectureId } = useParams<{ classroomId: string, lectureId: string }>();
@@ -13,9 +11,9 @@ const LiveSession = () => {
         return <Navigate to="/login" replace />;
     }
 
-    // if (!classroomId || !lectureId) {
-    //     return <Navigate to="/404" replace />;
-    // }
+    if (!classroomId || !lectureId) {
+        return <Navigate to="/404" replace />;
+    }
 
     // ROLE-BASED CHECK
     if (user.role === "instructor") {

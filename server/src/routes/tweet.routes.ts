@@ -12,9 +12,9 @@ import {
   createTweetValidator,
   tweetIdValidator,
 } from "../validators/tweet.validator";
-import authMiddleware from "../Middlewares/auth.middleware";
+import authMiddleware from "../middlewares/auth.middleware";
 import { upload } from "../lib/cloudinary";
-import { handleValidation } from "../Middlewares/handleValidation";
+import { handleValidation } from "../middlewares/handleValidation";
 
 const router = express.Router();
 

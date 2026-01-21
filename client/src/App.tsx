@@ -3,7 +3,6 @@ import { Routes, Route } from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
 import AuthSuccess from "./pages/AuthSuccess";
 import ProtectedRoute from "./wrapper/ProtectedRoute";
-import ChatRoom from "./pages/ChatRoom";
 import Home from "./pages/Home";
 import Signup from "./pages/signup";
 import Signin from "./pages/signin";
@@ -15,15 +14,12 @@ import EnrolledRoute from "./wrapper/EnrolledRoute";
 import ClassroomOverview from "./components/classroom/ClassroomOverview";
 import AssignmentPage from "./components/classroom/Assignments";
 import LeaderboardPage from "./components/LeaderboardPage";
-import ClassroomNotes from "./components/classroom/ClassroomNotes";
 import Quiz from "./pages/Quiz";
 import Editor from "./pages/Editor";
 import LiveSession from "./pages/LiveSession";
-import CommunityPage from "./pages/CommunityPage";
 import SaveNotes from "./pages/SaveNotes";
 import Note from "./pages/Note";
-import LiveTeacherPage from "./pages/LiveTeacherPage";
-import LiveStudentPage from "./pages/LiveStudentPage";
+import TweetFeed from "./pages/TweetFeed";
 
 
 
@@ -34,7 +30,7 @@ const App: React.FC = () => {
         <Routes>
             <Route path="/" element={<Layout />}>
                 <Route index element={<Home />} />
-                <Route path="community" element={<CommunityPage />} />
+                <Route path="community" element={<TweetFeed/>} />
                 <Route path="editor" element={<Editor />} />
                 <Route path="notes" >
                     <Route index element={<BrowseNotes />} />

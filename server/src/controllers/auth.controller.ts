@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import Attendance from "../models/attendence.model.";
-import Classroom from "../models/classroom.model";
+import { Classroom } from "../models/classroom.model";
 import User from "../models/user.model";
 import bcrypt from "bcrypt";
 import {
@@ -153,7 +153,7 @@ const signout = async (req: Request, res: Response) => {
     if (refreshToken) {
       const decoded = jwt.verify(
         refreshToken,
-        process.env.REFRESH_TOKEN_SECRET!
+        process.env.REFRESH_TOKEN_SECRET!,
       ) as JwtPayload;
 
       await User.findByIdAndUpdate(decoded._id, {
@@ -189,12 +189,12 @@ const deleteAccount = async (req: Request, res: Response) => {
     // 1. Delete all related data
     await Classroom.updateMany(
       { students: req.userId },
-      { $pull: { students: req.userId } }
+      { $pull: { students: req.userId } },
     );
 
     await Attendance.updateMany(
       { students: req.userId },
-      { $pull: { students: req.userId } }
+      { $pull: { students: req.userId } },
     );
 
     // 2. delete account
@@ -292,7 +292,7 @@ const refreshAccessToken = async (req: Request, res: Response) => {
   try {
     const decoded = jwt.verify(
       token,
-      process.env.REFRESH_TOKEN_SECRET!
+      process.env.REFRESH_TOKEN_SECRET!,
     ) as MyJwtPayload;
 
     const user = await User.findById(decoded._id);

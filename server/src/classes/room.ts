@@ -1,4 +1,4 @@
-import { AppData, Router, Transport } from "mediasoup/node/lib/types";
+import { Router, Transport } from "mediasoup/node/lib/types";
 import Peer from "./peer";
 
 class Room {
@@ -8,7 +8,6 @@ class Room {
 
   private peers: Map<string, Peer>; // socketId -> Peer
 
-  private ended: boolean;
 
   constructor(roomId: string, router: Router, host: Peer) {
     this.roomId = roomId;

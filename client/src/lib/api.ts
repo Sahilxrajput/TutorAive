@@ -68,7 +68,7 @@ API.interceptors.response.use(
 
           if (status === 401 || status === 403) {
             // refresh token invalid → real logout
-            const { user, setUser } = useAuth();
+            const { setUser } = useAuth();
 
             setUser(null);
             // setAccessToken(null);

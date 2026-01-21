@@ -1,6 +1,6 @@
 // middlewares/isEnrolled.ts
 import { Request, Response, NextFunction } from "express";
-import Classroom from "../models/classroom.model";
+import {Classroom} from "../models/classroom.model";
 
 export const isEnrolled = async (
   req: Request,
@@ -29,7 +29,7 @@ export const isEnrolled = async (
     }
 
     // Allow the creator as well
-    const isOwner = classroom.createdBy.toString() === userId!.toString();
+    const isOwner = classroom.teacher.toString() === userId!.toString();
     const isStudent = classroom.students.some(
       (_id: any) => _id.toString() === userId!.toString()
     );

@@ -2,17 +2,6 @@ import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { MyJwtPayload } from "../types/type";
 
-// Extend Request interface to include userId
-declare global {
-  namespace Express {
-    interface Request {
-      userId?: string;
-      userName?: string;
-      userRole?: "student" | "instructor" | "admin";
-    }
-  }
-}
-
 // Authentication middleware
 export default function authMiddleware(
   req: Request,

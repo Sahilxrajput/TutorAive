@@ -1,14 +1,10 @@
-import { useOutletContext } from "react-router-dom";
 import API from '@/lib/api';
-import EventCard from '@/components/home/EventCard';
 import LearningCard from '@/components/home/LeaningCard';
-import { Calendar } from '@/components/ui/calendar';
-import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import useAuth from '@/hooks/useAuth';
-import type { AssignmentPayload, LectureUpdatePayload, ILecture } from '@/types/type';
+import type { AssignmentPayload, LectureUpdatePayload, ILecture} from '@/types/type';
 import { formatDateTime } from '@/utils/splitDateTime';
-import { BookHeartIcon, Bookmark, Clock, Menu, Rocket } from 'lucide-react';
+import { BookHeartIcon, Bookmark, Clock,  Rocket } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import useSocketContext from '@/hooks/useSocketContext';
@@ -17,7 +13,6 @@ import EventList from '@/components/home/EventList';
 
 
 const Home = () => {
-    const [date, setDate] = useState<Date | undefined>(new Date());
     const [scheduleLecture, setScheduleLecture] = useState<ILecture[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [pendingAssignments, setPendingAssignments] = useState<number>(0)
@@ -32,23 +27,23 @@ const Home = () => {
             return "/lectures/scheduled/my"
         }, [isInstructor])
 
-    const deleteScheduleLecture = async (id: string) => {
-        try {
-            setLoading(true);
-            const { data } = await API.delete("/lectures/" + id)
-            console.log(data)
-            if (data?.success) {
-                toast.success(data.message)
-                setScheduleLecture(scheduleLecture.filter((l: ILecture) => l._id !== id))
-            }
-        } catch (error: any) { // *@fix think about error meg toast
-            console.error('Error fetching lectures:', error.response.data.message);
-            toast.error(error?.response?.data?.message)
-        } finally {
-            setLoading(false)
-        }
+    // const deleteScheduleLecture = async (id: string) => {
+    //     try {
+    //         setLoading(true);
+    //         const { data } = await API.delete("/lectures/" + id)
+    //         console.log(data)
+    //         if (data?.success) {
+    //             toast.success(data.message)
+    //             setScheduleLecture(scheduleLecture.filter((l: ILecture) => l._id !== id))
+    //         }
+    //     } catch (error: any) { // *@fix think about error meg toast
+    //         console.error('Error fetching lectures:', error.response.data.message);
+    //         toast.error(error?.response?.data?.message)
+    //     } finally {
+    //         setLoading(false)
+    //     }
 
-    }
+    // }
 
     // @remind fetch all assignments here
     useEffect(() => {
@@ -81,20 +76,20 @@ const Home = () => {
         fetchScheduleLectures();
     }, [detectPath]);
 
-    useEffect(() => {
-        if (!socket) return
+    // useEffect(() => {
+    //     if (!socket) return
 
-        const joinClassrooms = async () => {
-            const { data } = await API.get("/classrooms/enrolled")
+    //     const joinClassrooms = async () => {
+    //         const { data } = await API.get("/classrooms/enrolled")
 
-            data.forEach((c) => {
-                socket.emit("join:classroom", c._id)
-            });
-        };
+    //         data.forEach((c:IClassroom) => {
+    //             socket.emit("join:classroom", c._id)
+    //         });
+    //     };
 
-        joinClassrooms()
+    //     joinClassrooms()
 
-    }, [socket])
+    // }, [socket])
 
     useEffect(() => {
         if (!socket) return;
@@ -174,25 +169,8 @@ const Home = () => {
         };
     }, [socket]);
 
-    const handleDateSelect = (date: Date) => {
-        // clicking same date again = unselect
-        if (
-            selectedDate &&
-            date.toDateString() === selectedDate.toDateString()
-        ) {
-            setSelectedDate(null);
-            return;
-        }
-
-        setSelectedDate(date);
-    };
-
-    const handleCalendarBlur = () => {
-        setSelectedDate(null);
-    };
-
     return (
-        <main className="min-h-screen flex flex-col lg:flex-row gap-4 px-4">
+        <main className="min-h-screen flex flex-col lg:flex-row gap-4 p-4">
 
             {/* LEFT SIDE */}
             <section className="flex-1 flex flex-col gap-6">
@@ -238,25 +216,13 @@ const Home = () => {
             <section
                 className="w-full lg:w-1/4 px-2 sm:px-4 lg:px-6 space-y-6 flex flex-col overflow-y-auto scrollbar-hide"
             >
-                <Input type="text" placeholder="Search Something..." />
-
-                <Calendar
-                    buttonVariant="link"
-                    mode="single"
-                    selected={date}
-                    onDayClick={handleDateSelect}
-                    onDayBlur={handleCalendarBlur}
-                    onSelect={setDate}
-                    className="rounded-lg border w-full text-gray-700 shadow-sm"
-                    captionLayout="label"
-                />
 
                 <h1 className="text-lg font-semibold border-b pb-1">
                     Upcoming Schedule
                 </h1>
 
                 <div className="flex flex-col space-y-2">
-                    {!loading ? (
+                    {loading ? (
                         Array.from({ length: 4 }).map((_, i) => (
                             <div
                                 key={i}
@@ -275,7 +241,7 @@ const Home = () => {
                         />
                     ) : (
                         <p className="text-gray-500 text-center">
-                            No upcoming lectures
+                            No Scheduled lectures
                         </p>
                     )}
                 </div>

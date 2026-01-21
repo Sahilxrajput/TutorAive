@@ -1,10 +1,10 @@
 import express, { Request, Response } from "express";
-import authMiddleware from "../Middlewares/auth.middleware";
+import authMiddleware from "../middlewares/auth.middleware";
 import {
   addCollaboratorValidator,
   validateGetNotes,
 } from "../validators/note.validator";
-import { handleValidation } from "../Middlewares/handleValidation";
+import { handleValidation } from "../middlewares/handleValidation";
 import {
   addCollaborator,
   archiveToggler,
@@ -36,7 +36,7 @@ router.get(
   "/status/:status",
   validateGetNotes,
   handleValidation,
-  getNotesByStatus
+  getNotesByStatus,
 );
 
 router.route("/:id").get(getNoteById).put(updateNote).delete(permanentlyDelete);

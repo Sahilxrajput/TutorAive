@@ -1,29 +1,31 @@
-import { Schema, model, models } from "mongoose";
-import { IPayment } from "../types/type";
+import { model, models, Schema, Types } from "mongoose";
 
-const paymentSchema = new Schema<IPayment>(
+const paymentSchema = new Schema(
   {
-    user: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
+    user: { type: Types.ObjectId, ref: "User", required: true },
+    classroom: { type: Types.ObjectId, ref: "Classroom", required: true },
+
+    amount: { type: Number, required: true },
+    currency: { type: String, default: "INR" },
+
+    provider: {
+      type: String,
+      enum: ["razorpay", "stripe"],
       required: true,
+      default: "razorpay"
     },
-    classroom: {
-      type: Schema.Types.ObjectId,
-      ref: "Classroom",
-    },
+
     orderId: String,
     paymentId: String,
-    amount: Number,
+    signature: String,
+
     status: {
       type: String,
-      enum: ["created", "paid", "failed"],
+      enum: ["created", "paid", "failed", "refunded"],
       default: "created",
     },
   },
   { timestamps: true },
 );
 
-const payment = models.Payment || model<IPayment>("Payment", paymentSchema);
-
-export default payment;
+export const Payment = models.Payment || model("Payment", paymentSchema);

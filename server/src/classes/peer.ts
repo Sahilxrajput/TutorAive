@@ -1,5 +1,4 @@
 import { Producer, Transport, Consumer } from "mediasoup/node/lib/types";
-import Room from "./room";
 
 class Peer {
   public readonly userId: string;

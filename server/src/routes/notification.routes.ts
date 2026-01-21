@@ -5,7 +5,7 @@ import {
   markAllAsRead,
   getUnreadCount,
 } from "../controllers/notification.controller";
-import authMiddleware from "../Middlewares/auth.middleware";
+import authMiddleware from "../middlewares/auth.middleware";
 
 const router = Router();
 

@@ -12,7 +12,7 @@ const handleError = (
   res: Response,
   error: any,
   defaultMessage: string = "Internal Server Error",
-  statusCode: number = 500
+  statusCode: number = 500,
 ) => {
   console.error(error); // Log the detailed error for debugging
   return res.status(statusCode).json({
@@ -25,10 +25,10 @@ const handleError = (
 export const createTweet = async (req: Request, res: Response) => {
   try {
     const { content, type } = req.body;
-
+    
     const mentionedUserIds = await extractMentionedUserIds(
       content,
-      req.userId!
+      req.userId!,
     );
 
     const tweetData: any = {
@@ -56,7 +56,7 @@ export const createTweet = async (req: Request, res: Response) => {
           (error, result) => {
             if (error) reject(error);
             else resolve(result);
-          }
+          },
         );
 
         stream.end(req?.file?.buffer);
@@ -85,29 +85,6 @@ export const createTweet = async (req: Request, res: Response) => {
       }
     }
 
-    // emitTweetNotification({
-    //   userId: mentionId.toString(),
-    //   tweetId: tweet._id.toString(),
-    //   msg: `${req.userName} mentioned you in a post`,
-    // });
-
-    // Persist Notifications in Bulk (Tweet Mentions)
-    //   const notificationDocs = mentionedUserIds.map(
-    //     (userId: Types.ObjectId) => ({
-    //       user: userId,
-    //       type: "message", // correct semantic type
-    //       message: `You were mentioned in a tweet`,
-    //       data: {
-    //         tweetId: tweet._id,
-    //       },
-    //     })
-    //   );
-
-    //   if (notificationDocs.length > 0) {
-    //     await Notification.insertMany(notificationDocs);
-    //   }
-    // }
-
     return res.status(201).json({
       success: true,
       message: "Tweet posted successfully",
@@ -120,7 +97,17 @@ export const createTweet = async (req: Request, res: Response) => {
 
 export const getAllTweets = async (req: Request, res: Response) => {
   try {
-    const tweets = await Tweet.find()
+    const limit = Math.min(Number(req.query.limit) || 10, 50);
+    const before = req.query.before as string | undefined;
+
+    const query: any = {};
+
+    // Fetch tweets older than the cursor
+    if (before) {
+      query._id = { $lt: before };
+    }
+
+    const tweets = await Tweet.find(query)
       .populate("author", {
         userName: 1,
         profilePicture: 1,
@@ -135,15 +122,29 @@ export const getAllTweets = async (req: Request, res: Response) => {
           select: "userName firstName lastName profilePicture role",
         },
       })
-      .sort({ createdAt: -1 });
+      .sort({ _id: -1 }) // newest first, descending order
+      .limit(limit + 1); // fetch one extra to detect next page
 
-    res
-      .status(200)
-      .json({ message: "Get All Tweets successfully", data: tweets });
+    const hasNextPage = tweets.length > limit;
+    const slicedTweets = hasNextPage ? tweets.slice(0, limit) : tweets;
+
+    const nextCursor = hasNextPage
+      ? slicedTweets[slicedTweets.length - 1]._id
+      : null;
+
+      console.log("tweets:", slicedTweets.length);
+
+    res.status(200).json({
+      message: "Tweets fetched successfully",
+      data: slicedTweets,
+      nextCursor,
+      hasNextPage,
+    });
   } catch (error) {
-    handleError(res, error, "failed to fetch craeted tweets");
+    handleError(res, error, "failed to fetch tweets");
   }
 };
+
 
 export const getTweetById = async (req: Request, res: Response) => {
   try {
@@ -197,13 +198,13 @@ export const toggleLikeTweet = async (req: Request, res: Response) => {
 
     // Convert all like IDs to string & check toggle state
     const alreadyLiked = tweet.likes.some(
-      (id: Types.ObjectId) => id.toString() === userId
+      (id: Types.ObjectId) => id.toString() === userId,
     );
 
     if (alreadyLiked) {
       // Remove like
       tweet.likes = tweet.likes.filter(
-        (id: Types.ObjectId) => id.toString() !== userId
+        (id: Types.ObjectId) => id.toString() !== userId,
       );
     } else {
       // Add like

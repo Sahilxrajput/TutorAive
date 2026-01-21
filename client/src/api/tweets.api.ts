@@ -2,9 +2,16 @@ import API from "@/lib/api";
 import type {  ITweet,  } from "@/types/type";
 import { toast } from "sonner";
 
-export const fetchTweets = async () => {
-  const { data } = await API.get("/tweets");
-  return data.data;
+
+export const fetchTweets = async ({ pageParam }: { pageParam?: string }) => {
+  const { data } = await API.get("/tweets", {
+    params: {
+      limit: 12,
+      before: pageParam, // cursor
+    },
+  });
+  console.log("tweet dtaa: ", data)
+  return data
 };
 
 export const fetchNotifications = async () => {
@@ -17,6 +24,7 @@ export const createTweet = async (payload: FormData) => {
     "/tweets",
     payload
   );
+  console.log("fire")
   console.log("create post: ", data)
   toast.success(data.message);
   return data.data;

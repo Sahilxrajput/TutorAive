@@ -1,4 +1,3 @@
-// utils/parseQuizData.js
 export const parseQuizData = (rawData:any) => {
   try {
     const parsed = JSON.parse(rawData);

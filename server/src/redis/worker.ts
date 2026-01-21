@@ -1,6 +1,6 @@
 // workers/notification.worker.ts
 import { Job, Worker } from "bullmq";
-import Classroom from "../models/classroom.model";
+import {Classroom} from "../models/classroom.model";
 import { sendAssignmentEmail, sendClassStatusEmail } from "../utils/sendEmail";
 import { Notification } from "../models/notification.model";
 import {
@@ -66,7 +66,7 @@ export function createRedisWorker() {
 
           //  3. Send Emails (optional)
           for (const student of classroom.students) {
-            if (!student.email) continue;
+            // if (!student.email) continue;
 
             // await sendAssignmentEmail({
             //   toEmail: student.email,
@@ -132,7 +132,7 @@ export function createRedisWorker() {
 
           //  3. Send Emails (optional)
           for (const student of classroom.students) {
-            if (!student.email) continue;
+            // if (!student.email) continue;
 
             // await sendClassStatusEmail({
             //   toEmail: student.email,

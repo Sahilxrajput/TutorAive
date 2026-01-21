@@ -3,9 +3,9 @@ import Razorpay from "razorpay";
 import crypto from "crypto";
 import Enrollment from "../models/enrollment.model";
 import { razorpay } from "../config/razorpay";
-import payment from "../models/payment.model";
+import { Payment } from "../models/payment.model";
 import { createOrder, verifyPayment } from "../controllers/payment.controller";
-import authMiddleware from "../Middlewares/auth.middleware";
+import authMiddleware from "../middlewares/auth.middleware";
 
 const router = express.Router();
 

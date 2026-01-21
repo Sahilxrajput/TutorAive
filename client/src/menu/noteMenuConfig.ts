@@ -1,4 +1,3 @@
-// /components/note-actions/menu/noteMenuConfig.ts
 import type { INote } from "@/types/type";
 import {
   Pin,

@@ -6,7 +6,7 @@ import {
   attendenceAggregation,
   startLecture,
 } from "../controllers/attendence.controller";
-import { isEnrolled } from "../Middlewares/isEnrolled.middleware";
+import { isEnrolled } from "../middlewares/isEnrolled.middleware";
 
 const router = express.Router();
 
@@ -19,7 +19,7 @@ router.post("/lecture/:lectureId/lock", attendenceLock);
 router.get(
   "/percentage/:classroomId/:studentId",
   isEnrolled,
-  attendenceAggregation
+  attendenceAggregation,
 );
 
 export default router;

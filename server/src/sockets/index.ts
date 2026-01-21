@@ -1,6 +1,6 @@
 import { Server as HttpServer } from "http";
 import { Server, Socket } from "socket.io";
-import { socketAuthMiddleware } from "../Middlewares/socketAuth";
+import { socketAuthMiddleware } from "../middlewares/socketAuth";
 import { Consumer, Transport } from "mediasoup/node/lib/types";
 import Attendance from "../models/attendence.model.";
 import { roomManager } from "../managers/RoomManager";

@@ -1,7 +1,7 @@
 import { Response, Request } from "express";
 import { razorpay } from "../config/razorpay";
 import crypto from "crypto";
-import payment from "../models/payment.model";
+import { Payment } from "../models/payment.model";
 
 export const createOrder = async (req: Request, res: Response) => {
   try {
@@ -15,7 +15,7 @@ export const createOrder = async (req: Request, res: Response) => {
 
     const order = await razorpay.orders.create(options);
 
-    const data = await payment.create({
+    const data = await Payment.create({
       user: req.userId,
       classroom: classroomId,
       orderId: order.id,
@@ -53,12 +53,7 @@ export const verifyPayment = async (req: Request, res: Response) => {
     return res.status(400).json({ success: false });
   }
 
-  //   const enrollment = await Enrollment.findOneAndUpdate(
-  //     { orderId: razorpay_order_id },
-  //     { status: "success", paymentId: razorpay_payment_id },
-  //   );
-
-  const data = await payment.findOneAndUpdate(
+  const data = await Payment.findOneAndUpdate(
     { orderId: razorpay_order_id },
     {
       paymentId: razorpay_payment_id,

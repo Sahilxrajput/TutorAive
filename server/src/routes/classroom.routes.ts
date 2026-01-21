@@ -18,9 +18,9 @@ import {
   joinClassroomByCodeValidator,
 } from "../validators/classroom.validator";
 
-import authMiddleware from "../Middlewares/auth.middleware";
-import { handleValidation } from "../Middlewares/handleValidation";
-import { isInstructor } from "../Middlewares/Instructor.middleware";
+import authMiddleware from "../middlewares/auth.middleware";
+import { handleValidation } from "../middlewares/handleValidation";
+import { isInstructor } from "../middlewares/Instructor.middleware";
 import {
   createLecture,
   updateLecture,
@@ -30,11 +30,12 @@ import {
   createLectureValidator,
   updateLectureValidator,
 } from "../validators/lecture.validtor";
-import { isEnrolled } from "../Middlewares/isEnrolled.middleware";
+import { isEnrolled } from "../middlewares/isEnrolled.middleware";
 import {
   getStudentAssignmentProgress,
   getMyAssignmentProgress,
 } from "../controllers/assignment.controller";
+import { authorizeOwnerMiddleware } from "../middlewares/authorizeOwner.middleware";
 
 const router = express.Router();
 
@@ -54,7 +55,7 @@ router.post(
   "/:id/join",
   joinClassroomByCodeValidator,
   handleValidation,
-  enrollClassroomByCode
+  enrollClassroomByCode,
 );
 
 //@todo enroll classroom by purchase
@@ -62,7 +63,7 @@ router.post(
   "/enroll",
   joinClassroomValidator,
   handleValidation,
-  enrollClassroom
+  enrollClassroom,
 );
 
 //!@check create a --------------------lecture/Assignmnet------------------------ in classroom
@@ -70,7 +71,7 @@ router.post(
 router.get(
   "/:classroomId/my-assignment-progress",
   isEnrolled, // techer / enrolled student -> true
-  getMyAssignmentProgress
+  getMyAssignmentProgress,
 );
 
 // isInstructor?
@@ -87,23 +88,38 @@ router.put(
   "/:id/archive",
   idParamValidator,
   handleValidation,
-  archiveClassroom
+  archiveClassroom,
 );
 
 //!@check create a --------------------lecture------------------------ in classroom
 router
   .route("/:classroomId/lectures")
-  .post(createLectureValidator, handleValidation, createLecture);
+  .post(
+    createLectureValidator,
+    handleValidation,
+    authorizeOwnerMiddleware("classroom"),
+    createLecture,
+  );
 
 router
   .route("/:classroomId/lectures/:id")
-  .put(updateLectureValidator, handleValidation, updateLecture)
-  .delete(idParamValidator, handleValidation, deleteClassroom);
+  .put(
+    updateLectureValidator,
+    handleValidation,
+    authorizeOwnerMiddleware("lecture"),
+    updateLecture,
+  )
+  .delete(
+    idParamValidator,
+    handleValidation,
+    authorizeOwnerMiddleware("lecture"),
+    deleteClassroom,
+  );
 
 router.get(
   "/:classroomId/students/:studentId/assignment-progress",
   isEnrolled,
-  getStudentAssignmentProgress
+  getStudentAssignmentProgress,
 );
 
 export default router;

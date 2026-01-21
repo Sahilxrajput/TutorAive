@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import User from "../models/user.model";
-import Classroom from "../models/classroom.model";
+import { Classroom } from "../models/classroom.model";
 import Lecture from "../models/lecture.model";
 import { addClassNotificationJob } from "../redis/queue";
 import {
@@ -18,7 +18,7 @@ const handleError = (
   res: Response,
   error: any,
   defaultMessage: string = "Internal Server Error",
-  statusCode: number = 500
+  statusCode: number = 500,
 ) => {
   console.error(error); // Log the detailed error for debugging
   return res.status(statusCode).json({
@@ -38,59 +38,6 @@ const ALLOWED_TRANSITIONS: Record<LectureStatus, LectureStatus[]> = {
   cancelled: [],
 };
 
-// --- Helper function for Authorization checks ---
-type AuthorizeParams = {
-  req: Request;
-  res: Response;
-  lectureId?: string;
-  classroomId?: string;
-};
-
-export const authorizeOwner = async ({
-  req,
-  res,
-  lectureId,
-  classroomId,
-}: AuthorizeParams) => {
-  try {
-    let item = null;
-
-    // 1. Fetch based on what ID is provided
-    if (lectureId) {
-      item = await Lecture.findById(lectureId).populate("classroom");
-    } else if (classroomId) {
-      item = await Classroom.findById(classroomId);
-    }
-
-    // 2. Uniform Not Found Check
-    if (!item) {
-      const entity = lectureId ? "Lecture" : "Classroom";
-      res.status(404).json({ success: false, message: `${entity} not found` });
-      return null;
-    }
-
-    // 3. Authorization Logic
-    // If it's a lecture, we check the owner of the lecture.
-    // If it's a classroom, we check the owner of the classroom.
-    const ownerId = item.createdBy?.toString();
-
-    if (ownerId !== req.userId) {
-      res.status(403).json({
-        success: false,
-        message: "You do not have permission to modify this resource",
-      });
-      return null;
-    }
-
-    return item;
-  } catch (error) {
-    // Catching casting errors (e.g., invalid MongoDB ObjectIds)
-    res
-      .status(400)
-      .json({ success: false, message: "Invalid ID format provided" });
-    return null;
-  }
-};
 
 export const createLecture = async (req: Request, res: Response) => {
   try {
@@ -102,21 +49,23 @@ export const createLecture = async (req: Request, res: Response) => {
         .json({ success: false, message: "Missing required fields." });
     }
 
-    const classroom = await authorizeOwner({ req, res, classroomId });
-    if (!classroom) return;
+    const classroom = req.authorizedResource;
+    if (!classroom) {
+      return res
+        .status(500)
+        .json({ success: false, message: "Authorized classroom missing" });
+    }
 
     const newLecture = await Lecture.create({
       title,
       status,
-      createdBy: req.userId,
       startTime,
       classroom: classroom._id,
+      createdBy: req.userId, // @check
     });
 
-    // Attach classroom to lecture object for the notification helper
-    newLecture.classroom = classroom;
+    await newLecture.populate("classroom");
 
-    // Fire and forget background tasks
     addClassNotificationJob({
       classroomId,
       lectureId: newLecture._id.toString(),
@@ -138,23 +87,15 @@ export const createLecture = async (req: Request, res: Response) => {
 export const updateLecture = async (req: Request, res: Response) => {
   try {
     const { status, title, newStartTime, delayTime, reason } = req.body;
-    const { id: lectureId, classroomId } = req.params;
 
-    console.log("classroomId: ", classroomId);
-    console.log("lectureId: ", lectureId);
-    console.log("status: ", status);
-    console.log("title: ", title);
-
-    const lecture = await authorizeOwner({
-      req,
-      res,
-      lectureId,
-    });
-    if (!lecture) return;
-
-    if (title && title !== lecture.title) {
-      lecture.title = title;
+    const lecture = req.authorizedResource as ILecture;
+    if (!lecture) {
+      return res.status(500).json({
+        success: false,
+        message: "Authorized lecture missing",
+      });
     }
+
     if (title) lecture.title = title;
 
     let notificationTime: Date | undefined;
@@ -162,6 +103,7 @@ export const updateLecture = async (req: Request, res: Response) => {
     if (status) {
       const allowedNext =
         ALLOWED_TRANSITIONS[lecture.status as LectureStatus] || [];
+
       if (!allowedNext.includes(status)) {
         return res
           .status(400)
@@ -170,7 +112,7 @@ export const updateLecture = async (req: Request, res: Response) => {
 
       if (status === "delayed" && delayTime) {
         lecture.startTime = new Date(
-          lecture.startTime.getTime() + delayTime * 60000
+          lecture.startTime.getTime() + delayTime * 60000,
         );
         lecture.delayReason = reason;
         notificationTime = lecture.startTime;
@@ -190,29 +132,21 @@ export const updateLecture = async (req: Request, res: Response) => {
     }
 
     await lecture.save();
-    const newTime = lecture.newStartTime ?? lecture.startTime;
 
-    // Fire and forget background tasks
     if (status && status !== "completed") {
       addClassNotificationJob({
         classroomId: lecture.classroom._id.toString(),
         lectureId: lecture._id.toString(),
         title: lecture.title,
         status: lecture.status,
-
-        // send ONLY if meaningful
-        ...(notificationTime && {
-          startTime: notificationTime.toISOString(),
-        }),
+        ...(notificationTime && { startTime: notificationTime.toISOString() }),
         ...(reason && { reason }),
       });
     }
 
     res.json({
       success: true,
-      message: status
-        ? `Lecture updated to ${lecture.status}`
-        : `Lecture title changed to ${lecture.title}`,
+      message: `Lecture updated`,
       lecture,
     });
   } catch (error) {
@@ -220,26 +154,33 @@ export const updateLecture = async (req: Request, res: Response) => {
   }
 };
 
+
 export const deleteLecture = async (req: Request, res: Response) => {
   try {
-    const lecture = await authorizeOwner({
-      req,
-      res,
-      lectureId: req.params.id,
-    });
-    if (!lecture) return;
+    const lecture = req.authorizedResource as ILecture;
+
+    if (!lecture) {
+      return res.status(500).json({
+        success: false,
+        message: "Authorized lecture missing",
+      });
+    }
 
     await Lecture.findByIdAndDelete(lecture._id);
 
-    return res.status(200).json({ success: true, message: "Lecture deleted." });
+    return res.status(200).json({
+      success: true,
+      message: "Lecture deleted.",
+    });
   } catch (error) {
     handleError(res, error);
   }
 };
 
+
 export const getAllScheduleLecturesForInstructor = async (
   req: Request,
-  res: Response
+  res: Response,
 ) => {
   try {
     const scheduledLectures = await Lecture.find({
@@ -256,14 +197,14 @@ export const getAllScheduleLecturesForInstructor = async (
     handleError(
       res,
       error,
-      "Failed to fetch scheduled lectures for instructor."
+      "Failed to fetch scheduled lectures for instructor.",
     );
   }
 };
 
 export const getAllScheduleLecturesForStudent = async (
   req: Request,
-  res: Response
+  res: Response,
 ) => {
   try {
     const scheduledLectures = await Lecture.find({
@@ -290,7 +231,7 @@ export const getAllScheduleLecturesForStudent = async (
 
 export const getAllLecturesForInstructor = async (
   req: Request,
-  res: Response
+  res: Response,
 ) => {
   try {
     const lectures = await Lecture.find({ createdBy: req.userId }).sort({
@@ -359,7 +300,7 @@ export const getAllClassroomLectures = async (req: Request, res: Response) => {
 
 export const getAllScheduleLecturesForClassroom = async (
   req: Request,
-  res: Response
+  res: Response,
 ) => {
   try {
     const classroomId = req.params.classroomId;
@@ -373,9 +314,9 @@ export const getAllScheduleLecturesForClassroom = async (
     }
 
     // 2. Authorization Check //@todo a middleware
-    const isInstructor = classroom.createdBy.toString() === req.userId;
+    const isInstructor = classroom.teacher.toString() === req.userId;
     const isStudent = classroom.students.some(
-      (studentId: any) => studentId.toString() === req.userId
+      (studentId: any) => studentId.toString() === req.userId,
     );
 
     if (!isInstructor && !isStudent) {
@@ -401,19 +342,24 @@ export const getAllScheduleLecturesForClassroom = async (
     handleError(res, error, "Failed to fetch scheduled classroom lectures.");
   }
 };
+
 export const attendanceLock = async (req: Request, res: Response) => {
-  const lecture = await Lecture.findById(req.params.id).select("createdBy");
+  try {
+    const lecture = req.authorizedResource as ILecture;
 
-  if (!lecture) {
-    return res.status(404).json({ message: "Lecture not found" });
+    if (!lecture) {
+      return res.status(500).json({
+        success: false,
+        message: "Authorized lecture missing",
+      });
+    }
+
+    lecture.isAttendanceLocked = true;
+    await lecture.save();
+
+    return res.json({ success: true });
+  } catch (error) {
+    handleError(res, error);
   }
-
-  if (lecture.createdBy.toString() !== req.userId) {
-    return res.status(403).json({ message: "Forbidden" });
-  }
-
-  lecture.isAttendanceLocked = true;
-  await lecture.save();
-
-  return res.json({ success: true });
 };
+

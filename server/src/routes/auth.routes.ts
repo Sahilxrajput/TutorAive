@@ -1,6 +1,6 @@
 import { Router } from "express";
 import passport from "passport";
-import authMiddleware from "../Middlewares/auth.middleware";
+import authMiddleware from "../middlewares/auth.middleware";
 import {
   deleteAccount,
   forgotPassword,
@@ -21,7 +21,7 @@ router.get(
   passport.authenticate("google", {
     scope: ["profile", "email"],
     session: false,
-  })
+  }),
 );
 
 // google callback route
@@ -31,7 +31,7 @@ router.get(
     session: false,
     failureRedirect: "/login/failed",
   }),
-  googleCallback
+  googleCallback,
 );
 
 // login failed

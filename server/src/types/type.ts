@@ -64,35 +64,51 @@ export interface IAttendance extends Document {
   joinTime?: Date;
   status: "present" | "absent";
 }
+// export interface IClassroom extends Document {
+//   title: string;
+//   description?: string;
+//   price?: Number;
+//   isPublic: boolean;
+//   createdBy: Types.ObjectId;
+//   joinCode: string;
+//   tags: string[];
+//   modules?: Number;
+//   hours?: Number;
+//   curriculum: Object[];
+//   syllabus: Object[];
+//   students?: Types.ObjectId[];
+//   memberships?: Types.ObjectId[];
+//   //   assignments?: Types.ObjectId[];
+//   schedules?: Types.ObjectId[];
+//   invitations?: Types.ObjectId[];
+//   attendance?: Types.ObjectId[];
+//   overview?: {};
+//   status: "active" | "archived" | "deleted";
+//   settings?: {
+//     maxStudents: number;
+//     allowGuests: boolean;
+//     chatEnabled: boolean;
+//     codeEditorEnabled: boolean;
+//     canvasEnabled: boolean;
+//   };
+//   paid: boolean;
+// }
+
 export interface IClassroom extends Document {
   title: string;
-  description?: string;
-  price?: Number;
-  isPublic: boolean;
-  createdBy: Types.ObjectId;
-  joinCode: string;
-  tags: string[];
-  modules?: Number;
-  hours?: Number;
-  curriculum: Object[];
-  syllabus: Object[];
-  students?: Types.ObjectId[];
-  memberships?: Types.ObjectId[];
-  //   assignments?: Types.ObjectId[];
-  schedules?: Types.ObjectId[];
-  invitations?: Types.ObjectId[];
-  attendance?: Types.ObjectId[];
-  overview?: {};
-  status: "active" | "archived" | "deleted";
-  settings?: {
-    maxStudents: number;
-    allowGuests: boolean;
-    chatEnabled: boolean;
-    codeEditorEnabled: boolean;
-    canvasEnabled: boolean;
-  };
-  paid: boolean;
+  description: string;
+  teacher: Types.ObjectId;
+  students: Types.ObjectId[];
+  isPaid: boolean;
+  price?: number; // Optional: only if isPaid is true
+  currency: string;
+  assignments: Types.ObjectId[];
+  exams: Types.ObjectId[];
+  lectureIds?: string;
+  createdAt: Date;
+  status: "completed" | "active";
 }
+
 export interface ILecture extends Document {
   classroom: Types.ObjectId;
   title: string;

@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import Assignment from "../models/assignment.model";
-import Classroom from "../models/classroom.model";
+import {Classroom} from "../models/classroom.model";
 import Submission from "../models/submission.model";
 import {
   IAssignment,
@@ -180,7 +180,7 @@ export const getAssignmentsOfStudent = async (req: Request, res: Response) => {
         .status(404)
         .json({ message: "User is not enrolled in any classroom." });
 
-    const classroomIds = classrooms.map((c) => c._id);
+    const classroomIds = classrooms.map((c:IClassroom) => c._id);
 
     // 2. Fetch assignments for all those classrooms
     const assignments = await Assignment.find({

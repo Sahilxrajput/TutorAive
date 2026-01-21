@@ -1,16 +1,12 @@
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { Device } from 'mediasoup-client'
 import type {
     AppData,
     DtlsParameters,
-    IceCandidate,
-    IceParameters,
     MediaKind,
     Producer,
-    ProducerCodecOptions,
     RtpCapabilities,
     RtpParameters,
-    SctpParameters,
     Transport
 } from 'mediasoup-client/types';
 import useSocketContext from '@/hooks/useSocketContext';
@@ -36,7 +32,7 @@ const LiveTeacherPage = () => {
     const [openChat, setOpenChat] = useState(false)
     const [viewerCount] = useState(42);
     const { user } = useAuth();
-    const { socket, isConnected, } = useSocketContext();
+    const { socket,  } = useSocketContext();
     const { lectureId } = useParams<{
         classroomId: string;
         lectureId: string;
@@ -219,9 +215,9 @@ const LiveTeacherPage = () => {
             await createSendTransport()
 
             console.log("========================after transport======================")
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.log(error)
-            if (error.name === 'UnsupportedError')
+            if (error instanceof Error && error.name === 'UnsupportedError')
                 console.log("browser not supported")
         }
     }

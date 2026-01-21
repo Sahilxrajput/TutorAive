@@ -1,14 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import Classroom from "../models/classroom.model";
-import { IClassroom } from "../types/type";
 
-declare global {
-  namespace Express {
-    interface Request {
-      classroom?: IClassroom;
-    }
-  }
-}
 
 export const isInstructor = (
   req: Request,

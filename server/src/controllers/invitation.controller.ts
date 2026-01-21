@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { nanoid } from "nanoid";
 import Invitation from "../models/Invitation.model";
 import genearteQrCode from "../utils/generateQrCode";
-import Classroom from "../models/classroom.model";
+import {Classroom} from "../models/classroom.model";
 import Attendance from "../models/attendence.model.";
 
 // Create new invitation

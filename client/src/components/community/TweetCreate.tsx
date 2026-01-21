@@ -31,7 +31,7 @@ export default function TweetCreateDialog({
     parentTweet,
 }: Props) {
     const [content, setContent] = useState<string>("");
-    const [type, setType] = useState<"general" | "mentorship" | "news" | "problem">("general");
+    const [type, setType] = useState<string>("general");
     const [image, setImage] = useState<File | null>(null);
     const [preview, setPreview] = useState<string | null>(null);
     // const [loading, setLoading] = useState(false);
@@ -109,7 +109,7 @@ export default function TweetCreateDialog({
 
                     <div className="flex flex-col space-y-2">
                         <Label>Type</Label>
-                        <Select value={type} onValueChange={() => setType}>
+                        <Select value={type} onValueChange={(value) => setType(value)}>
                             <SelectTrigger className="w-full">
                                 <SelectValue placeholder="Select type" />
                             </SelectTrigger>

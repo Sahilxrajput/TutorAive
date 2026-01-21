@@ -6,7 +6,11 @@ import {
   toggleLike,
 } from "@/api/tweets.api";
 import type { IAddTweetContext, ITweet } from "@/types/type";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { CACHE_KEY_TWEETS } from "../constants";
 import useAuth from "@/hooks/useAuth";
 import { notifyError } from "@/utils/notifyError";
@@ -15,10 +19,12 @@ import { notifyError } from "@/utils/notifyError";
 //@fix ui behaviour on creating a new post and repost
 
 export function useTweets() {
-  //@todo limit vise fetching
-  return useQuery({
+  return useInfiniteQuery({
     queryKey: CACHE_KEY_TWEETS,
     queryFn: fetchTweets,
+    initialPageParam: undefined,
+    getNextPageParam: (lastPage) => lastPage.nextCursor,
+    staleTime: 60_000,
   });
 }
 
@@ -48,35 +54,48 @@ export const useCreateTweet = () => {
         author: user!,
         createdAt: new Date().toISOString(),
         likes: [],
-        // timeStr: "123",
-        // dateStr: "123",
       };
 
-      qc.setQueryData<ITweet[]>(CACHE_KEY_TWEETS, (prev = []) => [
-        optimisticTweet,
-        ...prev,
-      ]);
+      qc.setQueryData(CACHE_KEY_TWEETS, (old: any) => {
+        if (!old?.pages?.length) return old;
+
+        return {
+          ...old,
+          pages: [
+            {
+              ...old.pages[0],
+              data: [optimisticTweet, ...old.pages[0].data],
+            },
+            ...old.pages.slice(1),
+          ],
+        };
+      });
 
       return { previousTweets };
     },
 
     onSuccess: (fullTweet) => {
-      qc.setQueryData<ITweet[]>(CACHE_KEY_TWEETS, (prev = []) => {
-        return prev.map((tweet) =>
-          tweet._id.startsWith("temp") ? fullTweet : tweet
-        );
+      qc.setQueryData(CACHE_KEY_TWEETS, (old: any) => {
+        if (!old?.pages?.length) return old;
+
+        return {
+          ...old,
+          pages: old.pages.map((page: any) => ({
+            ...page,
+            data: page.data.map((tweet: ITweet) =>
+              tweet._id.startsWith("temp") ? fullTweet : tweet,
+            ),
+          })),
+        };
       });
     },
 
     onError: (err, _vars, context) => {
       notifyError(err);
+      console.log(err);
       if (context?.previousTweets)
         qc.setQueryData(CACHE_KEY_TWEETS, context.previousTweets);
     },
-    // @remind
-    // onSettled: () => {
-    //   qc.invalidateQueries({ queryKey: CACHE_KEY_TWEETS });
-    // },
   });
 };
 
@@ -88,7 +107,7 @@ export const useDeleteTweet = (tweetId: string) => {
     // onMutate
     onSuccess: () => {
       qc.setQueryData(CACHE_KEY_TWEETS, (prev: ITweet[] = []) =>
-        prev.filter((t) => t._id !== tweetId)
+        prev.filter((t) => t._id !== tweetId),
       );
     },
     onError: (err) => {
@@ -106,8 +125,8 @@ export const useLikeTweet = () => {
     onSuccess: (updatedTweet) => {
       qc.setQueryData(CACHE_KEY_TWEETS, (prev: ITweet[] = []) =>
         prev.map((tweet) =>
-          tweet._id === updatedTweet._id ? updatedTweet : tweet
-        )
+          tweet._id === updatedTweet._id ? updatedTweet : tweet,
+        ),
       );
     },
     onError: (err) => {

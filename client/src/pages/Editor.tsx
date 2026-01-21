@@ -1,11 +1,11 @@
-import React, { useEffect, useState, useRef } from "react";
+import { useEffect, useRef } from "react";
 
-import { EditorState, Compartment } from "@codemirror/state";
-import { html } from "@codemirror/lang-html";
-import { javascript } from "@codemirror/lang-javascript";
-import { java } from "@codemirror/lang-java";
-import { cpp } from "@codemirror/lang-cpp";
-import { python } from "@codemirror/lang-python";
+import { EditorState } from "@codemirror/state";
+// import { html } from "@codemirror/lang-html";
+// import { javascript } from "@codemirror/lang-javascript";
+// import { java } from "@codemirror/lang-java";
+// import { cpp } from "@codemirror/lang-cpp";
+// import { python } from "@codemirror/lang-python";
 import {
   EditorView,
   keymap,
@@ -44,9 +44,9 @@ import {
 import { lintKeymap } from "@codemirror/lint";
 import {
   collab,
-  getSyncedVersion,
-  sendableUpdates,
-  receiveUpdates,
+//   getSyncedVersion,
+//   sendableUpdates,
+//   receiveUpdates,
 } from "@codemirror/collab";
 
 import { io } from "socket.io-client";

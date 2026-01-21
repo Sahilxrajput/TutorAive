@@ -1,21 +1,20 @@
 import express from "express";
 import {
-  createLecture,
-  deleteLecture,
+  attendanceLock,
   getAllClassroomLectures,
   getAllLecturesForInstructor,
   getAllLecturesForStudent,
   getAllScheduleLecturesForClassroom,
   getAllScheduleLecturesForInstructor,
   getAllScheduleLecturesForStudent,
-  updateLecture,
 } from "../controllers/lecture.controller";
-import authMiddleware from "../Middlewares/auth.middleware";
+import authMiddleware from "../middlewares/auth.middleware";
 import {
   createLectureValidator,
   updateLectureValidator,
 } from "../validators/lecture.validtor";
-import { handleValidation } from "../Middlewares/handleValidation";
+import { handleValidation } from "../middlewares/handleValidation";
+import { authorizeOwnerMiddleware } from "../middlewares/authorizeOwner.middleware";
 
 const router = express.Router();
 
@@ -40,5 +39,10 @@ router.get("/scheduled/my", getAllScheduleLecturesForStudent);
 // Get scheduled lectures for a specific classroom. Route param: classroomId
 router.get("/scheduled/:classroomId", getAllScheduleLecturesForClassroom);
 
+router.post(
+  "/:id/attendance-lock",
+  authorizeOwnerMiddleware("lecture"),
+  attendanceLock,
+);
 
 export default router;

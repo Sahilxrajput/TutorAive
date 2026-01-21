@@ -78,56 +78,57 @@ export default function BrowseClassroom() {
         loadScript("https://checkout.razorpay.com/v1/checkout.js")
     }, [])
 
-    const onPayment = async (amount :number, classroomId: string) => {
-        // create order
-        try {
+    // const onPayment = async (amount :number, classroomId: string) => {
+    //     // create order
+    //     try {
 
-            const { data: { order } } = await API.post("/payment/create-order", { amount, classroomId })
-            console.log("api order data", order)
+    //         const { data: { order } } = await API.post("/payment/create-order", { amount, classroomId })
+    //         console.log("api order data", order)
 
 
-            const options = {
-                "key": import.meta.env.VITE_RAZORPAY_KEY_ID,
-                "amount": amount, // Amount is in currency subunits.
-                "currency": "INR",
-                "name": "Online Tutor", //your business name
-                "description": "Test Transaction",
-                // @todo
-                "image": "https://upload.wikimedia.org/wikipedia/commons/1/15/Virat_Kohli_portrait.jpg",
-                "order_id": order?.id, //This is a sample Order ID. Pass the `id` obtained in the response of Step 1
-                "handler": async function (response: any) {
-                    const option2 = {
-                        payment_id: response.razorpay_payment_id,
-                        order_id: response.razorpay_order_id,
-                        signature: response.razorpay_signature,
-                    }
+    //         const options = {
+    //             "key": import.meta.env.VITE_RAZORPAY_KEY_ID,
+    //             "amount": amount, // Amount is in currency subunits.
+    //             "currency": "INR",
+    //             "name": "Online Tutor", //your business name
+    //             "description": "Test Transaction",
+    //             // @todo
+    //             "image": "https://upload.wikimedia.org/wikipedia/commons/1/15/Virat_Kohli_portrait.jpg",
+    //             "order_id": order?.id, //This is a sample Order ID. Pass the `id` obtained in the response of Step 1
+    //             "handler": async function (response: any) {
+    //                 const option2 = {
+    //                     payment_id: response.razorpay_payment_id,
+    //                     order_id: response.razorpay_order_id,
+    //                     signature: response.razorpay_signature,
+    //                 }
 
-                    const { data: { success } } = await API.post("/payment/verify", option2)
-                    if (success) {
-                        toast.success("payment successfull")
-                    }
-                },
-                "notes": {
-                    "address": "Online tutor Corporate Office"
-                },
-                "theme": {
-                    "color": "#3399cc"
-                }
-            };
+    //                 const { data: { success } } = await API.post("/payment/verify", option2)
+    //                 if (success) {
+    //                     toast.success("payment successfull")
+    //                 }
+    //             },
+    //             "notes": {
+    //                 "address": "Online tutor Corporate Office"
+    //             },
+    //             "theme": {
+    //                 "color": "#3399cc"
+    //             }
+    //         };
 
-            const rzp1 = new (window as any).Razorpay(options);
+    //         const rzp1 = new (window as any).Razorpay(options);
 
-            rzp1.on('payment.failed', function (response: any) {
-                console.log(response.error.code);
-            });
+    //         rzp1.on('payment.failed', function (response: any) {
+    //             console.log(response.error.code);
+    //         });
 
-            rzp1.open();
-        } catch (error) {
-            console.log(error)
-        }
-    }
+    //         rzp1.open();
+    //     } catch (error) {
+    //         console.log(error)
+    //     }
+    // }
 
     // All unique tags
+   
     const allTags = courses.flatMap((c) => c.tags || []);
     const uniqueTag = ["All", ...Array.from(new Set(allTags)).slice(0, 8)];
 
@@ -177,7 +178,7 @@ export default function BrowseClassroom() {
     };
 
     return (
-        <div className="w-full py-8 p flex flex-col items-center justify-center">
+        <div className="w-full py-8 px-6 flex flex-col items-center justify-center">
             {/* Search Bar */}
             <section className="flex flex-col sm:flex-row w-full max-w-2xl items-center gap-3 mb-6">
                 <Input
@@ -231,7 +232,7 @@ export default function BrowseClassroom() {
                                                 <BookOpen size={16} /> {classroom.modules} Modules
                                             </div>
                                             <div className="flex items-center gap-1">
-                                                <Clock size={16} /> {classroom.hour} Hours
+                                                <Clock size={16} /> {classroom.hours} Hours
                                             </div>
                                         </div>
                                     </CardContent>
@@ -287,7 +288,7 @@ export default function BrowseClassroom() {
                                     </div>
                                     <div className="flex items-center gap-1">
                                         <Clock size={16} />
-                                        <span>{classroom.hour} Hours</span>
+                                        <span>{classroom.hours} Hours</span>
                                     </div>
                                 </div>
                             </CardContent>
@@ -323,11 +324,11 @@ export default function BrowseClassroom() {
                                 </p>
                                 <p>
                                     <Clock className="inline mr-1" size={14} />{" "}
-                                    {selectedCourse.hour} hours total
+                                    {selectedCourse.hours} hours total
                                 </p>
                                 <p>
                                     <Tag className="inline mr-1" size={14} />{" "}
-                                    {selectedCourse.category}
+                                    {selectedCourse.tags}
                                 </p>
                             </div>
                             <DialogFooter>
