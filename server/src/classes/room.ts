@@ -13,7 +13,6 @@ class Room {
     this.roomId = roomId;
     this.router = router;
     this.host = host;
-    this.ended = false;
     this.peers = new Map();
     this.addPeer(host);
   }

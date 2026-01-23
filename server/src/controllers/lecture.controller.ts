@@ -124,7 +124,7 @@ export const updateLecture = async (req: Request, res: Response) => {
 
       if (status === "rescheduled" && newStartTime) {
         lecture.startTime = new Date(newStartTime);
-        lecture.rescheduleReason = reason;
+        // lecture.rescheduleReason = reason;
         notificationTime = lecture.startTime;
       }
 
