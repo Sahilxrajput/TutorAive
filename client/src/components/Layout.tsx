@@ -4,11 +4,13 @@ import SideBar from "./SideBar";
 import MobileNavBar from "./MobileNavbar";
 import { useHideSidebar } from "@/hooks/useHideSidebar";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useRealtimeNotifications } from "@/hooks/useRealtimeNotifications";
 
 const Layout = () => {
-    const { hideSidebar  } = useHideSidebar();
-    const isMobile  = useIsMobile();
+    const { hideSidebar } = useHideSidebar();
+    const isMobile = useIsMobile();
     const location = useLocation();
+    useRealtimeNotifications() // update on realtime
 
     return (
         <div className="flex h-screen overflow-hidden transition-colors duration-500">

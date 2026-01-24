@@ -8,7 +8,7 @@ import { Types } from "mongoose";
 export const initializeAttendance = async (
   classroomId: string,
   lectureId: string,
-  students: string[]
+  students: string[],
 ) => {
   const ops = students.map((studentId) => ({
     updateOne: {
@@ -66,11 +66,12 @@ export const attendenceLock = async (req: Request, res: Response) => {
 };
 
 export const attendenceAggregation = async (req: Request, res: Response) => {
+  const { classroomId, studentId } = req.params;
   const data = await Attendance.aggregate([
     {
       $match: {
-        classroom: new Types.ObjectId(req.params.classroomId),
-        student: new Types.ObjectId(req.params.studentId),
+        classroom: new Types.ObjectId(classroomId as string),
+        student: new Types.ObjectId(studentId as string),
       },
     },
     {

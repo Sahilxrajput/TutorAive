@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { MoreHorizontalIcon, Clock, Calendar, XCircle, Play, Type, MoreVertical } from "lucide-react"
+import { Clock, Calendar, XCircle, Play, Type, MoreVertical } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
     Dialog,
@@ -26,8 +26,8 @@ import { toast } from "sonner"
 import { useNavigate } from "react-router-dom"
 import type { ILecture } from "@/types/type"
 
-export function EventDropdownMenu({ event }: { event: ILecture }) {
-    const classroomId = event.classroom._id ?? event.classroom
+export function LectureDropdownMenu({ lecture , cn}: { lecture: ILecture, cn:string }) {
+    const classroomId = lecture.classroom._id ?? lecture.classroom
     const [dialogType, setDialogType] = useState<"delay" | "reschedule" | "cancel" | "title" | null>(null)
     const [title, setTitle] = useState("")
     const [reason, setReason] = useState("")
@@ -49,7 +49,7 @@ export function EventDropdownMenu({ event }: { event: ILecture }) {
             return toast.warning("Delay reason is required");
         }
 
-        const { data } = await API.put(`/classrooms/${classroomId}/lectures/${event._id}`, {
+        const { data } = await API.put(`/classrooms/${classroomId}/lectures/${lecture._id}`, {
             status: "delayed",
             delayTime: Number(timeValue),
             reason,
@@ -71,7 +71,7 @@ export function EventDropdownMenu({ event }: { event: ILecture }) {
             return toast.warning("New time must be in the future");
         }
 
-        const { data } = await API.put(`/classrooms/${classroomId}/lectures/${event._id}`, {
+        const { data } = await API.put(`/classrooms/${classroomId}/lectures/${lecture._id}`, {
             status: "rescheduled",
             newStartTime: date.toISOString(),
             reason,
@@ -85,7 +85,7 @@ export function EventDropdownMenu({ event }: { event: ILecture }) {
             return toast.warning("Cancel reason is required");
         }
 
-        const { data } = await API.put(`/classrooms/${classroomId}/lectures/${event._id}`, {
+        const { data } = await API.put(`/classrooms/${classroomId}/lectures/${lecture._id}`, {
             status: "cancelled",
             reason,
         });
@@ -123,7 +123,7 @@ export function EventDropdownMenu({ event }: { event: ILecture }) {
             return alert("Title cannot be empty");
         }
 
-        const { data } = await API.put(`/classrooms/${classroomId}/lectures/${event._id}`, {
+        const { data } = await API.put(`/classrooms/${classroomId}/lectures/${lecture._id}`, {
             title: title.trim(),
         });
 
@@ -131,9 +131,7 @@ export function EventDropdownMenu({ event }: { event: ILecture }) {
     };
 
     const goLive = () => {
-        console.log("go live")
-        console.log(event)
-        navigate(`classrooms/${classroomId}/lecture/live/${event._id}`)
+        navigate(`classrooms/${classroomId}/lecture/live/${lecture._id}`)
     }
 
 
@@ -141,7 +139,7 @@ export function EventDropdownMenu({ event }: { event: ILecture }) {
         <>
             <DropdownMenu modal={false}>
                 <DropdownMenuTrigger asChild>
-                    <Button variant="outline" aria-label="Open menu" size="icon">
+                    <Button variant="outline" className={cn} aria-label="Open menu" size="icon">
                         <MoreVertical className="h-4 w-4" />
                     </Button>
                 </DropdownMenuTrigger>

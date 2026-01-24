@@ -11,70 +11,12 @@ import {
 import { cloudinary } from "../lib/cloudinary";
 import { addAssignmentNotificationJob } from "../redis/queue";
 
-// --- Helper function for Authorization checks ---
-type AuthorizeParams = {
-  req: Request;
-  res: Response;
-  assignmentId?: string;
-  classroomId?: string;
-};
-
-export const authorizeOwner = async ({
-  req,
-  res,
-  assignmentId,
-  classroomId,
-}: AuthorizeParams) => {
-  try {
-    let item = null;
-
-    // 1. Fetch based on what ID is provided
-    if (assignmentId) {
-      item = await Assignment.findById(assignmentId).populate("classroom");
-    } else if (classroomId) {
-      item = await Classroom.findById(classroomId);
-    }
-
-    // 2. Uniform Not Found Check
-    if (!item) {
-      const entity = assignmentId ? "Assignment" : "Classroom";
-      res.status(404).json({ success: false, message: `${entity} not found` });
-      return null;
-    }
-
-    // 3. Authorization Logic
-    // If it's a assignment, we check the owner of the assignment.
-    // If it's a classroom, we check the owner of the classroom.
-    const ownerId = item.createdBy?.toString();
-
-    if (ownerId !== req.userId) {
-      res.status(403).json({
-        success: false,
-        message: "You do not have permission to modify this resource",
-      });
-      return null;
-    }
-
-    return item;
-  } catch (error) {
-    // Catching casting errors (e.g., invalid MongoDB ObjectIds)
-    res
-      .status(400)
-      .json({ success: false, message: "Invalid ID format provided" });
-    return null;
-  }
-};
 
 export const cloudinarySignature = async (req: Request, res: Response) => {
   try {
     const { CLOUD_API_KEY, CLOUD_NAME, CLOUD_API_SECRET } = process.env;
-    const { classroomId } = req.params;
 
-    const classroom = await authorizeOwner({
-      req,
-      res,
-      classroomId,
-    });
+    const classroom = req.authorizedResource;
     if (!classroom) return;
 
     const timestamp = Math.floor(Date.now() / 1000);
@@ -119,7 +61,7 @@ export const saveAssignment = async (req: Request, res: Response) => {
     const { classroomId } = req.params;
 
     // 1. Authorization Check
-    const classroomDoc = await authorizeOwner({ req, res, classroomId });
+    const classroomDoc = req.authorizedResource;
     if (!classroomDoc) return;
 
     // 2. Create Assignment
@@ -325,11 +267,7 @@ export const getAssignmentsByClassroomId = async (
   res: Response
 ) => {
   try {
-    const classroom = await authorizeOwner({
-      req,
-      res,
-      classroomId: req.params.classroomId,
-    });
+    const classroom = req.authorizedResource;
     if (!classroom) return;
 
     const assignments = await Assignment.find({
@@ -348,11 +286,7 @@ export const getAssignmentsByClassroomId = async (
 // Delete assignment (instructor only)
 export const deleteAssignment = async (req: Request, res: Response) => {
   try {
-    const assignment = await authorizeOwner({
-      req,
-      res,
-      assignmentId: req.params.id,
-    });
+    const assignment = req.authorizedResource;
     if (!assignment) return;
 
     // Delete Cloudinary image if exists

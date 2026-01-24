@@ -13,7 +13,7 @@ export const authorizeOwnerMiddleware =
 
       const resource = await authorizeOwner({
         resourceType,
-        resourceId,
+        resourceId: resourceId as string,
         userId: req.userId,
       });
 

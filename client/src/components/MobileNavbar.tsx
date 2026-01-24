@@ -14,7 +14,7 @@ const items = [
     { id: "/classrooms", icon: Compass },
     { id: "/notes", icon: BookOpen },
     { id: "/community", icon: Twitch },
-    { id: "/profile", icon: UserRound },
+    { id: "/dashboard", icon: UserRound },
 ];
 
 interface Indicator {
@@ -32,8 +32,9 @@ const MobileSideBar = () => {
         opacity: 0,
     });
 
-    const updateIndicator = (el: HTMLElement) => {
+    const updateIndicator = (el: HTMLElement, id :string) => {
         const { width } = el.getBoundingClientRect();
+        setActive(id);
         setIndicator({
             left: el.offsetLeft,
             width,
@@ -53,10 +54,10 @@ const MobileSideBar = () => {
                         <li
                             key={id}
                             className="z-10 flex h-14 w-14 items-center justify-center text-zinc-400"
-                            onPointerEnter={(e) => updateIndicator(e.currentTarget)}
+                            onPointerEnter={(e) => updateIndicator(e.currentTarget, id)}
                             onClick={(e) => {
                                 setActive(id);
-                                updateIndicator(e.currentTarget);
+                                updateIndicator(e.currentTarget, id);
                                 navigate(id);
                             }}
                         >
@@ -68,7 +69,7 @@ const MobileSideBar = () => {
                                 }}
                                 transition={{
                                     type: "spring",
-                                    stiffness:1000,
+                                    stiffness: 1000,
                                     damping: 25,
                                 }}
                             >
@@ -85,7 +86,8 @@ const MobileSideBar = () => {
 const Cursor = ({ indicator }: { indicator: Indicator }) => (
     <motion.div
         className="absolute h-14 bottom-1/2 rounded-full bg-zinc-900 border-white border-4"
-        animate={indicator}
+        animate={{ ...indicator }}
+
         transition={{ type: "spring", stiffness: 500, damping: 30 }}
     />
 );

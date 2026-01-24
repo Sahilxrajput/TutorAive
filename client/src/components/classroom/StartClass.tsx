@@ -66,9 +66,6 @@ export function StartClass({ showPopup, setShowPopup }: DateTimePickerProps) {
                 classroomId,
             });
 
-            console.log("data:", data)
-
-
             if (data.success) {
                 toast.success(data.message);
                 setShowPopup(false)

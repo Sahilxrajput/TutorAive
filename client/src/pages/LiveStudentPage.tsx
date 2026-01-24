@@ -36,6 +36,11 @@ const LiveStudentPage = () => {
     const navigate = useNavigate();
 
 
+    useEffect(() => {
+        goConnect()
+    }, [])
+
+
     const clearStram = () => {
         if (!teacherVideoRef.current) return
         teacherVideoRef.current.srcObject = null;
@@ -269,7 +274,7 @@ const LiveStudentPage = () => {
             return;
         }
 
-        setIsScreenSharing(true); 
+        setIsScreenSharing(true);
 
         const stream = new MediaStream();
         stream.addTrack(screenVideoConsumerRef.current.track);
@@ -278,9 +283,9 @@ const LiveStudentPage = () => {
             stream.addTrack(screenAudioConsumerRef.current.track);
         }
         screenStreamRef.current = stream;
-        
+
         setIsScreenSharing(true);
-        
+
     }
 
     useEffect(() => {
@@ -322,8 +327,6 @@ const LiveStudentPage = () => {
                     isInstructor={false}
                     viewerCount={viewerCount}
                 />
-
-                <button className="absolute right-1/2 top-12 bg-red-500" onClick={goConnect}>start</button>
 
                 <ControlBarForStudent
                     isChatOpen={openChat}

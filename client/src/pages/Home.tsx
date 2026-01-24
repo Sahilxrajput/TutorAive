@@ -1,49 +1,19 @@
 import API from '@/lib/api';
 import LearningCard from '@/components/home/LeaningCard';
-import { Skeleton } from '@/components/ui/skeleton';
 import useAuth from '@/hooks/useAuth';
-import type { AssignmentPayload, LectureUpdatePayload, ILecture} from '@/types/type';
+import type { AssignmentPayload, LectureUpdatePayload } from '@/types/type';
 import { formatDateTime } from '@/utils/splitDateTime';
-import { BookHeartIcon, Bookmark, Clock,  Rocket } from 'lucide-react';
-import { useCallback, useEffect, useState } from 'react';
+import { BookHeartIcon, Bookmark, Clock, Rocket } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import useSocketContext from '@/hooks/useSocketContext';
-import EventList from '@/components/home/EventList';
+import DaySchedule from '@/components/home/DaySchedule';
 
 
 
 const Home = () => {
-    const [scheduleLecture, setScheduleLecture] = useState<ILecture[]>([]);
-    const [loading, setLoading] = useState<boolean>(true);
     const [pendingAssignments, setPendingAssignments] = useState<number>(0)
-    const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-    const { isInstructor, user } = useAuth()
-    const { socket } = useSocketContext()
-
-
-    const detectPath = useCallback(
-        function detectPath() {
-            if (isInstructor) return "/lectures/scheduled/created"
-            return "/lectures/scheduled/my"
-        }, [isInstructor])
-
-    // const deleteScheduleLecture = async (id: string) => {
-    //     try {
-    //         setLoading(true);
-    //         const { data } = await API.delete("/lectures/" + id)
-    //         console.log(data)
-    //         if (data?.success) {
-    //             toast.success(data.message)
-    //             setScheduleLecture(scheduleLecture.filter((l: ILecture) => l._id !== id))
-    //         }
-    //     } catch (error: any) { // *@fix think about error meg toast
-    //         console.error('Error fetching lectures:', error.response.data.message);
-    //         toast.error(error?.response?.data?.message)
-    //     } finally {
-    //         setLoading(false)
-    //     }
-
-    // }
+    const { user } = useAuth()
 
     // @remind fetch all assignments here
     useEffect(() => {
@@ -59,115 +29,6 @@ const Home = () => {
         }
         fetchAssignmnets()
     }, [user])
-
-    useEffect(() => {
-        const fetchScheduleLectures = async () => {
-            try {
-                setLoading(true);
-                const { data } = await API.get(detectPath());
-                console.log("setScheduleLecture : ", data.data)
-                setScheduleLecture(data.data);
-            } catch (error) {
-                console.error('Error fetching lectures:', error);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchScheduleLectures();
-    }, [detectPath]);
-
-    // useEffect(() => {
-    //     if (!socket) return
-
-    //     const joinClassrooms = async () => {
-    //         const { data } = await API.get("/classrooms/enrolled")
-
-    //         data.forEach((c:IClassroom) => {
-    //             socket.emit("join:classroom", c._id)
-    //         });
-    //     };
-
-    //     joinClassrooms()
-
-    // }, [socket])
-
-    useEffect(() => {
-        if (!socket) return;
-
-        const handleClassUpdate = (payload: LectureUpdatePayload) => {
-            console.log("payload : ", payload)
-            // @todo setScheduleLecture()
-            switch (payload.status) {
-                case "live":
-                    toast.success(`lecture ${payload.title} is live now`);
-                    break;
-
-                //@todo complete status -> remove live class event from notification bar
-                // case "starting_soon":
-                //     toast.info("Class starting soon ⏳");
-                //     console.log("payload : ", payload)
-                //     break;
-
-                case "scheduled":
-                    toast.info(`lecture scheduled at ${formatDateTime(payload.startTime)}`);
-                    break;
-
-                case "rescheduled":
-                    toast.info(
-                        ` ${payload.title} lecture rescheduled\nNew time: ${formatDateTime(payload.startTime)}`
-                    );
-                    break;
-
-                case "delayed":
-                    toast.warning(
-                        ` "${payload.title}" lecture delay`
-                    );
-                    break;
-
-                case "cancelled":
-                    toast.error(
-                        ` ${payload.title} lecture cancelled\nReason: ${payload.reason}`
-                    );
-                    break;
-
-                default:
-                    toast("Class updated");
-                    console.log("payload : ", payload)
-            }
-        };
-
-        const handleAssignmentUpdate = (payload: AssignmentPayload) => {
-            console.log("assignment payload : ", payload)
-            toast.info(
-                ` New assignment: ${payload.title}`,
-                {
-                    description: `Due: ${new Date(payload.dueDate).toLocaleString()}`,
-                    duration: 5000, // 5 sec
-                }
-            );
-        };
-
-        socket.on("lecture:update", handleClassUpdate);
-        socket.on("assignment:update", handleAssignmentUpdate);
-
-        return () => {
-            socket.off("lecture:update", handleClassUpdate);
-            socket.off("assignment:update", handleAssignmentUpdate);
-        }
-    }, [socket]);
-
-    useEffect(() => {
-        if (!socket) return;
-
-        socket.on("tweet:update", (payload) => {
-            console.log("Mention received:", payload);
-            toast.success(payload.msg);
-        });
-
-        return () => {
-            socket.off("tweet:update");
-        };
-    }, [socket]);
 
     return (
         <main className="min-h-screen flex flex-col lg:flex-row gap-4 p-4">
@@ -216,35 +77,10 @@ const Home = () => {
             <section
                 className="w-full lg:w-1/4 px-2 sm:px-4 lg:px-6 space-y-6 flex flex-col overflow-y-auto scrollbar-hide"
             >
-
                 <h1 className="text-lg font-semibold border-b pb-1">
                     Upcoming Schedule
                 </h1>
-
-                <div className="flex flex-col space-y-2">
-                    {loading ? (
-                        Array.from({ length: 4 }).map((_, i) => (
-                            <div
-                                key={i}
-                                className="p-3 border rounded-md shadow-sm space-y-2"
-                            >
-                                <Skeleton className="h-4 w-1/2" />
-                                <Skeleton className="h-4 w-4/5" />
-                                <Skeleton className="h-4 w-3/4" />
-                            </div>
-                        ))
-                    ) : scheduleLecture.length > 0 ? (
-                        <EventList
-                            events={scheduleLecture}
-                            selectedDate={selectedDate}
-                            onOpen={() => { }}
-                        />
-                    ) : (
-                        <p className="text-gray-500 text-center">
-                            No Scheduled lectures
-                        </p>
-                    )}
-                </div>
+                <DaySchedule />
             </section>
         </main>
     );

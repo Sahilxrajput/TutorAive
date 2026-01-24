@@ -71,3 +71,9 @@ export default defineConfig([
   },
 ])
 ```
+
+
+
+## live session 
+if user left then can't connect again
+if user if on another page then Lecture card willn't update

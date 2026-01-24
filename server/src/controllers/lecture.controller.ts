@@ -38,7 +38,6 @@ const ALLOWED_TRANSITIONS: Record<LectureStatus, LectureStatus[]> = {
   cancelled: [],
 };
 
-
 export const createLecture = async (req: Request, res: Response) => {
   try {
     const { title, status, startTime, classroomId } = req.body;
@@ -66,13 +65,7 @@ export const createLecture = async (req: Request, res: Response) => {
 
     await newLecture.populate("classroom");
 
-    addClassNotificationJob({
-      classroomId,
-      lectureId: newLecture._id.toString(),
-      status,
-      startTime,
-      title,
-    });
+    addClassNotificationJob(newLecture);
 
     return res.status(201).json({
       success: true,
@@ -133,16 +126,7 @@ export const updateLecture = async (req: Request, res: Response) => {
 
     await lecture.save();
 
-    if (status && status !== "completed") {
-      addClassNotificationJob({
-        classroomId: lecture.classroom._id.toString(),
-        lectureId: lecture._id.toString(),
-        title: lecture.title,
-        status: lecture.status,
-        ...(notificationTime && { startTime: notificationTime.toISOString() }),
-        ...(reason && { reason }),
-      });
-    }
+    if (status) addClassNotificationJob(lecture);
 
     res.json({
       success: true,
@@ -153,7 +137,6 @@ export const updateLecture = async (req: Request, res: Response) => {
     handleError(res, error);
   }
 };
-
 
 export const deleteLecture = async (req: Request, res: Response) => {
   try {
@@ -176,7 +159,6 @@ export const deleteLecture = async (req: Request, res: Response) => {
     handleError(res, error);
   }
 };
-
 
 export const getAllScheduleLecturesForInstructor = async (
   req: Request,
@@ -362,4 +344,3 @@ export const attendanceLock = async (req: Request, res: Response) => {
     handleError(res, error);
   }
 };
-

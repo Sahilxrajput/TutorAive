@@ -23,14 +23,14 @@ export const getUnreadCount = async (req: Request, res: Response) => {
 
 export const markAsRead = async (req: Request, res: Response) => {
   const { id } = req.params;
-    console.log("id:",id)
-  if (!mongoose.Types.ObjectId.isValid(id)) {
+  console.log("id:", id);
+  if (!mongoose.Types.ObjectId.isValid(id as string)) {
     return res.status(400).json({ message: "Invalid notification ID" });
   }
 
   await Notification.updateOne(
     { _id: id, user: req.userId },
-    { $set: { isRead: true } }
+    { $set: { isRead: true } },
   );
 
   res.json({ success: true });
@@ -39,7 +39,7 @@ export const markAsRead = async (req: Request, res: Response) => {
 export const markAllAsRead = async (req: Request, res: Response) => {
   await Notification.updateMany(
     { user: req.userId, isRead: false },
-    { $set: { isRead: true } }
+    { $set: { isRead: true } },
   );
 
   res.json({ success: true });

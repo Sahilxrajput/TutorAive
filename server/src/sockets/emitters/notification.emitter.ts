@@ -4,14 +4,21 @@ import {
   AssignmentPayload,
   LectureUpdatePayload,
   ITweetPayload,
+  ILecture,
 } from "../../types/type";
 
-export function emitLectureNotification(payload: LectureUpdatePayload) {
+export function emitLectureNotification({
+  payload,
+  userId,
+}: {
+  payload: ILecture;
+  userId: string;
+}) {
   const socket = getIO();
-  console.log("lecture emitter payload", payload);
+  console.log("UI payload", userId);
   if (payload.status === "completed") return;
 
-  socket.to(`user:${payload.studentId}`).emit("lecture:update", payload);
+  socket.to(`user:${userId}`).emit("lecture:update", payload);
 }
 
 export function emitAssignmentNotification(payload: AssignmentPayload) {

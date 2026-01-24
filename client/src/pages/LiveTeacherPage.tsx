@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Device } from 'mediasoup-client'
 import type {
     AppData,
@@ -25,14 +25,13 @@ interface IRoomCreate {
 
 const LiveTeacherPage = () => {
 
-
     const [isMuted, setIsMuted] = useState(false);
     const [isCamOff, setIsCamOff] = useState(false);
     const [isScreenSharing, setIsScreenSharing] = useState(false);
     const [openChat, setOpenChat] = useState(false)
     const [viewerCount] = useState(42);
     const { user } = useAuth();
-    const { socket,  } = useSocketContext();
+    const { socket, } = useSocketContext();
     const { lectureId } = useParams<{
         classroomId: string;
         lectureId: string;
@@ -51,6 +50,10 @@ const LiveTeacherPage = () => {
     const saudioProducerRef = useRef<Producer>(null);
     const deviceRef = useRef<Device>(null);
     const navigate = useNavigate();
+
+    useEffect(()=>{
+        start()
+    },[])
 
 
     async function start() {
@@ -475,9 +478,6 @@ const LiveTeacherPage = () => {
                     isCamOff={isCamOff}
                     isScreenSharing={isScreenSharing}
                 />
-
-                <button className='absolute bg-red-500 top-12 left-1/3 ' onClick={start}>start</button>
-
 
                 <ControlsBar
                     onLeave={leaveRoom}

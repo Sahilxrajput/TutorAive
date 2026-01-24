@@ -104,7 +104,7 @@ export default function NoteActionsDropdown({ note }: { note: INote }) {
             />
 
             <RemoveCollaboratorDialog
-                open={() => dialogs.removeCollab}
+                open={dialogs.removeCollab}
                 onClose={() => closeDialog("removeCollab")}
                 userId={userId}
                 setUserId={setUserId}

@@ -25,7 +25,7 @@ export async function extractMentionedUserIds(
   // 4. Map to IDs & filter self-mention
   const ids = users
     .map((u) => u._id)
-    .filter((id) => !creatorId || !id.equals(creatorId));
+    .filter((id : Types.ObjectId) => !creatorId || !id.equals(creatorId));
 
   return ids;
 }

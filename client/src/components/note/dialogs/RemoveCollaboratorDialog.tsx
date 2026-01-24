@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import type { Dispatch, SetStateAction } from "react";
 
 interface Props {
-    open: () => void
+    open: boolean
     onClose: () => void
     userId: string
     setUserId: Dispatch<SetStateAction<string>>

@@ -4,6 +4,7 @@ import { roomManager } from "../../managers/RoomManager";
 import { peerManager } from "../../managers/PeerManager";
 import { createRouter } from "../../mediasoup/router";
 import Lecture from "../../models/lecture.model";
+import { addClassNotificationJob } from "../../redis/queue";
 
 interface Payload {
   roomId: string;
@@ -15,7 +16,9 @@ export const handleInstructorJoinLiveSession =
   (socket: Socket) =>
   async ({ roomId, name, userId }: Payload, cb: any) => {
     // 1. Fetch lecture FIRST (no update yet)
-    const lecture = await Lecture.findById(roomId).select("createdBy status");
+    const lecture = await Lecture.findById(roomId).select(
+      "createdBy status classroom title",
+    );
 
     if (!lecture) {
       return cb({ error: "Lecture not found" });
@@ -40,6 +43,7 @@ export const handleInstructorJoinLiveSession =
     // 4. NOW update status to live
     lecture.status = "live";
     await lecture.save();
+    addClassNotificationJob(lecture);
 
     socket.data.activeRoomId = roomId;
     socket.join(roomId);

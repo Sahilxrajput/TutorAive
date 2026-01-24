@@ -2,6 +2,7 @@ import { Queue } from "bullmq";
 import {
   IAssignmentNotificationJob,
   IClassNotificationJob,
+  ILecture,
   ITweetNotificationJob,
   LectureStatus,
 } from "../types/type";
@@ -32,22 +33,15 @@ export const addAssignmentNotificationJob = async ({
       },
       removeOnComplete: true,
       removeOnFail: false,
-    }
+    },
   );
   console.log("added in assignmnet queue : ");
 };
 
-export const addClassNotificationJob = async ({
-  classroomId,
-  startTime,
-  reason,
-  lectureId,
-  status,
-  title,
-}: IClassNotificationJob) => {
+export const addClassNotificationJob = async (lecture: ILecture) => {
   await notificationQueue.add(
-    "class-notification",
-    { lectureId, startTime, reason, classroomId, title, status },
+    "lecture-notification",
+    { lecture },
     {
       attempts: 5,
       backoff: {
@@ -56,10 +50,34 @@ export const addClassNotificationJob = async ({
       },
       removeOnComplete: true,
       removeOnFail: false,
-    }
+    },
   );
   console.log("added in class queue : ");
 };
+
+// export const addClassNotificationJob = async ({
+//   classroomId,
+//   startTime,
+//   reason,
+//   lectureId,
+//   status,
+//   title,
+// }: IClassNotificationJob) => {
+//   await notificationQueue.add(
+//     "class-notification",
+//     { lectureId, startTime, reason, classroomId, title, status },
+//     {
+//       attempts: 5,
+//       backoff: {
+//         type: "exponential",
+//         delay: 3000,
+//       },
+//       removeOnComplete: true,
+//       removeOnFail: false,
+//     }
+//   );
+//   console.log("added in class queue : ");
+// };
 
 export const addTweetNotificationJob = async ({
   userId,
@@ -83,12 +101,12 @@ export const addTweetNotificationJob = async ({
       },
       removeOnComplete: true,
       removeOnFail: false,
-    }
+    },
   );
 
   console.log("added in tweet notification queue");
 };
 
 notificationQueue.on("waiting", (jobId) =>
-  console.log(`class Job ${jobId} is waiting`)
+  console.log(`class Job ${jobId} is waiting`),
 );

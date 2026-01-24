@@ -1,6 +1,6 @@
 // workers/notification.worker.ts
 import { Job, Worker } from "bullmq";
-import {Classroom} from "../models/classroom.model";
+import { Classroom } from "../models/classroom.model";
 import { sendAssignmentEmail, sendClassStatusEmail } from "../utils/sendEmail";
 import { Notification } from "../models/notification.model";
 import {
@@ -8,6 +8,7 @@ import {
   emitLectureNotification,
   emitTweetNotification,
 } from "../sockets/emitters/notification.emitter";
+import { ILecture } from "../types/type";
 
 export function createRedisWorker() {
   const worker = new Worker(
@@ -27,7 +28,7 @@ export function createRedisWorker() {
 
           const classroom = await Classroom.findById(classroomId).populate(
             "students",
-            "_id email"
+            "_id email",
           );
 
           if (
@@ -67,28 +68,24 @@ export function createRedisWorker() {
           //  3. Send Emails (optional)
           for (const student of classroom.students) {
             // if (!student.email) continue;
-
             // await sendAssignmentEmail({
             //   toEmail: student.email,
             //   classroomName: classroomTitle,
             //   assignmentTitle: title,
             //   dueDate,
             // });
-
             // console.log("Email sent to:", student.email);
           }
           break;
         }
 
-        case "class-notification": {
-          const { classroomId, lectureId, status, title, startTime, reason } =
-            job.data;
-
-          if (!classroomId || !lectureId || !status || !title) {
-            throw new Error("classroomId / lectureId / status / title missing");
+        case "lecture-notification": {
+          const { lecture }: { lecture: ILecture } = job.data;
+          if (!lecture) {
+            throw new Error("lecture missing");
           }
 
-          const classroom = await Classroom.findById(classroomId)
+          const classroom = await Classroom.findById(lecture.classroom)
             .populate("students", "_id email")
             .select("title students");
 
@@ -97,6 +94,7 @@ export function createRedisWorker() {
             !classroom.students ||
             classroom.students.length === 0
           ) {
+            console.log("classroom not found");
             return;
           }
 
@@ -104,36 +102,32 @@ export function createRedisWorker() {
           const notificationDocs = classroom.students.map((student: any) => ({
             user: student._id,
             type: "lecture",
-            message: `Lecture "${title}" is now ${status}`,
+            message: `Lecture "${lecture.title}" is now ${lecture.status}`,
             data: {
-              lectureId,
-              classroomId,
-              status,
-              startTime,
-              reason: reason || undefined,
+              lectureId: lecture._id,
+              classroomId: lecture.classroom,
+              status: lecture.status,
+              startTime: lecture.startTime,
+              reason:
+                lecture.status === "cancelled"
+                  ? (lecture.cancelReason ?? "no reason")
+                  : (lecture.delayReason ?? "no reason"),
             },
           }));
-
-          await Notification.insertMany(notificationDocs);
+          if (lecture.status !== "completed")
+            await Notification.insertMany(notificationDocs);
 
           //  2. Emit Socket Events
           for (const student of classroom.students) {
             emitLectureNotification({
-              lectureId,
-              studentId: student._id.toString(),
-              classroomTitle: classroom.title,
-              classroomId,
-              title,
-              reason,
-              status,
-              startTime,
+              payload: lecture,
+              userId: student._id?.toString(),
             });
           }
 
           //  3. Send Emails (optional)
           for (const student of classroom.students) {
             // if (!student.email) continue;
-
             // await sendClassStatusEmail({
             //   toEmail: student.email,
             //   classroomName: classroom.title,
@@ -141,7 +135,6 @@ export function createRedisWorker() {
             //   status,
             //   startTime,
             // });
-
             // console.log("Lecture email sent to:", student.email);
           }
 
@@ -215,7 +208,7 @@ export function createRedisWorker() {
         password: process.env.REDIS_PASSWORD,
       },
       concurrency: 2,
-    }
+    },
   );
 
   worker.on("completed", async (job) => {
@@ -225,11 +218,11 @@ export function createRedisWorker() {
   worker.on("active", (job) =>
     console.log(
       "[redis worker] active job : ",
-      job.data.tweetId ?? job.data.lectureId ?? job.data.classroomId
-    )
+      job.data.tweetId ?? job.data.lectureId ?? job.data.classroomId,
+    ),
   );
   worker.on("failed", (job, err) =>
-    console.error(`Job ${job?.id} failed:`, err)
+    console.error(`Job ${job?.id} failed:`, err),
   );
   worker.on("error", (err) => console.error("Worker error:", err));
 }

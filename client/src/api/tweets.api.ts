@@ -14,11 +14,6 @@ export const fetchTweets = async ({ pageParam }: { pageParam?: string }) => {
   return data
 };
 
-export const fetchNotifications = async () => {
-  const { data } = await API.get("/notifications");
-  return data.data;
-};
-
 export const createTweet = async (payload: FormData) => {
   const { data } = await API.post<{ data: ITweet; message: string }>(
     "/tweets",

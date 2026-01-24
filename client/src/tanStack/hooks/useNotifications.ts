@@ -1,4 +1,4 @@
-import { fetchNotifications } from "@/api/tweets.api";
+import { fetchNotifications } from "@/api/lectures.api";
 import { useQuery } from "@tanstack/react-query";
 import {CACHE_KEY_NOTIFICATIONS} from "../constants"
 

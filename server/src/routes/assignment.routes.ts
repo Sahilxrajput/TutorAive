@@ -20,6 +20,8 @@ import {
 } from "../validators/classroom.validator";
 import { handleValidation } from "../middlewares/handleValidation";
 import { body, param } from "express-validator";
+import { authorizeOwner } from "../utils/authorization/authorizeOwner";
+import { authorizeOwnerMiddleware } from "../middlewares/authorizeOwner.middleware";
 
 const router = express.Router();
 
@@ -35,7 +37,7 @@ router.get("/:id", isEnrolled, getAssignmentById);
 // Instructor-only routes
 // router.use(isInstructor); //@check no need
 
-router.post("/:classroomId/cloudinary/signature", cloudinarySignature);
+router.post("/:classroomId/cloudinary/signature", authorizeOwnerMiddleware, cloudinarySignature);
 
 router.post(
   "/:classroomId/save",
@@ -44,12 +46,12 @@ router.post(
   saveAssignment,
 );
 //get all assignments of classroom -> for instructor
-router.get("/classroom/:classroomId", getAssignmentsByClassroomId);
+router.get("/classroom/:classroomId", authorizeOwnerMiddleware, getAssignmentsByClassroomId);
 
 //get all assignments of all classroom created by instructor
 router.get("/instructor", getAssignmentsForInstructor);
 
 // router.put("/:id", updateAssignment);
-router.delete("/:id", deleteAssignment);
+router.delete("/:id", authorizeOwnerMiddleware, deleteAssignment);
 
 export default router;

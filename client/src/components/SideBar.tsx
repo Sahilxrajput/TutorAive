@@ -115,7 +115,7 @@ const SideBar = () => {
 const Cursor = ({ indicator }: { indicator: Indicator }) => (
     <motion.div
         className="absolute w-full aspect-square rounded-lg bg-primary/30 border-primary border-2 z-0"
-        animate={{ top: indicator.top, height: indicator.height, opacity: indicator.opacity }}
+        animate={{ ...indicator }}
         transition={{ type: "spring", stiffness: 400, damping: 35 }}
     />
 );

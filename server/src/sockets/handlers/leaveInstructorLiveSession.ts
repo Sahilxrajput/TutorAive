@@ -43,6 +43,7 @@ export const leaveInstructorLiveSession = (socket: Socket) => async () => {
   // 7. Update DB state
   const lecture  = await Lecture.findByIdAndUpdate(roomId, {
     status: "completed",
+    endTime: Date.now()
   });
   console.log("Lecture:", lecture)
 };
