@@ -4,8 +4,6 @@ import Dashboard from "./pages/Dashboard";
 import AuthSuccess from "./pages/AuthSuccess";
 import ProtectedRoute from "./wrapper/ProtectedRoute";
 import Home from "./pages/Home";
-import Signup from "./pages/signup";
-import Signin from "./pages/signin";
 import BrowseNotes from "./pages/BrowseNotes";
 import ClassroomLayout from "./components/classroom/ClassroomLayout";
 import BrowseClassroom from "./pages/BrowseClassroom";
@@ -20,6 +18,7 @@ import LiveSession from "./pages/LiveSession";
 import SaveNotes from "./pages/SaveNotes";
 import Note from "./pages/Note";
 import TweetFeed from "./pages/TweetFeed";
+import Auth from "./pages/Auth";
 
 
 
@@ -66,8 +65,7 @@ const App: React.FC = () => {
                 />
             </Route>
 
-            <Route path="signin" element={<Signin />} />
-            <Route path="signup" element={<Signup />} />
+            <Route path="auth" element={<Auth />} />
             <Route path="auth/success" element={<AuthSuccess />} />
         </Routes>
 
