@@ -18,7 +18,7 @@ const Layout = () => {
                 isMobile ? <MobileNavBar /> : <SideBar />
             )}
 
-            <main className="flex-1 overflow-y-auto bg-muted/30">
+            <main className="flex-1 overflow-y-auto bg- bg-[#FEFEF7]">
                 <motion.div
                     key={location.pathname}
                     initial={{ opacity: 0, y: 10 }}
