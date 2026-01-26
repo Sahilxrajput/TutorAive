@@ -17,6 +17,7 @@ import useAuth from "@/hooks/useAuth"
 import { useNavigate } from "react-router-dom"
 import { useState, type Dispatch, type SetStateAction } from "react"
 import { Label } from "./ui/label"
+import { House } from "lucide-react"
 
 export default function Signin({ setIsLoginPage }: { setIsLoginPage: Dispatch<SetStateAction<boolean>> }) {
 
@@ -44,8 +45,8 @@ export default function Signin({ setIsLoginPage }: { setIsLoginPage: Dispatch<Se
     };
 
     return (
-        <Card className="h-full w-2/5 flex flex-col p-10 items-center justify-around rounded-l-[15%] rounded-r-none">
-
+        <Card className="h-full w-2/5 flex flex-col p-10 items-center justify-around rounded-l-[15%] rounded-r-none relative">
+            {/* <House className="absolute top-12 -left-12 bg-white text-[#B8C8FF] p-2 w-10 h-10 rounded-full" /> */}
             {/* Header */}
             <CardHeader className="text-start space-y-2 w-full mt-8">
                 <CardTitle className="text-3xl font-thin font-cinzel">
@@ -57,7 +58,7 @@ export default function Signin({ setIsLoginPage }: { setIsLoginPage: Dispatch<Se
                 </CardDescription>
 
                 <CardAction className="justify-center">
-                    <Button variant="link" onClick={() => setIsLoginPage(false)}>Sign Up</Button>
+                    <Button variant="link" className="text-[#B8C8FF]" onClick={() => setIsLoginPage(false)}>Sign Up</Button>
                 </CardAction>
             </CardHeader>
 
@@ -91,9 +92,9 @@ export default function Signin({ setIsLoginPage }: { setIsLoginPage: Dispatch<Se
                         />
                     </div>
 
-                    <Button type="submit" className="w-full h-12 text-base mt-2">
+                    <button type="submit" className="w-full h-12 text-lg tracking-wider rounded-lg text-white bg-[#B8C8FF] mt-2">
                         Login
-                    </Button>
+                    </button>
                 </form>
             </CardContent>
 

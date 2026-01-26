@@ -27,7 +27,7 @@ const NoteCard = ({ note }: { note: INote }) => {
             whileHover={{ scale: 1.03 }}
             transition={{ duration: 0.2 }}
             className={cn(
-                "border relative rounded-xl flex flex-col justify-between p-6 shadow-md hover:shadow-lg transition-all duration-200 group relative w-full min-h-[360px]",
+                "border relative rounded-xl flex flex-col justify-between p-6 shadow-md hover:shadow-lg transition-all duration-200 group w-full min-h-[360px]",
                 isCollaborative ? "ring-2 ring-blue-200 bg-blue-50/40" : "bg-card/90",
                 note.isPinned && "ring-2 ring-amber-400"
             )}

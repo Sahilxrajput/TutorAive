@@ -19,7 +19,7 @@ interface Indicator {
 }
 
 const navItems = [
-    { to: "/", icon: LucideOctagon },
+    { to: "/home", icon: LucideOctagon },
     { to: "/classrooms", icon: Compass },
     { to: "/notes", icon: BookOpen },
     { to: "/community", icon: Twitch },

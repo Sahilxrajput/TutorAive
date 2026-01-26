@@ -12,7 +12,7 @@ const EnrolledRoute = ({ children }: {
     if (loading) return <div>Loading...</div>;
 
     if (!user) {
-        return <Navigate to="/signin" replace />;
+        return <Navigate to="/auth" replace />;
     }
 
     // @todo handle public classrooom case

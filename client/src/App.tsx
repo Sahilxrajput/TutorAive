@@ -19,6 +19,7 @@ import SaveNotes from "./pages/SaveNotes";
 import Note from "./pages/Note";
 import TweetFeed from "./pages/TweetFeed";
 import Auth from "./pages/Auth";
+import LandingPage from "./pages/LandingPage";
 
 
 
@@ -27,9 +28,10 @@ const App: React.FC = () => {
 
     return (
         <Routes>
-            <Route path="/" element={<Layout />}>
-                <Route index element={<Home />} />
-                <Route path="community" element={<TweetFeed/>} />
+            <Route path="/" element={<LandingPage />} />
+            <Route element={<Layout />}>
+                <Route path="/home" element={<Home />} />
+                <Route path="community" element={<TweetFeed />} />
                 <Route path="editor" element={<Editor />} />
                 <Route path="notes" >
                     <Route index element={<BrowseNotes />} />
@@ -68,7 +70,6 @@ const App: React.FC = () => {
             <Route path="auth" element={<Auth />} />
             <Route path="auth/success" element={<AuthSuccess />} />
         </Routes>
-
     );
 };
 

@@ -77,7 +77,7 @@ export default function Signup({ setIsLoginPage }: { setIsLoginPage: Dispatch<Se
                 </CardDescription>
 
                 <CardAction className="justify-center">
-                    <Button variant="link" onClick={() => setIsLoginPage(true)}>Sign In</Button>
+                    <Button variant="link" className="text-[#B8C8FF]" onClick={() => setIsLoginPage(true)}>Sign In</Button>
                 </CardAction>
             </CardHeader>
 
@@ -172,9 +172,9 @@ export default function Signup({ setIsLoginPage }: { setIsLoginPage: Dispatch<Se
                         </div>
                     </div>
 
-                    <Button type="submit" className="w-full h-12 text-base mt-2">
+                    <button type="submit" className="w-full h-12 text-lg mt-2 rounded-lg text-white  bg-[#B8C8FF]">
                         Sign Up
-                    </Button>
+                    </button>
                 </form>
             </CardContent>
 

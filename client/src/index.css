@@ -78,11 +78,11 @@
   --popover-foreground: oklch(0.141 0.005 285.823);
   /* --primary: oklch(0.21 0.006 285.885); */
   --primary: #26d9d9;
+  --secondary: #b8c8ff;
   --p: #e36ee5;
   --s: #7e31e1;
   --t: #c793ff;
   --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.967 0.001 286.375);
   --secondary-foreground: oklch(0.21 0.006 285.885);
   --muted: oklch(0.967 0.001 286.375);
   --muted-foreground: oklch(0.552 0.016 285.938);
@@ -173,9 +173,28 @@
 
 @layer base {
   * {
-    @apply border-border font-poppins outline-ring/50;
+    border-color: var(--color-border);
+    outline-color: var(--color-ring);
+    outline-width: 50%;
+    font-family: Inter;
   }
   body {
-    @apply bg-background text-foreground;
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    /* background-image:
+      repeating-linear-gradient(
+        0deg,
+        #121212,
+        #121212 70px,
+        transparent 70px,
+        transparent 80px
+      ),
+      repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 10px,
+        #121212 10px,
+        #121212 80px
+      ); */
   }
 }

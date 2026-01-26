@@ -10,7 +10,7 @@ import {
 import { useNavigate } from "react-router-dom";
 
 const items = [
-    { id: "/", icon: House },
+    { id: "/home", icon: House },
     { id: "/classrooms", icon: Compass },
     { id: "/notes", icon: BookOpen },
     { id: "/community", icon: Twitch },
