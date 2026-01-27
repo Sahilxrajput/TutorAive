@@ -62,7 +62,6 @@ const createTweet = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         // Create tweet
         const tweet = new tweet_model_1.default(tweetData);
         yield tweet.save();
-        console.log("tweet", tweet);
         if (mentionedUserIds.length > 0) {
             for (const mentionId of mentionedUserIds) {
                 yield (0, queue_1.addTweetNotificationJob)({

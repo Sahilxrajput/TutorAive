@@ -44,12 +44,12 @@ app.use((0, cookie_parser_1.default)());
 app.use(passport_1.default.initialize());
 (0, worker_1.createRedisWorker)();
 app.get("/", (_, res) => res.send("Server is  Running"));
+app.use("/health", health_route_1.default);
 app.use("/api/assignments", assignment_routes_1.default);
 app.use("/api/attendance", attendence_routes_1.default);
 app.use("/api/auth", auth_routes_1.default);
 app.use("/api/classrooms", classroom_routes_1.default);
 app.use("/api/invitations", invitation_routes_1.default);
-app.use("/api/health", health_route_1.default);
 app.use("/api/lectures", lecture_route_1.default); // all required auth
 app.use("/api/notes", note_routes_1.default); // all required auth
 app.use("/api/notifications", notification_routes_1.default);

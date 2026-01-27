@@ -197,9 +197,10 @@ const LandingPage = () => {
                             “An excellent platform for educators to monetize their skills.”
                         </h3>
 
-                        <button className="bg-gradient-to-l from-transparent via-white to-transparent px-12 py-3">
+                        <button className="bg-gradient-to-l from-transparent via-gray-200 to-transparent px-12 py-3">
                             Explore More
                         </button>
+
                     </div>
 
                     {/* HERO IMAGE */}

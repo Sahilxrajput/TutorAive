@@ -72,8 +72,6 @@ export const createTweet = async (req: Request, res: Response) => {
     const tweet = new Tweet(tweetData);
     await tweet.save();
 
-    console.log("tweet", tweet);
-
     if (mentionedUserIds.length > 0) {
       for (const mentionId of mentionedUserIds) {
         await addTweetNotificationJob({

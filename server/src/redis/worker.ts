@@ -9,6 +9,11 @@ import {
   emitTweetNotification,
 } from "../sockets/emitters/notification.emitter";
 import { ILecture } from "../types/type";
+import IORedis from "ioredis";
+
+const connection = new IORedis(process.env.REDIS_URL!, {
+  maxRetriesPerRequest: null,
+});
 
 export function createRedisWorker() {
   const worker = new Worker(
@@ -202,11 +207,7 @@ export function createRedisWorker() {
       }
     },
     {
-      connection: {
-        host: process.env.REDIS_HOST,
-        port: Number(process.env.REDIS_PORT),
-        password: process.env.REDIS_PASSWORD,
-      },
+      connection,
       concurrency: 2,
     },
   );

@@ -8,15 +8,33 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.addTweetNotificationJob = exports.addClassNotificationJob = exports.addAssignmentNotificationJob = exports.notificationQueue = void 0;
 const bullmq_1 = require("bullmq");
+const ioredis_1 = __importDefault(require("ioredis"));
+const connection = new ioredis_1.default({
+    maxRetriesPerRequest: null,
+});
 exports.notificationQueue = new bullmq_1.Queue("notifications", {
-    connection: {
-        host: process.env.REDIS_HOST,
-        port: Number(process.env.REDIS_PORT),
-        password: process.env.REDIS_PASSWORD,
-    },
+    //   connection: {
+    //     host: process.env.REDIS_HOST,
+    //     port: Number(process.env.REDIS_PORT),
+    //     password: process.env.REDIS_PASSWORD,
+    //   },
+    connection,
+});
+connection
+    .ping()
+    .then((res) => {
+    console.log("Redis says:", res); // should be PONG
+    process.exit(0);
+})
+    .catch((err) => {
+    console.error("Redis is not reachable:", err);
+    process.exit(1);
 });
 const addAssignmentNotificationJob = (_a) => __awaiter(void 0, [_a], void 0, function* ({ classroomId, classroomTitle, assignmentId, title, dueDate, }) {
     yield exports.notificationQueue.add("assignment-notification", { assignmentId, classroomId, classroomTitle, title, dueDate }, {

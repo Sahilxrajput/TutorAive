@@ -6,14 +6,24 @@ import {
   ITweetNotificationJob,
   LectureStatus,
 } from "../types/type";
+import IORedis from "ioredis";
 
-export const notificationQueue = new Queue("notifications", {
-  connection: {
-    host: process.env.REDIS_HOST,
-    port: Number(process.env.REDIS_PORT),
-    password: process.env.REDIS_PASSWORD,
-  },
+const connection = new IORedis(process.env.REDIS_URL!, {
+  maxRetriesPerRequest: null,
 });
+
+export const notificationQueue = new Queue("notifications", { connection });
+
+connection
+  .ping()
+  .then((res) => {
+    console.log("Redis says:", res); // should be PONG
+    process.exit(0);
+  })
+  .catch((err) => {
+    console.error("Redis is not reachable:", err);
+    process.exit(1);
+  });
 
 export const addAssignmentNotificationJob = async ({
   classroomId,
