@@ -16,9 +16,9 @@ import { registerQnaSocket } from "./qna.socket";
 import { registerChatSocket } from "./chat.socket";
 import { registerPollSocket } from "./poll.socket";
 import { registerSystemSocket } from "./system.socket";
-import { handleInstructorJoinLiveSession } from "./handlers/joinLiveSession.instructor.handler.ts";
 import { leaveInstructorLiveSession } from "./handlers/leaveInstructorLiveSession";
 import { handleStudentJoinLiveSession } from "./handlers/joinLiveSession.student.handler";
+import { handleInstructorJoinLiveSession } from "./handlers/joinLiveSession.instructor.handler";
 
 export let io: Server | null = null;
 
