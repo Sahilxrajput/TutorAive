@@ -50,12 +50,12 @@ app.use(passport.initialize());
 createRedisWorker();
 
 app.get("/", (_, res) => res.send("Server is  Running"));
+app.use("/health", healthRoute);
 app.use("/api/assignments", assignmentRoute);
 app.use("/api/attendance", attendanceRoute);
 app.use("/api/auth", authRoute);
 app.use("/api/classrooms", classRoute);
 app.use("/api/invitations", invitationRoute);
-app.use("/api/health", healthRoute);
 app.use("/api/lectures", lectureRoute); // all required auth
 app.use("/api/notes", notesRoute); // all required auth
 app.use("/api/notifications", notificationsRoute);

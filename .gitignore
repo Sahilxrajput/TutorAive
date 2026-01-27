@@ -13,9 +13,6 @@ yarn.lock
 # =========================
 # Build / Output
 # =========================
-# Ignore server build output only
-server/dist/
-server/build/
 
 # Optional: ignore client build output if it's auto-generated (like React)
 client/.next/
