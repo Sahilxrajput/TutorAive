@@ -65,7 +65,7 @@ const LandingPage = () => {
     const StarIcon = ({ filled }: { filled: boolean }) => (
         <svg
             viewBox="0 0 24 24"
-            className={`w-4 h-4 ${filled ? "text-yellow-400" : "text-gray-300"
+            className={`w-8 h-8 ${filled ? "text-yellow-400" : "text-gray-300"
                 }`}
             fill="currentColor"
         >
@@ -81,43 +81,60 @@ const LandingPage = () => {
         </div>
     );
 
+
     // useGSAP(() => {
-    //     gsap.to(".feedbacks", {
-    //         xPercent: -60, // adjust based on number of cards
-    //         ease: "back.in",
+    //     const container = document.querySelector(".feedbacks");
+    //     const section = document.querySelector(".page2");
+
+    //     if (!container || !section) return;
+
+    //     // HARD RESET — this fixes “hidden at start”
+    //     gsap.set(container, { x: 0 });
+
+    //     const scrollAmount =
+    //         container.scrollWidth - window.innerWidth;
+
+    //     gsap.to(container, {
+    //         x: -scrollAmount,
+    //         ease: "none",
     //         scrollTrigger: {
-    //             trigger: ".page2",
+    //             trigger: section,
     //             start: "top top",
-    //             end: "+=200%",
+    //             end: () => `+=${scrollAmount}`,
     //             pin: true,
     //             scrub: 1,
-    //             markers: true, // remove when done
+    //             markers: true,
     //         },
     //     });
     // });
 
 
     useGSAP(() => {
-        const container = document.querySelector(".feedbacks");
-        const section = document.querySelector(".page2");
+        const cards = gsap.utils.toArray(".feedback-card");
 
-        if (!container || !section) return;
+        // Initial messy state (before stacking)
+        gsap.set(cards, {
+            y: 120,
+            x: 0,
+            scale: 0.85,
+            opacity: 0,
+            rotation: () => gsap.utils.random(-45, 45),
+        });
 
-        // HARD RESET — this fixes “hidden at start”
-        gsap.set(container, { x: 0 });
-
-        const scrollAmount =
-            container.scrollWidth - window.innerWidth;
-
-        gsap.to(container, {
-            x: -scrollAmount,
-            ease: "none",
+        gsap.to(cards, {
+            y: (i) => -i * 10 + gsap.utils.random(-6, 6),
+            x: () => gsap.utils.random(-14, 14),
+            rotation: () => gsap.utils.random(-15, 15),
+            scale: 1,
+            opacity: 1,
+            stagger: 0.5,
+            ease: "power2.out",
             scrollTrigger: {
-                trigger: section,
-                start: "top top",
-                end: () => `+=${scrollAmount}`,
+                trigger: ".page2",
+                start: "top top",   
+                end: "+=220%",
                 pin: true,
-                scrub: 1,
+                scrub: true,
                 markers: true,
             },
         });
@@ -129,7 +146,7 @@ const LandingPage = () => {
             {/* PAGE ONE */}
             <div className="relative min-h-screen w-screen flex flex-col">
                 {/* NAVBAR */}
-                <nav className="fixed top-0 w-full h-16 flex items-center justify-between px-6 lg:px-16 z-50">
+                {/* <nav className="fixed top-0 w-full h-16 flex items-center justify-between px-6 lg:px-16 z-50">
                     <h1 className="text-xl lg:text-xl px-4 font-cinzel p-2 border border-muted-foreground backdrop-blur-md rounded-full">TutorAive</h1>
 
                     <div className="hidden md:flex items-center space-x-4 rounded-full border border-muted-foreground p-2 px-4 backdrop-blur-md">
@@ -142,7 +159,7 @@ const LandingPage = () => {
                     <button className="flex items-center gap-1 text-sm border-b">
                         Contact Us <ArrowUpRight size={16} />
                     </button>
-                </nav>
+                </nav> */}
 
                 {/* BACKGROUND */}
                 <img
@@ -154,9 +171,9 @@ const LandingPage = () => {
                 {/* HERO TEXT */}
                 <div className="relative mt-28 flex flex-col items-center text-center px-6 space-y-4">
                     <div className="text-4xl sm:text-5xl lg:text-6xl tracking-wider">
-                        <h1 className="font-poppins">Learn Smarter, Grow Faster</h1>
-                        <h1 className="font-poppins">
-                            With <span className="font-cinzel">TutorAive</span>
+                        <h1 className="font-cinzel">Learn Smarter, Grow Faster</h1>
+                        <h1 className="font-cinzel">
+                            With TutorAive
                         </h1>
                     </div>
 
@@ -166,7 +183,6 @@ const LandingPage = () => {
                         guidance.
                     </h3>
 
-                    <div className="absolute bg-primary w-64 h-64 blur-3xl rounded-full top-1/2 -left-32" />
                 </div>
 
                 {/* MAIN CONTENT */}
@@ -260,15 +276,21 @@ const LandingPage = () => {
             </div>
 
             {/* PAGE TWO */}
-            <div className="h-screen w-screen flex flex-col py-8 justify-center bg-[#CFE0F3] page2 overflow-hidden">
-                <h1 className='text-4xl font-montserrat font-bold tracking-wide'>Testrimonials</h1>
-                <div className='flex items-center gap-6 w-max feedbacks pl-16'>
+            <div 
+            className="page2 h-screen w-screen flex flex-col items-center justify-start pt-12 bg-[#CFE0F3] overflow-hidden"
+                style={{
+                    background: "radial-gradient(circle at center, #FAFBFD 0%, #CFE0F3 80%)",
+                }}
+            >
+                <h1 className="text-4xl  my -12 font-light p-8 px-16 border-[#121212] tracking-wider border-2 rounded-full">Testimonials</h1>
+
+                <div className="relative h-[420px] w-[520px] mt-16">
                     {feedbacks.map((f, i) => (
                         <div
                             key={i}
-                            className='shrink-0 border-4 border-primary bg-primary/40 relative rounded-xl w-[480px] h-80 p-4 flex flex-col items-start gap-4 justify-center'
+                            className="feedback-card absolute inset-0 border-b-8 border-l-4 border-2 border-[#c9c5c5] bg-card flex flex-col items-start space-y-8 justify-center rounded-xl p-4"
                         >
-                            <svg className='absolute w-32 text-[#E4E4E7] top-8' xmlns="http://www.w3.org/2000/svg" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" image-rendering="optimizeQuality" fill-rule="evenodd" clip-rule="evenodd" viewBox="0 0 512 379.51"><path fill="currentColor" d="M212.27 33.98C131.02 56.52 78.14 103.65 64.99 185.67c-3.58 22.32 1.42 5.46 16.55-5.86 49.4-36.96 146.53-23.88 160.01 60.56 27.12 149.48-159.79 175.36-215.11 92.8-12.87-19.19-21.39-41.59-24.46-66.19C-11.35 159.99 43.48 64.7 139.8 19.94c17.82-8.28 36.6-14.76 56.81-19.51 10.12-2.05 17.47 3.46 20.86 12.77 2.87 7.95 3.85 16.72-5.2 20.78zm267.78 0c-81.25 22.54-134.14 69.67-147.28 151.69-3.58 22.32 1.42 5.46 16.55-5.86 49.4-36.96 146.53-23.88 160 60.56 27.13 149.48-159.78 175.36-215.1 92.8-12.87-19.19-21.39-41.59-24.46-66.19C256.43 159.99 311.25 64.7 407.58 19.94 425.4 11.66 444.17 5.18 464.39.43c10.12-2.05 17.47 3.46 20.86 12.77 2.87 7.95 3.85 16.72-5.2 20.78z" /></svg>
+                            <svg className='absolute w-60 text-[#E4E4E7] top-8' xmlns="http://www.w3.org/2000/svg" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" image-rendering="optimizeQuality" fill-rule="evenodd" clip-rule="evenodd" viewBox="0 0 512 379.51"><path fill="currentColor" d="M212.27 33.98C131.02 56.52 78.14 103.65 64.99 185.67c-3.58 22.32 1.42 5.46 16.55-5.86 49.4-36.96 146.53-23.88 160.01 60.56 27.12 149.48-159.79 175.36-215.11 92.8-12.87-19.19-21.39-41.59-24.46-66.19C-11.35 159.99 43.48 64.7 139.8 19.94c17.82-8.28 36.6-14.76 56.81-19.51 10.12-2.05 17.47 3.46 20.86 12.77 2.87 7.95 3.85 16.72-5.2 20.78zm267.78 0c-81.25 22.54-134.14 69.67-147.28 151.69-3.58 22.32 1.42 5.46 16.55-5.86 49.4-36.96 146.53-23.88 160 60.56 27.13 149.48-159.78 175.36-215.1 92.8-12.87-19.19-21.39-41.59-24.46-66.19C256.43 159.99 311.25 64.7 407.58 19.94 425.4 11.66 444.17 5.18 464.39.43c10.12-2.05 17.47 3.46 20.86 12.77 2.87 7.95 3.85 16.72-5.2 20.78z" /></svg>
                             <Avatar className="absolute right-4 top-4 w-20 h-20 border-2 border-white bg-secondary">
                                 <AvatarImage
                                     src={`https://api.dicebear.com/7.x/thumbs/svg?seed=${f.userName}`}
@@ -276,12 +298,12 @@ const LandingPage = () => {
                                 <AvatarFallback>{f.userName.slice(0, 2).toUpperCase()}</AvatarFallback>
                             </Avatar>
                             <Rating rating={f.rating} />
-                            <h4 className='w-4/5 line-clamp-4 font-light font-poppins z-10 tracking-wide'>{f.feedback}</h4>
+                            <h4 className='w-4/5 line-clamp-6 text-xl font-light font-poppins z-10 tracking-wide'>{f.feedback}</h4>
                             <div >
-                                <h1 className='font-bold'>
+                                <h1 className='font-bold text-2xl font-poppins'>
                                     {f.userName}
                                 </h1>
-                                <span>{f.location}</span> </div>
+                                <span className='text-lg font-light'>{f.location}</span> </div>
                         </div>
                     ))}
                 </div>
