@@ -1,6 +1,9 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import defaultAvtar from '@/assets/image/avatar.png'
 import { Badge } from '@/components/ui/badge'
+import gsap from 'gsap';
+import { useGSAP } from '@gsap/react';
+import ScrollTrigger from "gsap/ScrollTrigger";
 import {
     ArrowUpRight,
     BrainCircuit,
@@ -13,7 +16,7 @@ import {
 
 const LandingPage = () => {
     const avatar = [defaultAvtar, defaultAvtar, defaultAvtar]
-
+    gsap.registerPlugin(ScrollTrigger);
     const feedbacks = [
         {
             userName: "Sahil Rajpoot",
@@ -50,6 +53,13 @@ const LandingPage = () => {
             location: "Lucknow, India",
             rating: 5,
         },
+        {
+            userName: "Virat Kohli",
+            feedback:
+                "I enrolled in two free courses first before paying for one, which I appreciate. Content quality depends on the tutor, but the platform itself stays out of the way, which is good.",
+            location: "Delhi, India",
+            rating: 5,
+        },
     ];
 
     const StarIcon = ({ filled }: { filled: boolean }) => (
@@ -71,9 +81,51 @@ const LandingPage = () => {
         </div>
     );
 
+    // useGSAP(() => {
+    //     gsap.to(".feedbacks", {
+    //         xPercent: -60, // adjust based on number of cards
+    //         ease: "back.in",
+    //         scrollTrigger: {
+    //             trigger: ".page2",
+    //             start: "top top",
+    //             end: "+=200%",
+    //             pin: true,
+    //             scrub: 1,
+    //             markers: true, // remove when done
+    //         },
+    //     });
+    // });
+
+
+    useGSAP(() => {
+        const container = document.querySelector(".feedbacks");
+        const section = document.querySelector(".page2");
+
+        if (!container || !section) return;
+
+        // HARD RESET — this fixes “hidden at start”
+        gsap.set(container, { x: 0 });
+
+        const scrollAmount =
+            container.scrollWidth - window.innerWidth;
+
+        gsap.to(container, {
+            x: -scrollAmount,
+            ease: "none",
+            scrollTrigger: {
+                trigger: section,
+                start: "top top",
+                end: () => `+=${scrollAmount}`,
+                pin: true,
+                scrub: 1,
+                markers: true,
+            },
+        });
+    });
+
 
     return (
-        <div className="overflow-hidden">
+        <div className="main-div">
             {/* PAGE ONE */}
             <div className="relative min-h-screen w-screen flex flex-col">
                 {/* NAVBAR */}
@@ -208,13 +260,13 @@ const LandingPage = () => {
             </div>
 
             {/* PAGE TWO */}
-            <div className="h-screen w-screen flex flex-col items-center py-8 justify-center bg-[#CFE0F3]">
+            <div className="h-screen w-screen flex flex-col py-8 justify-center bg-[#CFE0F3] page2 overflow-hidden">
                 <h1 className='text-4xl font-montserrat font-bold tracking-wide'>Testrimonials</h1>
-                <div className='flex items-center justify-center absolute gap-2'>
+                <div className='flex items-center gap-6 w-max feedbacks pl-16'>
                     {feedbacks.map((f, i) => (
                         <div
                             key={i}
-                            className='border-4 border-primary bg-primary/40 relative rounded-xl w-120 h-80 p-4 flex flex-col items-start gap-4 justify-center'
+                            className='shrink-0 border-4 border-primary bg-primary/40 relative rounded-xl w-[480px] h-80 p-4 flex flex-col items-start gap-4 justify-center'
                         >
                             <svg className='absolute w-32 text-[#E4E4E7] top-8' xmlns="http://www.w3.org/2000/svg" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" image-rendering="optimizeQuality" fill-rule="evenodd" clip-rule="evenodd" viewBox="0 0 512 379.51"><path fill="currentColor" d="M212.27 33.98C131.02 56.52 78.14 103.65 64.99 185.67c-3.58 22.32 1.42 5.46 16.55-5.86 49.4-36.96 146.53-23.88 160.01 60.56 27.12 149.48-159.79 175.36-215.11 92.8-12.87-19.19-21.39-41.59-24.46-66.19C-11.35 159.99 43.48 64.7 139.8 19.94c17.82-8.28 36.6-14.76 56.81-19.51 10.12-2.05 17.47 3.46 20.86 12.77 2.87 7.95 3.85 16.72-5.2 20.78zm267.78 0c-81.25 22.54-134.14 69.67-147.28 151.69-3.58 22.32 1.42 5.46 16.55-5.86 49.4-36.96 146.53-23.88 160 60.56 27.13 149.48-159.78 175.36-215.1 92.8-12.87-19.19-21.39-41.59-24.46-66.19C256.43 159.99 311.25 64.7 407.58 19.94 425.4 11.66 444.17 5.18 464.39.43c10.12-2.05 17.47 3.46 20.86 12.77 2.87 7.95 3.85 16.72-5.2 20.78z" /></svg>
                             <Avatar className="absolute right-4 top-4 w-20 h-20 border-2 border-white bg-secondary">
@@ -233,6 +285,12 @@ const LandingPage = () => {
                         </div>
                     ))}
                 </div>
+            </div>
+
+
+            {/* PAGE THREE */}
+            <div className='w-screen h-screen bg-yellow-400'>
+                PAGE THREE
             </div>
         </div>
     )
