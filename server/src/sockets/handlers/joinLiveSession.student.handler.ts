@@ -1,3 +1,4 @@
+import Attendance from "../../models/attendence.model.";
 import { Socket } from "socket.io";
 import Peer from "../../classes/peer";
 import { peerManager } from "../../managers/PeerManager";
@@ -24,8 +25,6 @@ export const handleStudentJoinLiveSession =
     }
 
     const room = roomManager.get(roomId);
-    console.log("room stu: ", roomId)
-    console.log("room manager: ", room)
     if (!room) {
       return cb({ error: "Live room not available" });
     }
@@ -44,6 +43,22 @@ export const handleStudentJoinLiveSession =
     room.addPeer(peer);
     peerManager.add(peer);
 
+    //@todo isenrolled gaurd
+    await Attendance.findOneAndUpdate(
+      { lecture: roomId, student: userId },
+      {
+        $setOnInsert: {
+          lecture: roomId,
+          student: userId,
+        },
+        $set: {
+          status: "present",
+          markedAt: new Date(),
+        },
+      },
+      { upsert: true, new: true },
+    );
+
     socket.data.activeRoomId = roomId;
     socket.join(roomId);
 
@@ -57,3 +72,4 @@ export const handleStudentJoinLiveSession =
       rtpCapabilities: room.router.rtpCapabilities,
     });
   };
+

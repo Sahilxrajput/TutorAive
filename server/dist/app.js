@@ -12,7 +12,6 @@ require("./lib/passportConfig");
 const db_1 = __importDefault(require("./database/db"));
 const http_1 = __importDefault(require("http"));
 const sockets_1 = require("./sockets");
-const worker_1 = require("./redis/worker");
 /* --------------- routes ------------------------ */
 const auth_routes_1 = __importDefault(require("./routes/auth.routes"));
 const classroom_routes_1 = __importDefault(require("./routes/classroom.routes"));
@@ -42,7 +41,7 @@ app.use(express_1.default.urlencoded({ extended: true }));
 app.use((0, cookie_parser_1.default)());
 (0, db_1.default)();
 app.use(passport_1.default.initialize());
-(0, worker_1.createRedisWorker)();
+// createRedisWorker();
 app.get("/", (_, res) => res.send("Server is  Running"));
 app.use("/health", health_route_1.default);
 app.use("/api/assignments", assignment_routes_1.default);

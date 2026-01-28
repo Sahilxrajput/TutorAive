@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.startLecture = exports.attendenceAggregation = exports.attendenceLock = exports.exportAttendanceCSV = exports.exportAttendancePDF = exports.initializeAttendance = void 0;
+exports.getStudentAttendance = exports.getLectureAttendance = exports.markAttendance = exports.startLecture = exports.attendenceAggregation = exports.attendenceLock = exports.exportAttendanceCSV = exports.exportAttendancePDF = exports.initializeAttendance = void 0;
 const pdfkit_1 = __importDefault(require("pdfkit"));
 const json2csv_1 = require("json2csv");
 const attendence_model_1 = __importDefault(require("../models/attendence.model."));
@@ -110,3 +110,46 @@ const startLecture = (req, res) => __awaiter(void 0, void 0, void 0, function* (
     res.json({ success: true });
 });
 exports.startLecture = startLecture;
+const markAttendance = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { lecture, student, status } = req.body;
+        if (!lecture || !student || !status) {
+            return res.status(400).json({ message: "Missing required fields" });
+        }
+        const attendance = yield attendence_model_1.default.findOneAndUpdate({ lecture, student }, {
+            status,
+            markedBy: req.userId, // teacher
+            markedAt: new Date(),
+        }, { upsert: true, new: true });
+        res.status(200).json(attendance);
+    }
+    catch (err) {
+        if (err.code === 11000) {
+            return res.status(409).json({ message: "Attendance already exists" });
+        }
+        res.status(500).json({ message: err.message });
+    }
+});
+exports.markAttendance = markAttendance;
+const getLectureAttendance = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { lectureId } = req.params;
+        const attendance = yield attendence_model_1.default.find({ lecture: lectureId }).populate("student", "name email");
+        res.status(200).json(attendance);
+    }
+    catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+exports.getLectureAttendance = getLectureAttendance;
+const getStudentAttendance = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { studentId } = req.params;
+        const attendance = yield attendence_model_1.default.find({ student: studentId }).populate("lecture", "title date");
+        res.status(200).json(attendance);
+    }
+    catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+exports.getStudentAttendance = getStudentAttendance;

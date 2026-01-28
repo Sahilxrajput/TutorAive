@@ -115,8 +115,8 @@ export function StartClass({ showPopup, setShowPopup }: DateTimePickerProps) {
 
 
     return (
-        <Dialog open={showPopup} onOpenChange={setShowPopup}>
-            <DialogContent className="sm:max-w-[400px]">
+        <Dialog open={showPopup} onOpenChange={setShowPopup} >
+            <DialogContent className="sm:max-w-[400px] bg-card">
                 <CardHeader>
                     <DialogTitle>
                         Select Class Type

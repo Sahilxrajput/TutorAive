@@ -55,14 +55,13 @@ export interface IAssignment extends Document {
   updatedAt: Date;
 }
 export interface IAttendance extends Document {
-  classroom: Types.ObjectId;
   lecture: Types.ObjectId;
   student: Types.ObjectId;
   markedBy: Types.ObjectId;
-  sessionDate: Date;
   leaveTime?: Date;
+  markedAt?: Date;
   joinTime?: Date;
-  status: "present" | "absent";
+  status: "present" | "absent" | "late";
 }
 // export interface IClassroom extends Document {
 //   title: string;

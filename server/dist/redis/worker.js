@@ -19,7 +19,7 @@ const classroom_model_1 = require("../models/classroom.model");
 const notification_model_1 = require("../models/notification.model");
 const notification_emitter_1 = require("../sockets/emitters/notification.emitter");
 const ioredis_1 = __importDefault(require("ioredis"));
-const connection = new ioredis_1.default({
+const connection = new ioredis_1.default(process.env.REDIS_URL, {
     maxRetriesPerRequest: null,
 });
 function createRedisWorker() {
@@ -183,11 +183,6 @@ function createRedisWorker() {
                 throw new Error("jobname mismatch");
         }
     }), {
-        //   connection: {
-        //     host: process.env.REDIS_HOST,
-        //     port: Number(process.env.REDIS_PORT),
-        //     password: process.env.REDIS_PASSWORD,
-        //   },
         connection,
         concurrency: 2,
     });

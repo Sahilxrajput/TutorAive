@@ -11,9 +11,9 @@ import {
 import { ILecture } from "../types/type";
 import IORedis from "ioredis";
 
-const connection = new IORedis(process.env.REDIS_URL!, {
-  maxRetriesPerRequest: null,
-});
+// const connection = new IORedis(process.env.REDIS_URL!, {
+//   maxRetriesPerRequest: null,
+// });
 
 export function createRedisWorker() {
   const worker = new Worker(
@@ -207,7 +207,11 @@ export function createRedisWorker() {
       }
     },
     {
-      connection,
+      connection: {
+        host: process.env.REDIS_HOST,
+        port: Number(process.env.REDIS_PORT),
+        password: process.env.REDIS_PASSWORD,
+      },
       concurrency: 2,
     },
   );

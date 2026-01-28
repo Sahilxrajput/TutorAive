@@ -15,17 +15,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.addTweetNotificationJob = exports.addClassNotificationJob = exports.addAssignmentNotificationJob = exports.notificationQueue = void 0;
 const bullmq_1 = require("bullmq");
 const ioredis_1 = __importDefault(require("ioredis"));
-const connection = new ioredis_1.default({
+const connection = new ioredis_1.default(process.env.REDIS_URL, {
     maxRetriesPerRequest: null,
 });
-exports.notificationQueue = new bullmq_1.Queue("notifications", {
-    //   connection: {
-    //     host: process.env.REDIS_HOST,
-    //     port: Number(process.env.REDIS_PORT),
-    //     password: process.env.REDIS_PASSWORD,
-    //   },
-    connection,
-});
+exports.notificationQueue = new bullmq_1.Queue("notifications", { connection });
 connection
     .ping()
     .then((res) => {

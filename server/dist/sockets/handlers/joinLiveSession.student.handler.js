@@ -13,6 +13,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.handleStudentJoinLiveSession = void 0;
+const attendence_model_1 = __importDefault(require("../../models/attendence.model."));
 const peer_1 = __importDefault(require("../../classes/peer"));
 const PeerManager_1 = require("../../managers/PeerManager");
 const RoomManager_1 = require("../../managers/RoomManager");
@@ -26,8 +27,6 @@ const handleStudentJoinLiveSession = (socket) => (_a, cb_1) => __awaiter(void 0,
         return cb({ error: "Lecture not started yet" });
     }
     const room = RoomManager_1.roomManager.get(roomId);
-    console.log("room stu: ", roomId);
-    console.log("room manager: ", room);
     if (!room) {
         return cb({ error: "Live room not available" });
     }
@@ -42,6 +41,17 @@ const handleStudentJoinLiveSession = (socket) => (_a, cb_1) => __awaiter(void 0,
     });
     room.addPeer(peer);
     PeerManager_1.peerManager.add(peer);
+    //@todo isenrolled gaurd
+    yield attendence_model_1.default.findOneAndUpdate({ lecture: roomId, student: userId }, {
+        $setOnInsert: {
+            lecture: roomId,
+            student: userId,
+        },
+        $set: {
+            status: "present",
+            markedAt: new Date(),
+        },
+    }, { upsert: true, new: true });
     socket.data.activeRoomId = roomId;
     socket.join(roomId);
     socket.to(roomId).emit("peer-joined", {

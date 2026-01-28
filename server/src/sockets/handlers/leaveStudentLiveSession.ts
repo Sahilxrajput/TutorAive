@@ -1,6 +1,8 @@
+import Lecture from "../../models/lecture.model";
 import { Socket } from "socket.io";
 import { peerManager } from "../../managers/PeerManager";
 import { roomManager } from "../../managers/RoomManager";
+import Attendance from "../../models/attendence.model.";
 
 export const leaveStudentLiveSession = (socket: Socket) => async () => {
   const peer = peerManager.get(socket.id);
@@ -9,7 +11,8 @@ export const leaveStudentLiveSession = (socket: Socket) => async () => {
     return;
   }
 
-   const roomId = peer.roomId;
+  const roomId = peer.roomId;
+  const studentId = peer.userId; // IMPORTANT
 
   const room = roomManager.get(roomId);
   if (!room) {
@@ -65,4 +68,28 @@ export const leaveStudentLiveSession = (socket: Socket) => async () => {
   // 4. remove peer
   room.removePeer(socket.id);
   peerManager.remove(socket.id);
+
+  // ---- ATTENDANCE LOGIC STARTS HERE ----
+  const lecture = await Lecture.findById(roomId);
+  if (!lecture) return;
+
+  const lectureStartTime = new Date(lecture.startTime);
+  const now = new Date();
+
+  const diffMinutes = (now.getTime() - lectureStartTime.getTime()) / 60000;
+
+  const status = diffMinutes > 10 ? "late" : "present";
+
+  await Attendance.findOneAndUpdate(
+    { lecture: roomId, student: studentId },
+    {
+      status,
+      markedAt: now,
+    },
+    { upsert: true },
+  );
+
+  console.log(
+    `[attendance] ${studentId} marked ${status} for lecture ${roomId}`,
+  );
 };

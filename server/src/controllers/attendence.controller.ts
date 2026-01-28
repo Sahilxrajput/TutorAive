@@ -112,3 +112,60 @@ export const startLecture = async (req: Request, res: Response) => {
 
   res.json({ success: true });
 };
+
+export const markAttendance = async (req:Request, res:Response) => {
+  try {
+    const { lecture, student, status } = req.body;
+
+    if (!lecture || !student || !status) {
+      return res.status(400).json({ message: "Missing required fields" });
+    }
+
+    const attendance = await Attendance.findOneAndUpdate(
+      { lecture, student },
+      {
+        status,
+        markedBy: req.userId, // teacher
+        markedAt: new Date(),
+      },
+      { upsert: true, new: true },
+    );
+
+    res.status(200).json(attendance);
+  } catch (err:any) {
+    if (err.code === 11000) {
+      return res.status(409).json({ message: "Attendance already exists" });
+    }
+    res.status(500).json({ message: err.message });
+  }
+};
+
+export const getLectureAttendance = async (req:Request, res:Response) => {
+  try {
+    const { lectureId } = req.params;
+
+    const attendance = await Attendance.find({ lecture: lectureId }).populate(
+      "student",
+      "name email",
+    );
+
+    res.status(200).json(attendance);
+  } catch (err:any) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+export const getStudentAttendance = async (req: Request, res: Response) => {
+  try {
+    const { studentId } = req.params;
+
+    const attendance = await Attendance.find({ student: studentId }).populate(
+      "lecture",
+      "title date",
+    );
+
+    res.status(200).json(attendance);
+  } catch (err:any) {
+    res.status(500).json({ message: err.message });
+  }
+};
