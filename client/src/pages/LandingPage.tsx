@@ -6,6 +6,7 @@ import { useGSAP } from '@gsap/react';
 import ScrollTrigger from "gsap/ScrollTrigger";
 import {
     ArrowUpRight,
+    BookA,
     BrainCircuit,
     MessageCircle,
     Mic,
@@ -13,6 +14,7 @@ import {
     Settings,
     Video,
 } from 'lucide-react'
+import ContactPage from './ContactPage';
 
 const LandingPage = () => {
     const avatar = [defaultAvtar, defaultAvtar, defaultAvtar]
@@ -81,34 +83,6 @@ const LandingPage = () => {
         </div>
     );
 
-
-    // useGSAP(() => {
-    //     const container = document.querySelector(".feedbacks");
-    //     const section = document.querySelector(".page2");
-
-    //     if (!container || !section) return;
-
-    //     // HARD RESET — this fixes “hidden at start”
-    //     gsap.set(container, { x: 0 });
-
-    //     const scrollAmount =
-    //         container.scrollWidth - window.innerWidth;
-
-    //     gsap.to(container, {
-    //         x: -scrollAmount,
-    //         ease: "none",
-    //         scrollTrigger: {
-    //             trigger: section,
-    //             start: "top top",
-    //             end: () => `+=${scrollAmount}`,
-    //             pin: true,
-    //             scrub: 1,
-    //             markers: true,
-    //         },
-    //     });
-    // });
-
-
     useGSAP(() => {
         const cards = gsap.utils.toArray(".feedback-card");
 
@@ -131,7 +105,7 @@ const LandingPage = () => {
             ease: "power2.out",
             scrollTrigger: {
                 trigger: ".page2",
-                start: "top top",   
+                start: "top top",
                 end: "+=220%",
                 pin: true,
                 scrub: true,
@@ -142,11 +116,11 @@ const LandingPage = () => {
 
 
     return (
-        <div className="main-div">
+        <div className="main-div overflow-hidden">
             {/* PAGE ONE */}
             <div className="relative min-h-screen w-screen flex flex-col">
                 {/* NAVBAR */}
-                {/* <nav className="fixed top-0 w-full h-16 flex items-center justify-between px-6 lg:px-16 z-50">
+                <nav className="fixed top-0 w-full h-16 flex items-center justify-between px-6 lg:px-16 z-50">
                     <h1 className="text-xl lg:text-xl px-4 font-cinzel p-2 border border-muted-foreground backdrop-blur-md rounded-full">TutorAive</h1>
 
                     <div className="hidden md:flex items-center space-x-4 rounded-full border border-muted-foreground p-2 px-4 backdrop-blur-md">
@@ -159,7 +133,7 @@ const LandingPage = () => {
                     <button className="flex items-center gap-1 text-sm border-b">
                         Contact Us <ArrowUpRight size={16} />
                     </button>
-                </nav> */}
+                </nav>
 
                 {/* BACKGROUND */}
                 <img
@@ -207,11 +181,18 @@ const LandingPage = () => {
                     <div className="relative w-full lg:w-1/3 flex justify-center order-first lg:order-none">
                         <div className="absolute inset-0 rounded-3xl border-x-4 border-t-2 border-b-12 bg-primary/10 z-10" />
 
-                        <div className="absolute top-1/3 -left-10 z-20 flex items-center gap-2 px-4 py-2 rounded-xl backdrop-blur-xl bg-white/10 text-sm">
+                        <div className="absolute top-1/3 -left-10 z-20 flex items-center gap-2 px-4 py-2 rounded-xl backdrop-blur-xl bg-white/40 text-sm border border-amber-400">
                             <span className="p-2 bg-amber-500 text-white rounded-full">
                                 <BrainCircuit size={14} />
                             </span>
                             AI POWERED
+                        </div>
+
+                        <div className="absolute top-1/2 -right-20 z-10 flex items-center gap-2 px-4 py-2 rounded-xl backdrop-blur-xl bg-white/40 text-sm border border-amber-400">
+                            <span className="p-2 bg-amber-500 text-white rounded-full">
+                                <BookA size={14} />
+                            </span>
+                            Smart Learning
                         </div>
 
                         <div className="absolute top-4 left-4 z-20 flex">
@@ -277,13 +258,13 @@ const LandingPage = () => {
             </div>
 
             {/* PAGE TWO */}
-            <div 
-            className="page2 h-screen w-screen flex flex-col items-center justify-start pt-12 bg-[#CFE0F3] overflow-hidden"
+            <div
+                className="page2 h-screen w-screen flex flex-col items-center justify-start pt-12 overflow-hidden"
                 style={{
                     background: "radial-gradient(circle at center, #FAFBFD 0%, #CFE0F3 80%)",
                 }}
             >
-                <h1 className="text-4xl  my -12 font-light p-8 px-16 border-[#121212] tracking-wider border-2 rounded-full">Testimonials</h1>
+                <h1 className="text-4xl my -12 font-light p-8 px-16 border-primary text-primary bg-primary/10 tracking-wider border-2 rounded-full">Testimonials</h1>
 
                 <div className="relative h-[420px] w-[520px] mt-16">
                     {feedbacks.map((f, i) => (
@@ -315,6 +296,8 @@ const LandingPage = () => {
             <div className='w-screen h-screen bg-yellow-400'>
                 PAGE THREE
             </div>
+
+            <ContactPage />
         </div>
     )
 }

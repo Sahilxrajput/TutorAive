@@ -1,6 +1,16 @@
 import { createTransport } from "nodemailer";
 import { LectureStatus } from "../types/type";
 
+const transporter = createTransport({
+  service: "gmail",
+  secure: true,
+  port: 465,
+  auth: {
+    user: process.env.MAIL_USER,
+    pass: process.env.MAIL_PASS,
+  },
+});
+
 export const sendAssignmentEmail = async ({
   toEmail,
   classroomName,
@@ -10,16 +20,6 @@ export const sendAssignmentEmail = async ({
   classroomName?: string;
   assignmentId: string;
 }) => {
-  const transporter = createTransport({
-    service: "gmail",
-    secure: true,
-    port: 465,
-    auth: {
-      user: process.env.MAIL_USER,
-      pass: process.env.MAIL_PASS,
-    },
-  });
-
   const assignmentUrl = `${process.env.SERVER_URL}/assignments/${assignmentId}`;
 
   const mailOptions = {
@@ -93,7 +93,7 @@ export const sendAssignmentEmail = async ({
   `,
   };
 
-  const info = await transporter.sendMail(mailOptions);
+  await transporter.sendMail(mailOptions);
 };
 
 const CLASS_STATUS_CONFIG: Record<
@@ -188,15 +188,6 @@ export const sendClassStatusEmail = async ({
   status: LectureStatus;
   title: string;
 }) => {
-  const transporter = createTransport({
-    service: "gmail",
-    secure: true,
-    port: 465,
-    auth: {
-      user: process.env.MAIL_USER,
-      pass: process.env.MAIL_PASS,
-    },
-  });
 
   const lectureUrl = `${process.env.SERVER_URL}/lectures/${lectureId}`;
   const config = CLASS_STATUS_CONFIG[status];
@@ -233,6 +224,32 @@ export const sendClassStatusEmail = async ({
           </p>
         </div>
       </div>
+    `,
+  });
+};
+
+export const sendContactMail = async ({
+  name,
+  email,
+  role,
+  message,
+}: {
+  name: string;
+  email: string;
+  role: string;
+  message: string;
+}) => {
+  await transporter.sendMail({
+    from: `"TutorAive Contact" <${process.env.EMAIL_USER}>`,
+    to: process.env.CONTACT_USER,
+    subject: "New Contact Message",
+    html: `
+      <h3>New Contact Submission</h3>
+      <p><b>Name:</b> ${name}</p>
+      <p><b>Email:</b> ${email}</p>
+      <p><b>Role:</b> ${role}</p>
+      <p><b>Message:</b></p>
+      <p>${message}</p>
     `,
   });
 };

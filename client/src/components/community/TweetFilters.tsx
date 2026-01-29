@@ -1,10 +1,6 @@
 import { Button } from "@/components/ui/button";
 import type { Dispatch, SetStateAction } from "react";
 
-interface Props {
-    active: string;
-    setActive: Dispatch<SetStateAction<TweetFilter>>
-}
 
 export type TweetFilter =
     | "all"
@@ -14,8 +10,13 @@ export type TweetFilter =
     | "news"
     | "repost";
 
+interface Props {
+    active: TweetFilter;
+    setActive: Dispatch<SetStateAction<TweetFilter>>;
+}
 
-const filters:  TweetFilter[] = [
+
+const filters: TweetFilter[] = [
     "all",
     "general",
     "mentorship",
@@ -23,14 +24,15 @@ const filters:  TweetFilter[] = [
     "news",
     "repost",
 ];
+
 export default function TweetFilters({ active, setActive }: Props) {
     return (
-        <div className="flex gap-3 px-6 pt-2 absolute left-6 top-0 z-20">
-            {filters.map(f => (
+        <div className="flex gap-2 overflow-x-auto pb-1">
+            {filters.map((f) => (
                 <Button
                     key={f}
                     variant={active === f ? "default" : "outline"}
-                    className="capitalize"
+                    className="capitalize whitespace-nowrap"
                     onClick={() => setActive(f)}
                 >
                     {f}

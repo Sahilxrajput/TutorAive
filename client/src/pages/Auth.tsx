@@ -10,16 +10,18 @@ export default function Auth() {
         >
             <h1 className="text-4xl absolute font-cinzel top-8 left-20 text-card">TutorAive</h1>
 
-            <div className="absolute top-1/5 px-6 left-1/10 max-w-xl text-card flex flex-col items-start justify-center gap-4">
-                <h1 className="text-6xl font-cinzel">Smart Learning</h1>
-                <p className="text-sm pr-12 font-light">TutorAive helps students learn smarter through live classes, real time interaction, expert instructors, structured courses, secure access, and modern tools that simplify teaching, learning, and collaboration in one platform.</p>
-            </div>
+            <div className="h-9/10">
+                <div className="absolute top-1/5 px-6 left-1/10 max-w-xl text-card flex flex-col items-start justify-center gap-4">
+                    <h1 className="text-6xl font-cinzel">Smart Learning</h1>
+                    <p className="text-sm pr-12 font-light">TutorAive helps students learn smarter through live classes, real time interaction, expert instructors, structured courses, secure access, and modern tools that simplify teaching, learning, and collaboration in one platform.</p>
+                </div>
 
-            <img
-                src="/bg2.svg"
-                alt="student"
-                className="h-9/10 ml-40"
-            />
+                <img
+                    src="/bg2.svg"
+                    alt="student"
+                    className="h-full ml-40"
+                />
+            </div>
             {
                 isLoginPage ?
                     <Signin setIsLoginPage={setIsLoginPage} /> :

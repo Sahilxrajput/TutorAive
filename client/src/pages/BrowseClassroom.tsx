@@ -1,6 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
     Card,
     CardHeader,
@@ -17,298 +16,275 @@ import {
     DialogDescription,
     DialogFooter,
 } from "@/components/ui/dialog";
-import { BookOpen, Clock, Tag } from "lucide-react";
+import { BookOpen, Clock, SearchIcon, Tag } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
 import API from "@/lib/api";
 import { toast } from "sonner";
 import type { IClassroom } from "@/types/type";
+import {
+    InputGroup,
+    InputGroupAddon,
+    InputGroupInput,
+} from "@/components/ui/input-group";
+import { Kbd } from "@/components/ui/kbd";
+import { useSearchShortcut } from "@/hooks/useSearchShortcut";
 
 export default function BrowseClassroom() {
     const navigate = useNavigate();
 
     const [search, setSearch] = useState("");
-    const [selectedTags, setSelectedTags] = useState("All");
-    const [selectedCourse, setSelectedCourse] = useState<IClassroom | null>(null);
+    const [selectedTag, setSelectedTag] = useState("All");
+    const [selectedCourse, setSelectedCourse] =
+        useState<IClassroom | null>(null);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [courses, setCourses] = useState<IClassroom[]>([]);
     const [enrolledCourses, setEnrolledCourses] = useState<string[]>([]);
+    const searchInputRef = useRef<HTMLInputElement | null>(null);
+    const { register } = useSearchShortcut();
+    /* ---------- FETCH DATA ---------- */
 
     useEffect(() => {
-        async function getAllClassroom() {
+        async function loadData() {
             try {
-                const { data } = await API.get("/classrooms");
-                setCourses(data.data);
-            } catch (error) {
-                console.log(error);
+                const [{ data: all }, { data: enrolled }] = await Promise.all([
+                    API.get("/classrooms"),
+                    API.get("/users/enrolled"),
+                ]);
+
+                setCourses(all.data ?? []);
+                setEnrolledCourses(
+                    Array.isArray(enrolled)
+                        ? enrolled.map((c: IClassroom) => c._id)
+                        : []
+                );
+            } catch (err) {
+                console.error(err);
             }
         }
 
-        async function getEnrolled() {
-            try {
-                let { data } = await API.get("/users/enrolled");
-
-                if (!Array.isArray(data)) {
-                    data = [];
-                }
-                setEnrolledCourses(data.map((c: IClassroom) => c._id));
-            } catch (error) {
-                console.log(error);
-            }
-        }
-        getAllClassroom();
-        getEnrolled();
+        loadData();
     }, []);
 
-    const loadScript = (src: string) => {
-        return new Promise((resolve) => {
-            const script = document.createElement('script');
-            script.src = src;
-            script.onload = () => {
-                resolve(true);
-            }
-            script.onerror = () => {
-                resolve(false);
-            }
-            document.body.appendChild(script)
-        })
-    }
-
     useEffect(() => {
-        loadScript("https://checkout.razorpay.com/v1/checkout.js")
-    }, [])
-
-    // const onPayment = async (amount :number, classroomId: string) => {
-    //     // create order
-    //     try {
-
-    //         const { data: { order } } = await API.post("/payment/create-order", { amount, classroomId })
-    //         console.log("api order data", order)
+        register(searchInputRef.current);
+        return () => register(null);
+    }, [register]);
 
 
-    //         const options = {
-    //             "key": import.meta.env.VITE_RAZORPAY_KEY_ID,
-    //             "amount": amount, // Amount is in currency subunits.
-    //             "currency": "INR",
-    //             "name": "Online Tutor", //your business name
-    //             "description": "Test Transaction",
-    //             // @todo
-    //             "image": "https://upload.wikimedia.org/wikipedia/commons/1/15/Virat_Kohli_portrait.jpg",
-    //             "order_id": order?.id, //This is a sample Order ID. Pass the `id` obtained in the response of Step 1
-    //             "handler": async function (response: any) {
-    //                 const option2 = {
-    //                     payment_id: response.razorpay_payment_id,
-    //                     order_id: response.razorpay_order_id,
-    //                     signature: response.razorpay_signature,
-    //                 }
+    /* ---------- TAGS ---------- */
 
-    //                 const { data: { success } } = await API.post("/payment/verify", option2)
-    //                 if (success) {
-    //                     toast.success("payment successfull")
-    //                 }
-    //             },
-    //             "notes": {
-    //                 "address": "Online tutor Corporate Office"
-    //             },
-    //             "theme": {
-    //                 "color": "#3399cc"
-    //             }
-    //         };
+    const uniqueTags = useMemo(() => {
+        const allTags = courses.flatMap((c) => c.tags || []);
+        return ["All", ...Array.from(new Set(allTags)).slice(0, 8)];
+    }, [courses]);
 
-    //         const rzp1 = new (window as any).Razorpay(options);
+    /* ---------- SEARCH + TAG FILTER ---------- */
 
-    //         rzp1.on('payment.failed', function (response: any) {
-    //             console.log(response.error.code);
-    //         });
+    const filteredCourses = useMemo(() => {
+        const q = search.trim().toLowerCase();
 
-    //         rzp1.open();
-    //     } catch (error) {
-    //         console.log(error)
-    //     }
-    // }
+        return courses.filter((course) => {
+            const matchesSearch =
+                !q ||
+                course.title?.toLowerCase().includes(q) ||
+                course.description?.toLowerCase().includes(q);
 
-    // All unique tags
-   
-    const allTags = courses.flatMap((c) => c.tags || []);
-    const uniqueTag = ["All", ...Array.from(new Set(allTags)).slice(0, 8)];
+            const matchesTag =
+                selectedTag === "All" || course.tags?.includes(selectedTag);
 
-    // Filtered by search + tags
-    const filteredCourses = courses.filter((classroom) => {
-        const matchesSearch = classroom.title
-            .toLowerCase()
-            .includes(search.toLowerCase());
-        const matchesTags =
-            selectedTags === "All" ||
-            (Array.isArray(classroom.tags)
-                ? classroom.tags.includes(selectedTags)
-                : classroom.tags === selectedTags);
-        return matchesSearch && matchesTags;
-    });
+            return matchesSearch && matchesTag;
+        });
+    }, [courses, search, selectedTag]);
 
-    const handleEnrollClick = (classroom: IClassroom) => {
-        if (enrolledCourses.includes(classroom._id)) {
-            navigate(`/classrooms/${classroom._id}`);
+    /* ---------- SPLIT SECTIONS ---------- */
+
+    const enrolledList = filteredCourses.filter((c) =>
+        enrolledCourses.includes(c._id)
+    );
+
+    const availableList = filteredCourses.filter(
+        (c) => !enrolledCourses.includes(c._id)
+    );
+
+    /* ---------- ENROLL HANDLERS ---------- */
+
+    const handleEnrollClick = (course: IClassroom) => {
+        if (enrolledCourses.includes(course._id)) {
+            navigate(`/classrooms/${course._id}`);
             return;
         }
-        setSelectedCourse(classroom);
+        setSelectedCourse(course);
         setIsDialogOpen(true);
     };
 
     const handleConfirmEnroll = async () => {
-        console.log("selected classroom : ", selectedCourse)
         if (!selectedCourse) return;
 
         try {
-            if (selectedCourse.paid) {
-                // Payment integration placeholder
-                console.log("Redirecting to payment gateway...");
-            } else {
-                const { data } = await API.post("/classrooms/enroll", {
-                    classroomId: selectedCourse._id,
-                });
-                toast.success(data.message);
-                setEnrolledCourses([...enrolledCourses, selectedCourse._id]);
-                navigate("/classrooms/" + selectedCourse._id)
-            }
-        } catch (error) {
-            console.error(error);
+            const { data } = await API.post("/classrooms/enroll", {
+                classroomId: selectedCourse._id,
+            });
+            toast.success(data.message);
+            setEnrolledCourses((prev) => [...prev, selectedCourse._id]);
+            navigate(`/classrooms/${selectedCourse._id}`);
+        } catch (err) {
+            console.error(err);
         } finally {
             setIsDialogOpen(false);
         }
     };
 
-    return (
-        <div className="w-full py-8 px-6 flex flex-col items-center justify-center">
-            {/* Search Bar */}
-            <section className="flex flex-col sm:flex-row w-full max-w-2xl items-center gap-3 mb-6">
-                <Input
-                    type="text"
-                    placeholder="Search courses..."
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                />
-            </section>
+    /* ---------- RENDER ---------- */
 
-            {/* Tag Filter */}
+    return (
+        <div className="w-full py-8 px-6 flex flex-col items-center">
+            {/* Search */}
+            <div className="flex w-full mb-6 flex-col sm:flex-row max-w-2xl gap-6">
+                <InputGroup>
+                    <InputGroupInput
+                        ref={searchInputRef}
+                        placeholder="Search courses..."
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                    />
+                    <InputGroupAddon>
+                        <SearchIcon />
+                    </InputGroupAddon>
+                    <InputGroupAddon align="inline-end" className="hidden sm:flex">
+                        <Kbd>⌘</Kbd>
+                        <Kbd>K</Kbd>
+                    </InputGroupAddon>
+                </InputGroup>
+            </div>
+
+            {/* Tags */}
             <div className="flex flex-wrap justify-center gap-2 mb-8">
-                {uniqueTag.map((tag) => (
+                {uniqueTags.map((tag) => (
                     <Badge
                         key={tag}
-                        variant={selectedTags === tag ? "default" : "outline"}
+                        variant={selectedTag === tag ? "default" : "outline"}
                         className="cursor-pointer text-sm"
-                        onClick={() => setSelectedTags(tag)}
+                        onClick={() => setSelectedTag(tag)}
                     >
                         <Tag className="h-3 w-3 mr-1" /> {tag}
                     </Badge>
                 ))}
             </div>
 
-            {/* ✅ Enrolled Courses Section */}
-            {enrolledCourses.length > 0 && (
+            {/* Enrolled Courses */}
+            {enrolledList.length > 0 && (
                 <>
-                    <h2 className="text-xl font-semibold mt-8 mb-4 text-green-600">
+                    <h2 className="text-xl font-semibold mt-6 mb-4 text-green-600">
                         Enrolled Courses
                     </h2>
+
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
-                        {filteredCourses
-                            .filter((c) => enrolledCourses.includes(c._id))
-                            .map((classroom) => (
-                                <Card
-                                    key={classroom._id}
-                                    className="border-2 border-green-500 shadow-green-200 shadow-sm hover:shadow-md transition-all"
-                                >
-                                    <CardHeader>
-                                        <CardTitle className="flex justify-between items-center">
-                                            {classroom.title}
-                                            <Badge className="bg-green-500 text-white">
-                                                Enrolled
-                                            </Badge>
-                                        </CardTitle>
-                                        <CardDescription>{classroom.description}</CardDescription>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <div className="flex justify-between text-sm text-gray-600">
-                                            <div className="flex items-center gap-1">
-                                                <BookOpen size={16} /> {classroom.modules} Modules
-                                            </div>
-                                            <div className="flex items-center gap-1">
-                                                <Clock size={16} /> {classroom.hours} Hours
-                                            </div>
-                                        </div>
-                                    </CardContent>
-                                    <CardFooter>
-                                        <Button
-                                            size="sm"
-                                            className="w-full bg-green-600 hover:bg-green-700 text-white"
-                                            onClick={() => navigate(`/classrooms/${classroom._id}`)}
-                                            // onClick={() => onPayment(5, classroom._id)}
-                                        >
-                                            Go to Course
-                                        </Button>
-                                    </CardFooter>
-                                </Card>
-                            ))}
+                        {enrolledList.map((course) => (
+                            <Card
+                                key={course._id}
+                                className="border-2 border-green-500 shadow-sm hover:shadow-md"
+                            >
+                                <CardHeader>
+                                    <CardTitle className="flex justify-between items-center">
+                                        {course.title}
+                                        <Badge className="bg-green-500 text-white">
+                                            Enrolled
+                                        </Badge>
+                                    </CardTitle>
+                                    <CardDescription>
+                                        {course.description}
+                                    </CardDescription>
+                                </CardHeader>
+
+                                <CardContent>
+                                    <div className="flex justify-between text-sm text-muted-foreground">
+                                        <span className="flex items-center gap-1">
+                                            <BookOpen size={14} /> {course.modules} modules
+                                        </span>
+                                        <span className="flex items-center gap-1">
+                                            <Clock size={14} /> {course.hours} hrs
+                                        </span>
+                                    </div>
+                                </CardContent>
+
+                                <CardFooter>
+                                    <Button
+                                        className="w-full bg-green-600 hover:bg-green-700 text-white"
+                                        onClick={() =>
+                                            navigate(`/classrooms/${course._id}`)
+                                        }
+                                    >
+                                        Go to Course
+                                    </Button>
+                                </CardFooter>
+                            </Card>
+                        ))}
                     </div>
                 </>
             )}
 
-            {/*  Available Courses Section */}
+            {/* Available Courses */}
             <h2 className="text-xl font-semibold mt-8 mb-4 text-blue-600">
                 Available Courses
             </h2>
+
+            {availableList.length === 0 && (
+                <p className="text-muted-foreground">
+                    No courses match your filters.
+                </p>
+            )}
+
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
-                {filteredCourses
-                    .filter((c) => !enrolledCourses.includes(c._id))
-                    .map((classroom) => (
-                        <Card
-                            key={classroom._id}
-                            className={`shadow-md hover:shadow-lg border-2 transition-all ${classroom.paid
-                                ? "border-yellow-400 shadow-yellow-200"
-                                : "border-gray-200"
-                                }`}
-                        >
-                            <CardHeader>
-                                <CardTitle className="flex justify-between items-center">
-                                    {classroom.title}
-                                    {classroom.paid && (
-                                        <Badge className="bg-yellow-500 text-black font-semibold">
-                                            Paid
-                                        </Badge>
-                                    )}
-                                </CardTitle>
-                                <CardDescription className="text-sm text-gray-500 line-clamp-2">
-                                    {classroom.description}
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="flex justify-between items-center text-sm text-gray-600">
-                                    <div className="flex items-center gap-1">
-                                        <BookOpen size={16} />
-                                        <span>{classroom.modules} Modules</span>
-                                    </div>
-                                    <div className="flex items-center gap-1">
-                                        <Clock size={16} />
-                                        <span>{classroom.hours} Hours</span>
-                                    </div>
-                                </div>
-                            </CardContent>
-                            <CardFooter>
-                                <Button
-                                    size="sm"
-                                    className="w-full mt-2"
-                                    variant={classroom.paid ? "default" : "secondary"}
-                                    onClick={() => handleEnrollClick(classroom)}
-                                >
-                                    {classroom.paid ? "Buy Course" : "Enroll Free"}
-                                </Button>
-                            </CardFooter>
-                        </Card>
-                    ))}
+                {availableList.map((course) => (
+                    <Card
+                        key={course._id}
+                        className={`border-2 transition-all ${course.paid
+                            ? "border-yellow-400 shadow-yellow-200"
+                            : "border-gray-200"
+                            }`}
+                    >
+                        <CardHeader>
+                            <CardTitle className="flex justify-between items-center">
+                                {course.title}
+                                {course.paid && (
+                                    <Badge className="bg-yellow-500 text-black">
+                                        Paid
+                                    </Badge>
+                                )}
+                            </CardTitle>
+                            <CardDescription className="line-clamp-2">
+                                {course.description}
+                            </CardDescription>
+                        </CardHeader>
+
+                        <CardContent>
+                            <div className="flex justify-between text-sm text-muted-foreground">
+                                <span className="flex items-center gap-1">
+                                    <BookOpen size={14} /> {course.modules} modules
+                                </span>
+                                <span className="flex items-center gap-1">
+                                    <Clock size={14} /> {course.hours} hrs
+                                </span>
+                            </div>
+                        </CardContent>
+
+                        <CardFooter>
+                            <Button
+                                className="w-full"
+                                variant={course.paid ? "default" : "secondary"}
+                                onClick={() => handleEnrollClick(course)}
+                            >
+                                {course.paid ? "Buy Course" : "Enroll Free"}
+                            </Button>
+                        </CardFooter>
+                    </Card>
+                ))}
             </div>
 
-            {/* Enroll Confirmation Modal */}
+            {/* Confirm Enroll Dialog */}
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                <DialogContent className="max-w-md">
+                <DialogContent>
                     {selectedCourse && (
                         <>
                             <DialogHeader>
@@ -317,20 +293,7 @@ export default function BrowseClassroom() {
                                     {selectedCourse.description}
                                 </DialogDescription>
                             </DialogHeader>
-                            <div className="py-4 space-y-2 text-sm text-gray-600">
-                                <p>
-                                    <BookOpen className="inline mr-1" size={14} />{" "}
-                                    {selectedCourse.modules} modules
-                                </p>
-                                <p>
-                                    <Clock className="inline mr-1" size={14} />{" "}
-                                    {selectedCourse.hours} hours total
-                                </p>
-                                <p>
-                                    <Tag className="inline mr-1" size={14} />{" "}
-                                    {selectedCourse.tags}
-                                </p>
-                            </div>
+
                             <DialogFooter>
                                 <Button
                                     variant="outline"
@@ -338,7 +301,7 @@ export default function BrowseClassroom() {
                                 >
                                     Cancel
                                 </Button>
-                                <Button variant="default" onClick={handleConfirmEnroll}>
+                                <Button onClick={handleConfirmEnroll}>
                                     Confirm Enroll
                                 </Button>
                             </DialogFooter>

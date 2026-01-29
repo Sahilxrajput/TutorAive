@@ -82,7 +82,7 @@ export default function TweetCreateDialog({
 
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
-            <DialogContent className="sm:max-w-lg max-h-[80vh] p-0 flex flex-col">
+            <DialogContent className="sm:max-w-lg max-h-[80vh] p-0 flex flex-col bg-card">
                 {/* HEADER */}
                 <DialogHeader className="p-4 pb-2">
                     <DialogTitle>{parentTweet ? "Repost" : "Create Post"}</DialogTitle>

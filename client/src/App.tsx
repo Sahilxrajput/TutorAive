@@ -20,6 +20,7 @@ import Note from "./pages/Note";
 import TweetFeed from "./pages/TweetFeed";
 import Auth from "./pages/Auth";
 import LandingPage from "./pages/LandingPage";
+import PageNotFound from "./pages/PageNotFound";
 
 
 
@@ -38,7 +39,7 @@ const App: React.FC = () => {
                     <Route path=":noteId" element={<Note />} />
                     <Route path="new" element={<SaveNotes />} />
                 </Route>
-                <Route path="quizs" element={<Quiz />} />
+                <Route path="quiz" element={<Quiz />} />
 
                 {/* Browse all classrooms */}
                 <Route path="classrooms" element={<BrowseClassroom />} />
@@ -53,7 +54,7 @@ const App: React.FC = () => {
                     <Route path="notes" element={<BrowseNotes />} />
                     <Route path="assignments" element={<AssignmentPage />} />
                     <Route path="leaderboard" element={<LeaderboardPage />} />
-                    <Route path="lecture/live/:lectureId" element={<LiveSession />} /> // handle role wised page rendering
+                    <Route path="lecture/live/:lectureId" element={<LiveSession />} />
                 </Route>
 
                 {/* Protected dashboard */}
@@ -69,6 +70,7 @@ const App: React.FC = () => {
 
             <Route path="auth" element={<Auth />} />
             <Route path="auth/success" element={<AuthSuccess />} />
+            <Route path="*" element={<PageNotFound />} />
         </Routes>
     );
 };

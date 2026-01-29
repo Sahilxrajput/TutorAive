@@ -1,18 +1,26 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import TweetFilters from "@/components/community/TweetFilters";
 import TweetCard from "@/components/community/TweetCard";
 import TweetCreateDialog from "@/components/community/TweetCreate";
-import { SquarePen } from "lucide-react";
+import { SearchIcon, SquarePen } from "lucide-react";
 import { useTweets } from "@/tanStack/hooks/useTweets";
 import TweetSkeletonList from "@/components/community/TweetSkeletonList";
+import { useSearchShortcut } from "@/hooks/useSearchShortcut";
+import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
+import { Kbd } from "@/components/ui/kbd";
 
 
 export default function TweetFeed() {
-    const [filter, setFilter] = useState<"all"| "general"| "mentorship"| "problem"| "news"| "repost">("all");
+    const [filter, setFilter] = useState<
+        "all" | "general" | "mentorship" | "problem" | "news" | "repost"
+    >("all");
     const [isCreating, setIsCreating] = useState(false);
+    const [search, setSearch] = useState("");
 
     const containerRef = useRef<HTMLDivElement | null>(null);
     const isFetchingRef = useRef(false);
+    const searchInputRef = useRef<HTMLInputElement | null>(null);
+
 
     const {
         data,
@@ -21,22 +29,33 @@ export default function TweetFeed() {
         hasNextPage,
         isFetchingNextPage,
     } = useTweets();
-
+    const { register } = useSearchShortcut();
 
     /* ---------------- FILTER LOGIC ---------------- */
-
+    // @todo only search apply to load tweets not on all 
     const filteredTweets = useMemo(() => {
-        const tweets = data?.pages.flatMap(page => page.data) ?? [];
+        let tweets = data?.pages.flatMap(page => page.data) ?? [];
 
-        if (filter === "all") return tweets;
-
+        // ----- FILTERS -----
         if (filter === "repost") {
-            return tweets.filter(t => t.parentTweet);
+            tweets = tweets.filter(t => t.parentTweet);
+        } else if (filter !== "all") {
+            tweets = tweets.filter(t => t.type === filter);
         }
 
-        return tweets.filter(t => t.type === filter);
-    }, [filter, data]);
+        // ----- SEARCH -----
+        if (search.trim()) {
+            const q = search.toLowerCase();
 
+            tweets = tweets.filter(t =>
+                t.content?.toLowerCase().includes(q) ||
+                t.author?.name?.toLowerCase().includes(q) ||
+                t.author?.username?.toLowerCase().includes(q)
+            );
+        }
+        console.log(tweets)
+        return tweets;
+    }, [data, filter, search]);
 
     /* ---------------- SCROLL HANDLER ---------------- */
 
@@ -45,7 +64,7 @@ export default function TweetFeed() {
         if (!el) return;
 
         if (
-            el.scrollTop + el.clientHeight >= el.scrollHeight - 50 &&     // small threshold
+            el.scrollTop + el.clientHeight >= el.scrollHeight - 50 &&
             hasNextPage &&
             !isFetchingRef.current
         ) {
@@ -53,29 +72,62 @@ export default function TweetFeed() {
 
             fetchNextPage().finally(() => {
                 requestAnimationFrame(() => {
-                    if (!containerRef.current) return;
                     isFetchingRef.current = false;
                 });
             });
         }
     };
 
+    /* ----------------  ctrl + k  ---------------- */
+
+    useEffect(() => {
+        register(searchInputRef.current);
+        return () => register(null);
+    }, [register]);
 
     /* ---------------- INITIAL LOADING ---------------- */
 
     if (isLoading) {
         return (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-8 pb-4 w-full" >
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-6">
                 <TweetSkeletonList count={9} />
             </div>
-        )
+        );
     }
 
     /* ---------------- RENDER ---------------- */
 
     return (
-        <div className="relative px-6 overflow-hidden">
-            <TweetFilters active={filter} setActive={setFilter} />
+        <div className="relative flex flex-col gap-4 px-4 sm:px-6 w-full h-full">
+
+            <div className="w-full z-20 bg-[#FEFEF7] flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between pt-2">
+                <TweetFilters
+                    active={filter}
+                    setActive={setFilter}
+                />
+                {/* Search */}
+                <div className="max-w-2xl sm:max-w-2xl">
+                    <InputGroup>
+                        <InputGroupInput
+                            ref={searchInputRef}
+                            placeholder="Search tweets..."
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                        />
+                        <InputGroupAddon>
+                            <SearchIcon className="w-4 h-4" />
+                        </InputGroupAddon>
+                        <InputGroupAddon
+                            align="inline-end"
+                            className="hidden sm:flex gap-1"
+                        >
+                            <Kbd>⌘</Kbd>
+                            <Kbd>K</Kbd>
+                        </InputGroupAddon>
+                    </InputGroup>
+
+                </div>
+            </div>
 
             {isCreating && (
                 <TweetCreateDialog
@@ -88,21 +140,18 @@ export default function TweetFeed() {
             <div
                 ref={containerRef}
                 onScroll={handleScroll}
-                className="mt-12 px-6 overflow-y-auto overflow-x-hidden h-[calc(100vh-70px)]"
+                className="w-full overflow-y-auto h-[calc(100vh-80px)] pr-1"
             >
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 px-1 pb-10">
-                    {filteredTweets.map(tweet => (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pb-12">
+                    {filteredTweets.map((tweet) => (
                         <TweetCard key={tweet._id} tweet={tweet} />
                     ))}
 
-                    {/* Skeletons appear ONLY while next page is loading */}
                     {isFetchingNextPage && <TweetSkeletonList count={3} />}
                 </div>
 
-
                 {!hasNextPage && (
-                    <div className="py-4 text-center text-sm text-muted-foreground">
+                    <div className="py-6 text-center text-sm text-muted-foreground">
                         You’ve reached the beginning of time.
                     </div>
                 )}
@@ -110,8 +159,8 @@ export default function TweetFeed() {
 
             {/* Create tweet button */}
             <button
-                className="rounded-2xl fixed bottom-12 right-16 shadow-md border text-blue-500 bg-card z-50 hover:scale-105 transition"
                 onClick={() => setIsCreating(true)}
+                className="fixed lg:bottom-6 bottom-16 right-6 sm:bottom-20 sm:right-10 rounded-2xl border bg-card text-blue-500 shadow-md hover:scale-105 transition z-50"
             >
                 <SquarePen className="m-4" />
             </button>

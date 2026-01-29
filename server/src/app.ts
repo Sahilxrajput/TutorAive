@@ -12,6 +12,7 @@ import { createRedisWorker } from "./redis/worker";
 
 /* --------------- routes ------------------------ */
 import authRoute from "./routes/auth.routes";
+import contactRouter from "./routes/contact.routes";
 import classRoute from "./routes/classroom.routes";
 import userRoute from "./routes/user.routes";
 import invitationRoute from "./routes/invitation.routes";
@@ -54,6 +55,7 @@ app.use("/health", healthRoute);
 app.use("/api/assignments", assignmentRoute);
 app.use("/api/attendance", attendanceRoute);
 app.use("/api/auth", authRoute);
+app.use("/api/contact", contactRouter);
 app.use("/api/classrooms", classRoute);
 app.use("/api/invitations", invitationRoute);
 app.use("/api/lectures", lectureRoute); // all required auth

@@ -8,6 +8,7 @@ import { Toaster } from 'sonner'
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query"
 // import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
 import { SocketProvider } from './context/socketProvider.tsx'
+import { SearchProvider } from './context/SearchProvider.tsx'
 
 
 const queryClient = new QueryClient()
@@ -25,19 +26,23 @@ const queryClient = new QueryClient()
 // })
 
 createRoot(document.getElementById('root')!).render(
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <SocketProvider>
-          <BrowserRouter>
-            <App />
-            <Toaster
-              position='top-center'
-              richColors
-              closeButton
-            />
-          </BrowserRouter>
-          {/* <ReactQueryDevtools /> */}
-        </SocketProvider>
-      </AuthProvider>
-    </QueryClientProvider>
+    <StrictMode>
+        <QueryClientProvider client={queryClient}>
+            <AuthProvider>
+                <BrowserRouter>
+                    <SearchProvider>
+                        <SocketProvider>
+                            <App />
+                            <Toaster
+                                position="top-center"
+                                richColors
+                                closeButton
+                            />
+                        </SocketProvider>
+                    </SearchProvider>
+                </BrowserRouter>
+            </AuthProvider>
+        </QueryClientProvider>
+    </StrictMode>
+
 )

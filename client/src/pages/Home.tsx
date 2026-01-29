@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import useSocketContext from '@/hooks/useSocketContext';
 import DaySchedule from '@/components/home/DaySchedule';
+import { ShortcutForHideSidebar } from '@/components/ShortcutForHideSidebar';
 
 
 
@@ -32,7 +33,7 @@ const Home = () => {
 
     return (
         <main className="min-h-screen flex flex-col lg:flex-row gap-4 p-4">
-
+            <ShortcutForHideSidebar/>
             {/* LEFT SIDE */}
             <section className="flex-1 flex flex-col gap-6">
                 {/* Top banner */}
