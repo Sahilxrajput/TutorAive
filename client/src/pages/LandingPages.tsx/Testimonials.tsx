@@ -91,6 +91,7 @@ const Testimonials = () => {
 
     return (
         <div className="testimonials-wrapper h-screen w-full bg-black flex flex-col items-center justify-start pt-32 overflow-hidden relative perspective-1000">
+            <div className="absolute bottom-0 w-full h-[300px] bg-indigo-600/5 blur-[120px] rounded-full pointer-events-none z-0" />
 
             {/* Background Atmosphere */}
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-indigo-600/5 blur-[150px] rounded-full -z-10" />

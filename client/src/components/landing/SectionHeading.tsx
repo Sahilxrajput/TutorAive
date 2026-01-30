@@ -25,8 +25,7 @@ const SectionHeading = ({ subtitle, title, centered = false }: Props) => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={isInView ? { opacity: 1, y: 0 } : {}}
                 transition={{ duration: 0.8, delay: 0.2 }}
-                className="text-4xl md:text-6xl font-bold text-white max-w-2xl leading-tight"
-                style={{ fontFamily: 'var(--font-cinzel)' }}
+                className="text-4xl md:text-6xl font-bold text-white max-w-2xl leading-tight font-cinzel"
             >
                 {title}
             </motion.h2>

@@ -1,7 +1,6 @@
-import { motion } from 'framer-motion';
-import { Mail, MessageSquare, MapPin, Send, Github, Linkedin, Twitter, type LucideIcon } from 'lucide-react';
-import Footer from './Footer';
-import { useState, type FormEvent } from 'react';
+import { motion, useInView } from 'framer-motion';
+import { Mail, MessageSquare, MapPin, Send, Github, Linkedin, Twitter, type LucideIcon, MailIcon } from 'lucide-react';
+import { useRef, useState, type FormEvent } from 'react';
 import API from '@/lib/api';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -39,16 +38,20 @@ const socialLinks: SocialLink[] = [
         icon: Twitter,
         href: "https://x.com/SaahilxRajput",
     },
+    {
+        icon: MailIcon,
+        href: "mailto:sahilrazput18@gmail.com?subject=Hello&body=Hi"
+    }
 ];
 
 const ContactSection = () => {
-
     const [name, setName] = useState('')
     const [email, setEmail] = useState('')
     const [message, setMessage] = useState('')
-    const [subject, setSubject] = useState('')
+    const [subject, setSubject] = useState('general-inquiry')
     const [isSubmitting, setIsSubmitting] = useState(false);
-
+    const ref = useRef(null);
+    const isInView = useInView(ref, { once: true, margin: "-100px" });
 
 
     const isFormValid =
@@ -57,7 +60,6 @@ const ContactSection = () => {
         subject.trim().length > 0 &&
         message.trim().length > 0;
 
-
     const handleFormSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         if (!isFormValid) return
@@ -65,14 +67,13 @@ const ContactSection = () => {
         try {
             setIsSubmitting(true);
             await API.post("/contact", { name, email, message, subject });
-            toast.success("message send successfully")
+            toast.success("Message sent successfully");
             setName('');
             setEmail('');
             setSubject('');
             setMessage('');
-        } catch (err) {
-            console.error("Contact form failed", err);
-            toast.error("somthing goes wrong")
+        } catch {
+            toast.error("Something went wrong");
         } finally {
             setIsSubmitting(false);
         }
@@ -96,7 +97,7 @@ const ContactSection = () => {
                             <span className="text-indigo-500 font-bold tracking-[0.3em] text-xs uppercase mb-4 block font-oswald">
                                 Get in Touch
                             </span>
-                            <h2 className="text-5xl md:text-6xl font-bold text-white mb-6" style={{ fontFamily: 'var(--font-cinzel)' }}>
+                            <h2 className="text-5xl md:text-6xl font-bold font-cinzel text-white mb-6">
                                 LET'S START A <br />
                                 <span className="text-indigo-500 italic">CONVERSATION.</span>
                             </h2>
@@ -105,9 +106,15 @@ const ContactSection = () => {
                             </p>
                         </div>
 
-                        <div className="space-y-6">
+                        <div ref={ref} className="space-y-6">
                             {contactInfo.map((item, i) => (
-                                <div key={i} className="flex items-center gap-4 group">
+                                <motion.div
+                                    key={i}
+                                    initial={{ opacity: 0, x: -50 }}
+                                    animate={isInView ? { opacity: 1, x: 0 } : {}}
+                                    transition={{ delay: 0.2 * i }}
+                                    className="flex items-center gap-3 group "
+                                >
                                     <div className="w-12 h-12 rounded-2xl bg-neutral-900 border border-white/5 flex items-center justify-center text-indigo-400 group-hover:border-indigo-500/30 transition-all">
                                         <item.icon size={22} />
                                     </div>
@@ -115,12 +122,15 @@ const ContactSection = () => {
                                         <div className="text-[10px] text-neutral-500 uppercase tracking-widest font-bold font-oswald">{item.label}</div>
                                         <a href={item.href} className="text-white hover:text-indigo-400 transition-colors">{item.value}</a>
                                     </div>
-                                </div>
+                                </motion.div>
                             ))}
                         </div>
 
                         {/* Social Links */}
                         <div className="flex gap-4 pt-4">
+
+
+
                             {socialLinks.map(({ icon: Icon, href }, i) => (
                                 <motion.a
                                     key={i}
@@ -175,6 +185,7 @@ const ContactSection = () => {
                                     onChange={(e) => setSubject(e.target.value)}
                                     value={subject}
                                 >
+                                    <option value="" disabled>Select a subject</option>
                                     <option value={"general-inquiry"}>General Inquiry</option>
                                     <option value={"teacher-inquiry"}>Teacher Inquiry</option>
                                     <option value={"student-inquiry"}>Student Inquiry</option>
@@ -203,10 +214,9 @@ const ContactSection = () => {
                                         : "bg-neutral-800 text-neutral-500 cursor-not-allowed"
                                 )}
                             >
-                                Send Message
+                                {isSubmitting ? "Sending..." : "Send Message"}
                                 <Send size={18} />
                             </button>
-
                         </form>
                     </motion.div>
                 </div>

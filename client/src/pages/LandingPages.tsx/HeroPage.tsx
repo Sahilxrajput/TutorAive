@@ -1,76 +1,75 @@
-import {  type Dispatch, type SetStateAction } from 'react';
+import { type Dispatch, type SetStateAction } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-    Users,
     Zap,
     BarChart3,
-    Gamepad2,
-    Layout,
-    MessageSquare,
-    Award,
     ArrowRight,
     CheckCircle2,
     Monitor,
     Rocket,
-    ShieldCheck,
-    Star
+    UserCheck,
+    FileText,
+    MessageCircleQuestion,
+    UploadCloud,
+    ClipboardCheck,
+    MessagesSquare
 } from 'lucide-react';
-import LandingNavbar from '@/components/landing/Navbar';
 import FeatureCard from '@/components/landing/FeatureCard';
 import RevealText from '@/components/animation/revealText';
 import SectionHeading from '@/components/landing/SectionHeading';
 import FloatingBadge from '@/components/animation/FloatingBadge';
+import { useNavigate } from 'react-router-dom';
 
 
 interface Props {
-    setActiveTab: Dispatch<SetStateAction<'teacher' | 'student'>>
-    activeTab: 'teacher' | 'student'
+    setActiveTab: Dispatch<SetStateAction<string>>
+    activeTab: string
 }
 
-
-export default function Features({ activeTab, setActiveTab }: Props) {
+export default function HeroPage({ activeTab, setActiveTab }: Props) {
+    const navigate = useNavigate();
 
     const teacherFeatures = [
         {
             icon: Zap,
-            title: "Quick Setup",
+            title: "Quick Class Setup",
             description:
-                "Build and schedule your classes in a flash. Add students by roster, email, or shareable link with a few clicks.",
+                "Create classes fast and invite students via link or code. No complicated setup, no time wasted before teaching.",
             delay: 1,
         },
         {
-            icon: ShieldCheck,
-            title: "One-Click Attendance",
+            icon: UserCheck,
+            title: "Auto Attendance",
             description:
-                "The moment students join, they're marked present. No more manual roll-call or missing names.",
+                "Students are marked present automatically when they join the class. Attendance tracking without roll calls.",
             delay: 2,
         },
         {
             icon: BarChart3,
-            title: "Auto-Grading & Lists",
+            title: "Live Polls & Reports",
             description:
-                "Assign quizzes or polls and see instant reports. Our system logs scores and participation automatically.",
+                "Run live polls during class and instantly see responses. Get clear participation insights without extra effort.",
             delay: 3,
         },
         {
-            icon: Layout,
-            title: "Digital Whiteboards",
+            icon: FileText,
+            title: "Notes & Resources Sharing",
             description:
-                "Swap bland slides for interactive whiteboards where anyone can scribble, draw, and work problems together.",
+                "Upload and share class notes and materials in one place so students always have access.",
             delay: 4,
         },
         {
-            icon: Users,
-            title: "Breakout Sessions",
+            icon: MessageCircleQuestion,
+            title: "Live Q&A Sessions",
             description:
-                "Launch small-group activities or debates. Split into teams with a tap and pull everyone back when ready.",
+                "Let students ask questions in real time and manage discussions without breaking the flow of teaching.",
             delay: 5,
         },
         {
-            icon: Rocket,
-            title: "Smarter Planning",
+            icon: UploadCloud,
+            title: "Assignments Upload & Tracking",
             description:
-                "Identify trends over time. See which lessons flew and which flopped to continuously improve your classes.",
+                "Create assignments, collect submissions, and track progress without juggling multiple tools.",
             delay: 6,
         },
     ];
@@ -78,53 +77,50 @@ export default function Features({ activeTab, setActiveTab }: Props) {
     const studentFeatures = [
         {
             icon: Monitor,
-            title: "No Tech Headaches",
+            title: "Join From Any Device",
             description:
-                "Works on phones, tablets, or laptops—no special apps needed. If you can use a web browser, you're set.",
+                "Attend classes from mobile, tablet, or laptop using a browser. No app installs, no setup headaches.",
             delay: 1,
         },
         {
-            icon: MessageSquare,
-            title: "Chats & Emojis",
+            icon: MessageCircleQuestion,
+            title: "Live Q&A & Chat",
             description:
-                "Ask questions by chat or raise a virtual hand. Emojis and quick polls make classes feel like games.",
+                "Ask questions during class and interact in real time without interrupting the session.",
             delay: 2,
         },
         {
-            icon: Gamepad2,
-            title: "Quizzes & Games",
+            icon: BarChart3,
+            title: "Live Poll Participation",
             description:
-                "Win badges and climb leaderboards on the spot. Trivia and trivia make sure you actually get the lesson.",
+                "Respond to live polls and see instant results, keeping you engaged throughout the class.",
             delay: 3,
         },
         {
-            icon: Award,
-            title: "Personal Dashboard",
+            icon: FileText,
+            title: "Access Notes & Materials",
             description:
-                "Track your journey like game stats. Earn achievements like 'Marathon Learner' for your progress.",
+                "View and download notes and shared resources anytime, so nothing important gets missed.",
             delay: 4,
         },
         {
-            icon: Star,
-            title: "Feedback & Hints",
+            icon: ClipboardCheck,
+            title: "Assignments Submission",
             description:
-                "Get helpful hints if you miss a question and instant links to review topics where you need to brush up.",
+                "Submit assignments directly on the platform and keep track of what’s pending or completed.",
             delay: 5,
         },
         {
-            icon: Rocket,
-            title: "Goal Setting",
+            icon: MessagesSquare,
+            title: "Tweet-Style Community",
             description:
-                "Mark your target—like acing algebra or learning 50 new words—and watch your progress bar climb.",
+                "Share thoughts, questions, and updates in a tweet-style community space and learn from peers beyond the classroom.",
             delay: 6,
         },
     ];
 
     return (
         <div className="min-h-screen bg-black text-neutral-200 selection:bg-indigo-500/30 overflow-x-hidden">
-
-            <LandingNavbar />
-
             {/* Hero Section */}
             <section className="relative h-screen flex flex-col items-center justify-center px-6 overflow-hidden">
                 {/* Animated Background Gradients */}
@@ -140,12 +136,12 @@ export default function Features({ activeTab, setActiveTab }: Props) {
                 <div className="text-center z-10 space-y-8">
                     <div className="space-y-2">
                         <RevealText delay={0.2}>
-                            <h1 className="text-6xl md:text-9xl font-bold tracking-tighter text-white leading-none" style={{ fontFamily: 'var(--font-cinzel)' }}>
+                            <h1 className="text-6xl md:text-9xl font-bold tracking-tighter text-white leading-none font-cinzel">
                                 MAKE LEARNING
                             </h1>
                         </RevealText>
                         <RevealText delay={0.4}>
-                            <h1 className="text-6xl md:text-9xl font-bold tracking-tighter leading-none bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 via-white to-indigo-600" style={{ fontFamily: 'var(--font-cinzel)' }}>
+                            <h1 className="text-6xl md:text-9xl font-bold tracking-tighter leading-none bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 via-white to-indigo-600 font-cinzel">
                                 FEEL ALIVE
                             </h1>
                         </RevealText>
@@ -157,7 +153,7 @@ export default function Features({ activeTab, setActiveTab }: Props) {
                         transition={{ duration: 1, delay: 0.8 }}
                         className="max-w-2xl mx-auto text-lg md:text-xl text-neutral-400 font-light leading-relaxed"
                     >
-                        Ditch the paperwork. Ignite the energy. The platform that turns silent Zoom rooms into vibrant, interactive digital classrooms.
+                        Ditch the paperwork. Ignite the energy. <span className='font-bold tracking-wide bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 via-white to-indigo-600 font-cinzel'>TutorAive</span> turns silent Zoom rooms into vibrant, interactive digital classrooms.
                     </motion.p>
 
                     <motion.div
@@ -166,15 +162,19 @@ export default function Features({ activeTab, setActiveTab }: Props) {
                         transition={{ duration: 0.8, delay: 1 }}
                         className="flex flex-wrap justify-center gap-6 pt-4"
                     >
-                        <button className="px-10 py-4 bg-indigo-600 text-white rounded-full font-bold hover:bg-indigo-500 hover:scale-105 transition-all flex items-center gap-2 group shadow-2xl shadow-indigo-500/20">
+                        <button className="px-10 py-4 bg-indigo-600 text-white rounded-full font-bold hover:bg-indigo-500 hover:scale-105 transition-all flex items-center gap-2 group shadow-2xl shadow-indigo-500/20"
+                            onClick={() => navigate('/home')}
+                        >
                             Start Teaching <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
                         </button>
-                        <button className="px-10 py-4 bg-white/5 border border-white/10 text-white rounded-full font-bold hover:bg-white/10 transition-all">
+                        <button className="px-10 py-4 bg-white/5 border border-white/10 text-white rounded-full font-bold hover:bg-white/10 transition-all"
+                            onClick={() => navigate('/home')}
+                        >
                             Join as Student
                         </button>
                     </motion.div>
                 </div>
-                
+
                 <FloatingBadge styleName='right-[10%] top-1/4' icon={CheckCircle2} title='Attendance' subTitle='100% Automated' />
                 <FloatingBadge styleName='left-[10%] bottom-1/4 ' icon={Rocket} title='Engagement' subTitle='Live Insights' />
             </section>
@@ -187,9 +187,7 @@ export default function Features({ activeTab, setActiveTab }: Props) {
                             <button
                                 key={tab}
                                 onClick={() => setActiveTab(tab)}
-                                className={`relative z-10 px-8 py-3 rounded-full text-sm font-bold uppercase transition-colors duration-300 ${activeTab === tab ? 'text-white' : 'text-neutral-500 hover:text-neutral-300'}`}
-                                style={{ fontFamily: 'var(--font-oswald)' }}
-                            >
+                                className={`relative z-10 px-8 py-3 rounded-full text-sm font-bold uppercase transition-colors duration-300 font-oswald ${activeTab === tab ? 'text-white' : 'text-neutral-500 hover:text-neutral-300'}`}                            >
                                 For {tab}s
                                 {activeTab === tab && (
                                     <motion.div

@@ -1,6 +1,5 @@
-import React from 'react';
 import { motion } from 'framer-motion';
-import { Zap, Users, BarChart3, ArrowRight, Play, CheckCircle2, Rocket, Monitor, Gamepad2 } from 'lucide-react';
+import { Zap, BarChart3, Play, Monitor, UserCheck, MessageCircleQuestion, FileText } from 'lucide-react';
 import RevealText from '@/components/animation/revealText';
 import CTACard from '@/components/landing/CTACard';
 import StepCard from '@/components/landing/StepCard';
@@ -9,63 +8,119 @@ import TeacherPage from './Teacher';
 
 
 
+const teacherSteps = [
+    {
+        number: "01",
+        icon: Zap,
+        title: "Set Up the Class",
+        description:
+            "Create a class in minutes, schedule sessions, and share the join link with students. No complex configuration or setup overhead.",
+        delay: 0.2,
+    },
+    {
+        number: "02",
+        icon: UserCheck,
+        title: "Teach & Engage Live",
+        description:
+            "Students join instantly through the browser. Attendance is logged automatically while live polls, Q&A, and chat keep the class interactive.",
+        delay: 0.4,
+    },
+    {
+        number: "03",
+        icon: BarChart3,
+        title: "Review & Improve",
+        description:
+            "See engagement insights from polls and participation. Understand what worked, identify gaps, and refine your next session.",
+        delay: 0.6,
+    },
+];
+;
 
-const HowItWorks = ({ activeTab = 'student' }: { activeTab: 'teacher' | 'student' }) => {
-    const teacherSteps = [
-        {
-            number: "01",
-            icon: Zap,
-            title: "Ignite the Room",
-            description: "Set up your virtual workspace in under 60 seconds. Import your roster, schedule your live sessions, and deploy interactive assets with a single tap.",
-            delay: 0.2
-        },
-        {
-            number: "02",
-            icon: Users,
-            title: "Real-Time Sync",
-            description: "Students join instantly—no apps required. Attendance is logged automatically while live polls, whiteboards, and emojis turn passive observers into active participants.",
-            delay: 0.4
-        },
-        {
-            number: "03",
-            icon: BarChart3,
-            title: "Data-Driven Scale",
-            description: "Get instant analytics on engagement and performance. Identify who needs help and who is excelling, allowing you to iterate and improve every single lesson.",
-            delay: 0.6
-        }
-    ];
+const studentSteps = [
+    {
+        number: "01",
+        icon: Monitor,
+        title: "Join the Class",
+        description:
+            "Enter your classroom through a single link using any device. No downloads, no setup, just open and learn.",
+        delay: 0.2,
+    },
+    {
+        number: "02",
+        icon: MessageCircleQuestion,
+        title: "Participate Live",
+        description:
+            "Ask questions, respond to live polls, and interact during sessions instead of passively watching.",
+        delay: 0.4,
+    },
+    {
+        number: "03",
+        icon: FileText,
+        title: "Learn Beyond the Session",
+        description:
+            "Access shared notes, submit assignments, and stay connected through the community even after class ends.",
+        delay: 0.6,
+    },
+];
 
-    const studentSteps = [
-        {
-            number: "01",
-            icon: Monitor,
-            title: "Enter the Arena",
-            description: "Join your classroom instantly through a single link. No downloads or complex setups—if you have a browser, you have a classroom.",
-            delay: 0.2
-        },
-        {
-            number: "02",
-            icon: Gamepad2,
-            title: "Active Play",
-            description: "Don't just watch—interact. Use live reactions, participate in breakout games, and draw on shared whiteboards to solve problems in real-time.",
-            delay: 0.4
-        },
-        {
-            number: "03",
-            icon: Rocket,
-            title: "Master Your Path",
-            description: "Track your personal growth like game stats. Earn badges for participation, review smart summaries of every lesson, and reach your learning goals faster.",
-            delay: 0.6
-        }
-    ];
+
+const HowItWorks = ({ activeTab = 'student' }: { activeTab: string }) => {
+    // const teacherSteps = [
+    //     {
+    //         number: "01",
+    //         icon: Zap,
+    //         title: "Ignite the Room",
+    //         description: "Set up your virtual workspace in under 60 seconds. Import your roster, schedule your live sessions, and deploy interactive assets with a single tap.",
+    //         delay: 0.2
+    //     },
+    //     {
+    //         number: "02",
+    //         icon: Users,
+    //         title: "Real-Time Sync",
+    //         description: "Students join instantly—no apps required. Attendance is logged automatically while live polls, QnA, and chats turn passive observers into active participants.",
+    //         delay: 0.4
+    //     },
+    //     {
+    //         number: "03",
+    //         icon: BarChart3,
+    //         title: "Data-Driven Scale",
+    //         description: "Get instant analytics on engagement and performance. Identify who needs help and who is excelling, allowing you to iterate and improve every single lesson.",
+    //         delay: 0.6
+    //     }
+    // ];
+
+    // const studentSteps = [
+    //     {
+    //         number: "01",
+    //         icon: Monitor,
+    //         title: "Enter the Arena",
+    //         description: "Join your classroom instantly through a single link. No downloads or complex setups—if you have a browser, you have a classroom.",
+    //         delay: 0.2
+    //     },
+    //     {
+    //         number: "02",
+    //         icon: Gamepad2,
+    //         title: "Active Play",
+    //         description: "Don't just watch—interact. Use live reactions, participate in breakout games, and draw on shared whiteboards to solve problems in real-time.",
+    //         delay: 0.4
+    //     },
+    //     {
+    //         number: "03",
+    //         icon: Rocket,
+    //         title: "Master Your Path",
+    //         description: "Track your personal growth like game stats. Earn badges for participation, review smart summaries of every lesson, and reach your learning goals faster.",
+    //         delay: 0.6
+    //     }
+    // ];
 
     const steps = activeTab === 'student' ? studentSteps : teacherSteps;
 
     return (
         <section id="how-it-works" className="py-24 bg-black relative overflow-hidden">
+            
             {/* Ambient Background Glows */}
-            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-600/5 blur-[120px] rounded-full z-10" />
-            <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-indigo-600/5 blur-[120px] rounded-full z-10" />
+            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-600/5 blur-[120px] pointer-events-none rounded-full z-0" />
+            <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-indigo-600/5  pointer-events-none rounded-full z-50" />
 
             <div className="max-w-7xl mx-auto px-8">
                 {/* Header Section */}
@@ -114,7 +169,6 @@ const HowItWorks = ({ activeTab = 'student' }: { activeTab: 'teacher' | 'student
                 </div>
 
                 {activeTab === 'student' ? <StudentPage /> : <TeacherPage />}
-                {/* Bottom CTA Card */}
                 <CTACard activeTab={activeTab} />
             </div>
         </section>

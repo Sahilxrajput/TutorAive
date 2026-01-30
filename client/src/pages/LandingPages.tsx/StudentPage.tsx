@@ -1,6 +1,6 @@
-import React from 'react';
+import { useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
-import { ArrowRight, CheckCircle2, Rocket, Star, Monitor, Gamepad2, MessageSquare, NotebookPen, Users, type LucideIcon } from 'lucide-react';
+import { ArrowRight, Rocket, Gamepad2, MessageSquare, NotebookPen, Users, type LucideIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import RevealText from '@/components/animation/revealText';
 import FloatingBadge from '@/components/animation/FloatingBadge';
@@ -9,10 +9,9 @@ import FloatingBadge from '@/components/animation/FloatingBadge';
 
 const StudentPage = () => {
     const navigate = useNavigate();
-    const ref = React.useRef(null);
+    const ref = useRef(null);
     const isInView = useInView(ref, { once: true, margin: "-100px" });
-
-
+    
     type FloatingBadgeItem = {
         styleName: string;
         icon: LucideIcon;
@@ -29,7 +28,7 @@ const StudentPage = () => {
             title: "Engagement",
             subTitle: "Gamified",
             iconColor: "green",
-            dir:'negative'
+            dir: 'negative'
         },
         {
             styleName: "right-10 top-12 z-20",
@@ -70,7 +69,7 @@ const StudentPage = () => {
         <div className="min-h-screen bg-black text-neutral-200 selection:bg-indigo-500/30 overflow-hidden relative">
 
             {/* Background Glow - Positioned differently for the student side */}
-            <div className="absolute bottom-0 right-1/4 w-[700px] h-[700px] bg-indigo-600/10 blur-[130px] rounded-full -z-10" />
+            <div className="absolute bottom-0 right-1/4 w-[700px] h-[700px] bg-indigo-600/10 blur-[130px] rounded-full pointer-events-none z-10" />
 
             <div className="max-w-7xl mx-auto px-8 pt-32 pb-20 flex flex-col lg:flex-row-reverse items-center gap-16">
 
@@ -161,9 +160,7 @@ const StudentPage = () => {
                         {/* Inner Gradient Overlay */}
                         <div className="absolute inset-0 bg-gradient-to-t from-indigo-900/20 via-transparent to-transparent rounded-[4rem] z-20 pointer-events-none" />
 
-
                     </motion.div>
-
 
                     {studentFloatingBadges.map((badge, i) => (
                         <FloatingBadge key={i} {...badge} />

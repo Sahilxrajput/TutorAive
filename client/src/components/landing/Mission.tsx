@@ -5,6 +5,8 @@ import SectionHeading from './SectionHeading'
 const Mission = () => {
     return (
         <section id="mission" className="py-24 relative overflow-hidden bg-neutral-900/30">
+            <div className="absolute top-0 aspect-square h-[300px]  bg-indigo-600/5 blur-[120px] rounded-2xl pointer-events-none z-0" />
+
             <div className="max-w-7xl mx-auto px-8 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
                 <motion.div
                     initial={{ opacity: 0, x: -30 }}
@@ -14,7 +16,7 @@ const Mission = () => {
                 >
                     <SectionHeading subtitle="The Mission" title="Online Learning Doesn't Have to be Lonely" />
                     <p className="text-xl text-neutral-400 font-light mb-8 leading-relaxed">
-                        Too many virtual classes had students on mute boxes and teachers talking into the void. We exist to replace silent Zoom rooms with classrooms that really click.
+                        Most online classes still feel one-sided. Cameras off, mics muted, and real interaction missing. Our mission is to turn passive sessions into active classrooms where students participate and teachers actually get feedback.
                     </p>
                     <div className="grid grid-cols-2 gap-8">
                         <div>
@@ -22,8 +24,7 @@ const Mission = () => {
                                 initial={{ opacity: 0 }}
                                 whileInView={{ opacity: 1 }}
                                 transition={{ delay: 0.5 }}
-                                className="text-4xl font-bold text-white mb-2"
-                                style={{ fontFamily: 'var(--font-oswald)' }}
+                                className="text-4xl font-bold text-white mb-2 font-oswald"
                             >
                                 2.5X
                             </motion.div>
@@ -35,8 +36,7 @@ const Mission = () => {
                                 initial={{ opacity: 0 }}
                                 whileInView={{ opacity: 1 }}
                                 transition={{ delay: 0.7 }}
-                                className="text-4xl font-bold text-white mb-2"
-                                style={{ fontFamily: 'var(--font-oswald)' }}
+                                className="text-4xl font-oswald font-bold text-white mb-2"
                             >
                                 ZERO
                             </motion.div>
@@ -77,7 +77,7 @@ const Mission = () => {
                                     <Star className="text-yellow-400" />
                                 </motion.div>
                             </div>
-                            <h4 className="text-2xl font-bold text-white" style={{ fontFamily: 'var(--font-cinzel)' }}>Classroom Connection</h4>
+                            <h4 className="text-2xl font-bold text-white font-cinzel">Classroom Connection</h4>
                             <p className="text-neutral-500 text-sm max-w-[250px] mx-auto leading-relaxed">
                                 Transforming screen time into a valuable learning experience through real-time participation.
                             </p>

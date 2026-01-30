@@ -1,6 +1,4 @@
-import React from 'react';
-import { Github, Linkedin, Twitter, Instagram, Zap, Rocket, Users } from 'lucide-react';
-import { motion } from 'framer-motion'
+import { Github, Linkedin, Twitter, Instagram, Zap } from 'lucide-react';
 
 const Footer = () => {
     const socialLinks = [
@@ -25,59 +23,28 @@ const Footer = () => {
     ]
 
     return (
-        <footer className="bg-black border-t border-white/5 pt-20 relative overflow-hidden">
+        <footer className="bg-black border-t border-white/5  relative overflow-hidden">
             {/* Ready to begin */}
-            {/* 
-            <div className="max-w-7xl mx-auto px-8 text-center border-b-[1px] border-[#121212]">
-                <motion.h2
+            
+                {/* <motion.h2
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
-                    className="text-5xl md:text-7xl font-bold text-white mb-12"
-                    style={{ fontFamily: 'var(--font-cinzel)' }}
+                    className="text-5xl md:text-7xl font-bold text-center border-b border-px border-[#121212] text-white py-12 font-cinzel"
                 >
                     READY TO <span className="text-indigo-500 italic">BEGIN?</span>
-                </motion.h2>
+                </motion.h2> */}
 
-                <div className="flex flex-col md:flex-row justify-center gap-8 mb-24">
-                    <motion.div
-                        whileHover={{ y: -5 }}
-                        className="p-8 rounded-3xl bg-neutral-900 border border-white/5 flex-1 hover:border-indigo-500/50 transition-all flex flex-col items-center"
-                    >
-                        <div className="w-12 h-12 bg-indigo-600/20 rounded-xl flex items-center justify-center mb-4 text-indigo-400">
-                            <Users size={24} />
-                        </div>
-                        <h3 className="text-xl font-bold mb-4" style={{ fontFamily: 'var(--font-oswald)' }}>START AS TEACHER</h3>
-                        <p className="text-sm text-neutral-400 mb-6 max-w-[200px]">Gear up to run fun, engaging online classes. Tools make you a pro.</p>
-                        <button className="w-full py-4 bg-indigo-600 rounded-xl font-bold uppercase tracking-widest text-xs hover:bg-indigo-500 transition-colors">Launch Class</button>
-                    </motion.div>
+            <div className="absolute bottom-0 w-full h-[300px] bg-indigo-600/5 blur-[120px] rounded-full pointer-events-none z-0" />
 
-                    <motion.div
-                        whileHover={{ y: -5 }}
-                        className="p-8 rounded-3xl bg-neutral-900 border border-white/5 flex-1 hover:border-indigo-500/50 transition-all flex flex-col items-center"
-                    >
-                        <div className="w-12 h-12 bg-white/5 rounded-xl flex items-center justify-center mb-4 text-white">
-                            <Rocket size={24} />
-                        </div>
-                        <h3 className="text-xl font-bold mb-4" style={{ fontFamily: 'var(--font-oswald)' }}>JOIN AS STUDENT</h3>
-                        <p className="text-sm text-neutral-400 mb-6 max-w-[200px]">Jump into live sessions and watch your learning adventure take off.</p>
-                        <button className="w-full py-4 bg-white text-black rounded-xl font-bold uppercase tracking-widest text-xs hover:bg-neutral-200 transition-colors">Enter Room</button>
-                    </motion.div>
-                </div>
+            <div className="max-w-7xl mx-auto px-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-16 my-10">
 
-
-            </div> */}
-
-            <div className="absolute bottom-0 w-full h-[300px] bg-indigo-600/5 blur-[120px] rounded-full z-0" />
-
-            <div className="max-w-7xl mx-auto px-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-16 mb-10">
-                {/* @todo bg layes isin front  */}
                 {/* Brand Column */}
                 <div className="lg:col-span-2 space-y-6">
                     <div className="flex items-center gap-2">
                         <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
                             <Zap className="text-white fill-white" size={20} />
                         </div>
-                        <span className="text-2xl font-bold tracking-tighter text-white font-cinzel">AIVE</span>
+                        <span className="text-2xl font-bold tracking-tighter leading-none bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 via-white to-indigo-600 font-cinzel">TUTORAIVE</span>
                     </div>
 
                     <p className="text-neutral-400 text-sm leading-relaxed max-w-sm">
@@ -122,8 +89,8 @@ const Footer = () => {
             <div className="flex flex-col md:flex-row justify-between max-w-7xl mx-auto px-8 items-center gap-8 py-8 border-t border-white/5 text-neutral-600 text-sm">
                 <div className="flex items-center gap-2">
                     <Zap size={16} className="text-indigo-500" />
-                    <span className="font-bold text-neutral-400 tracking-tighter" style={{ fontFamily: 'var(--font-cinzel)' }}>AIVE</span>
-                    <span className="ml-2">© 2026. Make Learning Feel AIVE.</span>
+                    <span className="font-bold tracking-tighter leading-none bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 via-white to-indigo-600 font-cinzel">TUTORAIVE</span>
+                    <span className="ml-2">© 2026. Make Learning Feel ALIVE.</span>
                 </div>
                 <div className="flex gap-8">
                     <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>

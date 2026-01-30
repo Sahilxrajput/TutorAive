@@ -9,9 +9,6 @@ import {
     CheckSquare,
     ArrowRight,
     CheckCircle2,
-    Zap,
-    Users,
-    Star
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import RevealText from '@/components/animation/revealText';
@@ -21,8 +18,6 @@ const TeacherPage = () => {
     const navigate = useNavigate();
     const ref = React.useRef(null);
     const isInView = useInView(ref, { once: true, margin: "-100px" });
-
-
 
     type FloatingBadgeItem = {
         styleName: string;
@@ -73,21 +68,22 @@ const TeacherPage = () => {
 
 
     const perks = [
-        "Quick Setup & Rosters",
-        "Flexible schedule",
-        "Innovative teaching tools",
-        "One-Click Attendance",
-        "Creative freedom",
-        "Monetize your expertise",
-        "Professional development",
-        "Networking opportunities"
+        "Quick class setup and easy student onboarding",
+        "Automatic attendance tracking",
+        "Live polls and real-time Q&A during sessions",
+        "Simple assignment sharing and collection",
+        "Centralized notes and resource distribution",
+        "Clear engagement insights from live activity",
+        "Browser-based teaching with no app installs",
+        "Direct interaction with students in real time",
     ];
+
 
     return (
         <div className="min-h-screen bg-black text-neutral-200 selection:bg-indigo-500/30 overflow-hidden relative font-sans">
 
             {/* Background Glow */}
-            <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-[600px] h-[600px] bg-indigo-600/10 blur-[120px] rounded-full -z-10" />
+            <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-[600px] h-[600px] bg-indigo-600/10 blur-[120px] rounded-full z-10" />
 
             <div className="max-w-7xl mx-auto px-8 pt-32 pb-20 flex flex-col lg:flex-row items-center gap-16">
 
@@ -103,12 +99,12 @@ const TeacherPage = () => {
 
                     <div className="mb-8">
                         <RevealText delay={0.2}>
-                            <h1 className="text-5xl md:text-7xl font-bold text-white leading-tight" style={{ fontFamily: 'var(--font-cinzel)' }}>
+                            <h1 className="text-5xl md:text-7xl font-bold text-white leading-tight font-cinzel">
                                 TEACH WHAT
                             </h1>
                         </RevealText>
                         <RevealText delay={0.4}>
-                            <h1 className="text-5xl md:text-7xl font-bold leading-tight bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-white" style={{ fontFamily: 'var(--font-cinzel)' }}>
+                            <h1 className="text-5xl md:text-7xl font-bold leading-tight bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-white font-cinzel">
                                 YOU LOVE.
                             </h1>
                         </RevealText>
@@ -135,7 +131,7 @@ const TeacherPage = () => {
                                 <div className="w-5 h-5 rounded-full bg-indigo-500/10 flex items-center justify-center group-hover:bg-indigo-500/20 transition-colors">
                                     <CheckCircle2 size={14} className="text-indigo-400" />
                                 </div>
-                                <span className="text-sm font-medium tracking-wide text-neutral-300 font-oswald uppercase">{perk}</span>
+                                <span className="text-xs font-medium  text-neutral-300 font-oswald tracking-wider uppercase">{perk}</span>
                             </motion.div>
                         ))}
                     </div>
@@ -169,7 +165,7 @@ const TeacherPage = () => {
                             transition={{ duration: 1.2, ease: "circOut", delay: 0.2 }}
                             src="/girl.png"
                             alt="Teacher"
-                            className="absolute inset-0 object-contain w-full h-full object-contain z-30 drop-shadow-[0_20px_50px_rgba(79,70,229,0.3)]"
+                            className="absolute inset-0  w-full h-full object-contain z-30 drop-shadow-[0_20px_50px_rgba(79,70,229,0.3)]"
                         />
 
                         {/* Gradient Overlay - Strictly inside the box */}
