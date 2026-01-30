@@ -188,7 +188,6 @@ export const sendClassStatusEmail = async ({
   status: LectureStatus;
   title: string;
 }) => {
-
   const lectureUrl = `${process.env.SERVER_URL}/lectures/${lectureId}`;
   const config = CLASS_STATUS_CONFIG[status];
 
@@ -231,12 +230,12 @@ export const sendClassStatusEmail = async ({
 export const sendContactMail = async ({
   name,
   email,
-  role,
+  subject,
   message,
 }: {
   name: string;
   email: string;
-  role: string;
+  subject: string;
   message: string;
 }) => {
   await transporter.sendMail({
@@ -247,7 +246,7 @@ export const sendContactMail = async ({
       <h3>New Contact Submission</h3>
       <p><b>Name:</b> ${name}</p>
       <p><b>Email:</b> ${email}</p>
-      <p><b>Role:</b> ${role}</p>
+      <p><b>Role:</b> ${subject}</p>
       <p><b>Message:</b></p>
       <p>${message}</p>
     `,

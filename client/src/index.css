@@ -12,8 +12,34 @@
   scrollbar-width: none; /* Firefox */
 }
 
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #000;
+}
+::-webkit-scrollbar-thumb {
+  background: #222;
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #333;
+}
+
 .scrollbar-hide::-webkit-scrollbar {
   display: none; /* Chrome, Safari, Opera */
+}
+
+.gradient-primary {
+  background: radial-gradient(circle at center, #fafbfd 0%, #cfe0f3 80%);
+}
+
+.gradient-secondary {
+  background: radial-gradient(circle at center, #fffefb 0%, #f2e8dc 80%);
+}
+
+.gradient-tercery {
+  background: radial-gradient(circle at center, #f7fefc 0%, #d8f3ec 80%);
 }
 
 @theme inline {
@@ -67,7 +93,7 @@
 
 :root {
   --radius: 0.625rem;
-  --background:oklch(98.237% 0.00844 348.495) ;
+  --background: oklch(98.237% 0.00844 348.495);
   --foreground: oklch(0.141 0.005 285.823);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.141 0.005 285.823);
@@ -81,7 +107,8 @@
   --t: #c793ff;
   --primary-foreground: oklch(0.985 0 0);
   --secondary-foreground: oklch(0.21 0.006 285.885);
-  --muted: oklch(0.967 0.001 286.375);
+  --muted: oklab(96.744% 0.00038 -0.00138);
+  /* --muted: #171717 */
   --muted-foreground: oklch(0.552 0.016 285.938);
   --accent: oklch(0.967 0.001 286.375);
   --accent-foreground: oklch(0.21 0.006 285.885);
@@ -154,6 +181,26 @@
   .animate-ripple {
     animation: ripple 2s linear infinite;
   }
+  
+  .animate-ripple-blue {
+    animation: ripple-blue 2s linear infinite;
+  }
+
+  .perspective-\[1200px\] {
+    perspective: 1200px;
+  }
+
+  .transform-style-preserve-3d {
+    transform-style: preserve-3d;
+  }
+
+  .backface-hidden {
+    backface-visibility: hidden;
+  }
+
+  .rotate-y-90 {
+    transform: rotateY(90deg);
+  }
 }
 
 @keyframes ripple {
@@ -168,6 +215,19 @@
   }
 }
 
+@keyframes ripple-blue {
+  0% {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4); /* blue */
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+  }
+}
+
+
 @layer base {
   * {
     border-color: var(--color-border);
@@ -176,9 +236,8 @@
     font-family: Inter;
   }
   body {
-  /* background-color: var(--background); */
-  background-color: #FEFEF7;
-  color: var(--foreground);
-}
-
+    /* background-color: var(--background); */
+    background-color: #fefef7;
+    color: var(--foreground);
+  }
 }

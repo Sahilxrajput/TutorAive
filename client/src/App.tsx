@@ -19,7 +19,7 @@ import SaveNotes from "./pages/SaveNotes";
 import Note from "./pages/Note";
 import TweetFeed from "./pages/TweetFeed";
 import Auth from "./pages/Auth";
-import LandingPage from "./pages/LandingPage";
+import LandingPage from "./pages/LandingPages.tsx/LandingPage";
 import PageNotFound from "./pages/PageNotFound";
 
 
