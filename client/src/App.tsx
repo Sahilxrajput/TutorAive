@@ -2,14 +2,15 @@ import { Routes, Route } from "react-router-dom";
 import { lazy, Suspense } from "react";
 import { Analytics } from '@vercel/analytics/react';
 
-// wrappers / layout (keep eager)
+// wrappers / layout / loading (keep eager)
 import Layout from "./components/Layout";
 import ProtectedRoute from "./wrapper/ProtectedRoute";
 import EnrolledRoute from "./wrapper/EnrolledRoute";
+import LoadingPage from "./pages/LandingPages/LoadingPage";
 
 // lazy pages
 const LandingPage = lazy(
-    () => import("./pages/LandingPages.tsx/LandingPage")
+    () => import("./pages/LandingPages/LandingPage")
 );
 const Home = lazy(() => import("./pages/Home"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
@@ -42,7 +43,7 @@ const App: React.FC = () => {
     return (
         <>
             <Analytics />
-            <Suspense fallback={<div>Loading…</div>}>
+            <Suspense fallback={<LoadingPage/>}>
                 <Routes>
                     <Route path="/" element={<LandingPage />} />
 
