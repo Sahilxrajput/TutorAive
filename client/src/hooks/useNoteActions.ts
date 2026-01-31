@@ -1,4 +1,3 @@
-// /components/note-actions/hooks/useNoteActions.ts
 import {
   useAccessChange,
   useAddCollaborator,
@@ -8,9 +7,8 @@ import {
   useRemoveCollaborator,
   useTrashToggle,
 } from "@/tanStack/hooks/useNotes";
-import type { INote } from "@/types/type";
 
-export const useNoteActions = (note: INote) => {
+export const useNoteActions = () => {
   const pin = usePinToggle();
   const archive = useArchiveToggle();
   const trash = useTrashToggle();

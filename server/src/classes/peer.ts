@@ -1,4 +1,6 @@
-import { Producer, Transport, Consumer } from "mediasoup/node/lib/types";
+import { Consumer } from "mediasoup/node/lib/ConsumerTypes";
+import { Producer } from "mediasoup/node/lib/ProducerTypes";
+import { Transport } from "mediasoup/node/lib/TransportTypes";
 
 class Peer {
   public readonly userId: string;

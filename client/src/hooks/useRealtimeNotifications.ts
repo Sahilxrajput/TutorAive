@@ -1,18 +1,18 @@
 import { useEffect } from "react";
 import { toast } from "sonner";
-import type { LectureUpdatePayload, AssignmentPayload, ILecture } from "@/types/type";
+import type { AssignmentPayload, ILecture } from "@/types/type";
 import { formatDateTime } from "@/utils/splitDateTime";
 import useSocketContext from "@/hooks/useSocketContext";
 
 export const useRealtimeNotifications = () => {
   const { socket } = useSocketContext();
-  
+
   useEffect(() => {
     if (!socket) return;
 
-    const handleLectureUpdate = (payload: any) => {
-        console.log("socket received")
-        console.log(payload)
+    const handleLectureUpdate = (payload: ILecture) => {
+      console.log("socket received");
+      console.log(payload);
 
       switch (payload.status) {
         case "live":
@@ -37,7 +37,7 @@ export const useRealtimeNotifications = () => {
 
         case "cancelled":
           toast.error(`"${payload.title}" cancelled`, {
-            description: payload.reason || "No reason provided",
+            description: payload?.cancelReason || "No reason provided",
           });
           break;
 
@@ -67,24 +67,4 @@ export const useRealtimeNotifications = () => {
       socket.off("tweet:update", handleTweetUpdate);
     };
   }, [socket]);
-  
 };
-
-type DashboardState = {
-  lectures: Record<string, LectureUpdatePayload>;
-};
-
-function dashboardReducer(state: DashboardState, action: any) {
-  switch (action.type) {
-    case "LECTURE_UPDATE":
-      return {
-        ...state,
-        lectures: {
-          ...state.lectures,
-          [action.payload.lectureId]: action.payload,
-        },
-      };
-    default:
-      return state;
-  }
-}

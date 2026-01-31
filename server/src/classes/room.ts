@@ -1,5 +1,6 @@
-import { Router, Transport } from "mediasoup/node/lib/types";
+import { Router } from "mediasoup/node/lib/RouterTypes";
 import Peer from "./peer";
+import { Transport } from "mediasoup/node/lib/TransportTypes";
 
 class Room {
   public readonly roomId: string;

@@ -1,16 +1,25 @@
-import React from 'react';
 import { motion } from 'framer-motion';
-import { Check, Zap, Rocket, ShieldCheck, ArrowRight } from 'lucide-react';
+import { Check, Zap, Rocket, ShieldCheck, ArrowRight, type LucideIcon } from 'lucide-react';
 
-const PricingCard = ({ tier, price, description, features, icon: Icon, highlighted = false, delay = 0 }) => (
+interface Iplan {
+    tier: string;
+    price: string;
+    icon: LucideIcon;
+    description: string;
+    features: string[];
+    delay?: number;
+    highlighted?: boolean;
+}
+
+const PricingCard = ({ tier, price, description, features, icon: Icon, highlighted = false, delay = 0 }: Iplan) => (
     <motion.div
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.8, delay }}
         className={`relative p-8 rounded-[3rem] border ${highlighted
-                ? 'bg-neutral-900 border-indigo-500/50 shadow-2xl shadow-indigo-500/20'
-                : 'bg-neutral-900/40 border-white/5 backdrop-blur-xl'
+            ? 'bg-neutral-900 border-indigo-500/50 shadow-2xl shadow-indigo-500/20'
+            : 'bg-neutral-900/40 border-white/5 backdrop-blur-xl'
             } flex flex-col h-full group hover:translate-y-[-8px] transition-all duration-500`}
     >
         {highlighted && (
@@ -44,8 +53,8 @@ const PricingCard = ({ tier, price, description, features, icon: Icon, highlight
         </ul>
 
         <button className={`w-full py-4 rounded-2xl font-bold font-oswald tracking-widest text-xs uppercase transition-all flex items-center justify-center gap-2 ${highlighted
-                ? 'bg-indigo-600 text-white hover:bg-indigo-500'
-                : 'bg-white/5 text-white hover:bg-white/10 border border-white/10'
+            ? 'bg-indigo-600 text-white hover:bg-indigo-500'
+            : 'bg-white/5 text-white hover:bg-white/10 border border-white/10'
             }`}>
             Select Plan <ArrowRight size={14} />
         </button>
@@ -53,7 +62,8 @@ const PricingCard = ({ tier, price, description, features, icon: Icon, highlight
 );
 
 const Pricing = () => {
-    const plans = [
+
+    const plans: Iplan[] = [
         {
             tier: "Starter",
             price: "0",

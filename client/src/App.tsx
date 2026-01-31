@@ -1,77 +1,98 @@
-import React from "react";
 import { Routes, Route } from "react-router-dom";
-import Dashboard from "./pages/Dashboard";
-import AuthSuccess from "./pages/AuthSuccess";
-import ProtectedRoute from "./wrapper/ProtectedRoute";
-import Home from "./pages/Home";
-import BrowseNotes from "./pages/BrowseNotes";
-import ClassroomLayout from "./components/classroom/ClassroomLayout";
-import BrowseClassroom from "./pages/BrowseClassroom";
+import { lazy, Suspense } from "react";
+
+// wrappers / layout (keep eager)
 import Layout from "./components/Layout";
+import ProtectedRoute from "./wrapper/ProtectedRoute";
 import EnrolledRoute from "./wrapper/EnrolledRoute";
-import ClassroomOverview from "./components/classroom/ClassroomOverview";
-import AssignmentPage from "./components/classroom/Assignments";
-import LeaderboardPage from "./components/LeaderboardPage";
-import Quiz from "./pages/Quiz";
-import Editor from "./pages/Editor";
-import LiveSession from "./pages/LiveSession";
-import SaveNotes from "./pages/SaveNotes";
-import Note from "./pages/Note";
-import TweetFeed from "./pages/TweetFeed";
-import Auth from "./pages/Auth";
-import LandingPage from "./pages/LandingPages.tsx/LandingPage";
-import PageNotFound from "./pages/PageNotFound";
 
+// lazy pages
+const LandingPage = lazy(
+    () => import("./pages/LandingPages.tsx/LandingPage")
+);
+const Home = lazy(() => import("./pages/Home"));
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const BrowseNotes = lazy(() => import("./pages/BrowseNotes"));
+const BrowseClassroom = lazy(() => import("./pages/BrowseClassroom"));
+const Quiz = lazy(() => import("./pages/Quiz"));
+const LiveSession = lazy(() => import("./pages/LiveSession"));
+const SaveNotes = lazy(() => import("./pages/SaveNotes"));
+const Note = lazy(() => import("./pages/Note"));
+const TweetFeed = lazy(() => import("./pages/TweetFeed"));
+const Auth = lazy(() => import("./pages/Auth"));
+const AuthSuccess = lazy(() => import("./pages/AuthSuccess"));
+const PageNotFound = lazy(() => import("./pages/PageNotFound"));
 
-
+// classroom (heavy → lazy)
+const ClassroomLayout = lazy(
+    () => import("./components/classroom/ClassroomLayout")
+);
+const ClassroomOverview = lazy(
+    () => import("./components/classroom/ClassroomOverview")
+);
+const AssignmentPage = lazy(
+    () => import("./components/classroom/Assignments")
+);
+const LeaderboardPage = lazy(
+    () => import("./components/LeaderboardPage")
+);
 
 const App: React.FC = () => {
-
     return (
-        <Routes>
-            <Route path="/" element={<LandingPage />} />
-            <Route element={<Layout />}>
-                <Route path="/home" element={<Home />} />
-                <Route path="community" element={<TweetFeed />} />
-                <Route path="editor" element={<Editor />} />
-                <Route path="notes" >
-                    <Route index element={<BrowseNotes />} />
-                    <Route path=":noteId" element={<Note />} />
-                    <Route path="new" element={<SaveNotes />} />
+        <Suspense fallback={<div>Loading…</div>}>
+            <Routes>
+                <Route path="/" element={<LandingPage />} />
+
+                <Route element={<Layout />}>
+                    <Route path="/home" element={<Home />} />
+                    <Route path="community" element={<TweetFeed />} />
+
+                    <Route path="notes">
+                        <Route index element={<BrowseNotes />} />
+                        <Route path="new" element={<SaveNotes />} />
+                        <Route path=":noteId" element={<Note />} />
+                    </Route>
+
+                    <Route path="quiz" element={<Quiz />} />
+
+                    {/* Browse all classrooms */}
+                    <Route path="classrooms" element={<BrowseClassroom />} />
+
+                    {/* Individual classroom */}
+                    <Route
+                        path="classrooms/:classroomId"
+                        element={
+                            <EnrolledRoute>
+                                <ClassroomLayout />
+                            </EnrolledRoute>
+                        }
+                    >
+                        <Route index element={<ClassroomOverview />} />
+                        <Route path="notes" element={<BrowseNotes />} />
+                        <Route path="assignments" element={<AssignmentPage />} />
+                        <Route path="leaderboard" element={<LeaderboardPage />} />
+                        <Route
+                            path="lecture/live/:lectureId"
+                            element={<LiveSession />}
+                        />
+                    </Route>
+
+                    {/* Protected dashboard */}
+                    <Route
+                        path="dashboard"
+                        element={
+                            <ProtectedRoute>
+                                <Dashboard />
+                            </ProtectedRoute>
+                        }
+                    />
                 </Route>
-                <Route path="quiz" element={<Quiz />} />
 
-                {/* Browse all classrooms */}
-                <Route path="classrooms" element={<BrowseClassroom />} />
-
-                {/* Individual classroom page */}
-                <Route path="classrooms/:classroomId" element={
-                    <EnrolledRoute>
-                        <ClassroomLayout />
-                    </EnrolledRoute>
-                }>
-                    <Route index element={<ClassroomOverview />} />
-                    <Route path="notes" element={<BrowseNotes />} />
-                    <Route path="assignments" element={<AssignmentPage />} />
-                    <Route path="leaderboard" element={<LeaderboardPage />} />
-                    <Route path="lecture/live/:lectureId" element={<LiveSession />} />
-                </Route>
-
-                {/* Protected dashboard */}
-                <Route
-                    path="dashboard"
-                    element={
-                        <ProtectedRoute>
-                            <Dashboard />
-                        </ProtectedRoute>
-                    }
-                />
-            </Route>
-
-            <Route path="auth" element={<Auth />} />
-            <Route path="auth/success" element={<AuthSuccess />} />
-            <Route path="*" element={<PageNotFound />} />
-        </Routes>
+                <Route path="auth" element={<Auth />} />
+                <Route path="auth/success" element={<AuthSuccess />} />
+                <Route path="*" element={<PageNotFound />} />
+            </Routes>
+        </Suspense>
     );
 };
 

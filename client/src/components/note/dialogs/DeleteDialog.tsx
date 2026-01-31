@@ -1,11 +1,17 @@
-// /components/note-actions/dialogs/DeleteDialog.tsx
 import {
     Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
     DialogFooter, DialogClose
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 
-export default function DeleteDialog({ open, onClose, onTrash, onDelete }) {
+interface Props {
+    open: boolean,
+    onClose: () => void,
+    onTrash: () => void,
+    onDelete: () => void,
+}
+
+export default function DeleteDialog({ open, onClose, onTrash, onDelete }: Props) {
     return (
         <Dialog open={open} onOpenChange={onClose}>
             <DialogContent className="space-y-3">

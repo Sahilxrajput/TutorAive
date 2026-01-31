@@ -1,21 +1,44 @@
 import type { INote } from "@/types/type";
 import {
-  Pin,
-  PinOff,
-  Globe,
-  Lock,
-  Archive,
-  ArchiveRestore,
-  UsersRound,
+    Pin,
+    PinOff,
+    Globe,
+    Lock,
+    Archive,
+    ArchiveRestore,
+    UsersRound,
   UserPlus,
   Users2,
   Trash,
   Save,
+  type LucideIcon,
 } from "lucide-react";
 
 
 
-export const getNoteMenuConfig = (note:INote, isOwner:boolean, openDialog:any, actions:any) => {
+interface MenuItem {
+  label: string;
+  icon: LucideIcon; 
+  onClick?: () => void;
+  variant?: "danger";
+  children?: MenuItem[];
+}
+
+
+type DialogKeys = "addCollab" | "removeCollab" | "deleteConfirm";
+interface NoteActions {
+    pin: { mutate: (id: string) => void };
+    changeAccess: { mutate: (id: string) => void };
+    archive: { mutate: (id: string) => void };
+    trash: { mutate: (id: string) => void };
+}
+
+export const getNoteMenuConfig = (
+  note: INote,
+  isOwner: boolean,
+  openDialog: (key: DialogKeys) => void,
+  actions: NoteActions,
+) => {
   const { pin, changeAccess, archive, trash } = actions;
 
   return [
@@ -76,8 +99,6 @@ export const getNoteMenuConfig = (note:INote, isOwner:boolean, openDialog:any, a
       variant: "danger",
       onClick: () => openDialog("deleteConfirm"),
     },
-  ].filter(
-  (item): item is MenuItem => Boolean(item)
-)
+  ].filter(Boolean) as MenuItem[];
 
 };

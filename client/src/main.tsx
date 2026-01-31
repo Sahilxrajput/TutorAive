@@ -1,14 +1,14 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
-import App from './App.tsx'
+import App from './App'
 import { BrowserRouter } from 'react-router-dom'
-import { AuthProvider } from './context/authContext.tsx'
+import { AuthProvider } from './context/authContext'
 import { Toaster } from 'sonner'
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query"
 // import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
-import { SocketProvider } from './context/socketProvider.tsx'
-import { SearchProvider } from './context/SearchProvider.tsx'
+import { SocketProvider } from './context/socketProvider'
+import { SearchProvider } from './context/SearchProvider'
 
 
 const queryClient = new QueryClient()

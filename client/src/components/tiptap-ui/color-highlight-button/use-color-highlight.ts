@@ -147,8 +147,7 @@ export function canColorHighlight(
     if (!isExtensionAvailable(editor, ["nodeBackground"])) return false
 
     try {
-      return editor.can()
-      .toggleNodeBackgroundColor("test")
+      return editor.can().updateAttributes("node", { backgroundColor: "test" })
     } catch {
       return false
     }
@@ -297,7 +296,7 @@ export function useColorHighlight(config: UseColorHighlightConfig) {
       const success = editor
         .chain()
         .focus()
-        // .toggleNodeBackgroundColor(highlightColor)
+        .updateAttributes("node", { backgroundColor: highlightColor })
         .run()
 
       if (success) {

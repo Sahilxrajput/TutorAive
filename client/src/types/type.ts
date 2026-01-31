@@ -169,6 +169,8 @@ export interface ILecture {
     | "cancelled";
   title: string;
   createdBy?: string;
+  delayReason?: string;
+  cancelReason?: string;
   createdAt?: Date;
   updatedAt?: Date;
 }

@@ -7,6 +7,19 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import type { Dispatch, SetStateAction } from "react";
+
+
+interface Props {
+    open: boolean,
+    onClose: () => void,
+    email: string,
+    setEmail: Dispatch<SetStateAction<string>>,
+    access: string,
+    setAccess: Dispatch<SetStateAction<string>>,
+    onSubmit: () => void,
+}
+
 
 export default function AddCollaboratorDialog({
     open,
@@ -16,7 +29,7 @@ export default function AddCollaboratorDialog({
     access,
     setAccess,
     onSubmit,
-}) {
+}: Props) {
     return (
         <Dialog open={open} onOpenChange={onClose}>
             <DialogContent>

@@ -31,7 +31,7 @@ export default function NoteActionsDropdown({ note }: { note: INote }) {
     const isOwner = user?._id === note.owner._id;
 
     const { dialogs, openDialog, closeDialog } = useDialogState();
-    const actions = useNoteActions(note);
+    const actions = useNoteActions();
 
     // Local fields
     const [email, setEmail] = useState("");
@@ -61,7 +61,7 @@ export default function NoteActionsDropdown({ note }: { note: INote }) {
 
                                     <DropdownMenuPortal>
                                         <DropdownMenuSubContent>
-                                            {item.children.map((sub) => (
+                                            {item.children.map((sub: typeof item.children[number]) => (
                                                 <DropdownMenuItem key={sub.label} onClick={sub.onClick}>
                                                     <sub.icon className="h-4 w-4 mr-2" />
                                                     {sub.label}

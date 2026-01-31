@@ -1,11 +1,10 @@
 import { useRef, } from "react";
-import { MonitorUp, Users, Video } from "lucide-react";
+import { Users} from "lucide-react";
 import { Card } from "../ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Badge } from "../ui/badge";
 import useAuth from "@/hooks/useAuth";
 import { motion } from "framer-motion"
-import { cn } from "@/lib/utils";
 import { useFullscreen } from "@/hooks/useFullscreen";
 
 interface VideoStageProps {

@@ -2,7 +2,6 @@ import { Socket } from "socket.io";
 import { getIO } from "..";
 import {
   AssignmentPayload,
-  LectureUpdatePayload,
   ITweetPayload,
   ILecture,
 } from "../../types/type";

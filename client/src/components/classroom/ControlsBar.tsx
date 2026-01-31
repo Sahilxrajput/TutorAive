@@ -1,4 +1,4 @@
-import { Mic, MicOff, Video, VideoOff, MonitorUp, PhoneOff, Send, MessageCircle, Share2, Minimize, Maximize } from "lucide-react";
+import { Mic, MicOff, Video, VideoOff, MonitorUp, PhoneOff, MessageCircle, Share2, Minimize, Maximize } from "lucide-react";
 import { Button } from "../ui/button";
 import { useState } from "react";
 import { toast } from "sonner";
