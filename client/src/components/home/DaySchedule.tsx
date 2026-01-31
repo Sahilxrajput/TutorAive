@@ -85,7 +85,6 @@ const DaySchedule = () => {
         lectures.length > 0 ? (
             <LectureList
                 lectures={lectures}
-                onOpen={() => { }}
             />
         ) : (
             <p className="text-gray-500 text-center">

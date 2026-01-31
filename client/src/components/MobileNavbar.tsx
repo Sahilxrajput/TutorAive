@@ -32,7 +32,7 @@ const MobileSideBar = () => {
         opacity: 0,
     });
 
-    const updateIndicator = (el: HTMLElement, id :string) => {
+    const updateIndicator = (el: HTMLElement, id: string) => {
         const { width } = el.getBoundingClientRect();
         setActive(id);
         setIndicator({
@@ -43,7 +43,7 @@ const MobileSideBar = () => {
     };
 
     return (
-        <nav className="fixed bottom-0 left-0 right-0 z-50 h-14 rounded-t-xl bg-zinc-900 border-t">
+        <nav className="fixed bottom-0 left-0 right-0 z-50 h-14 rounded-t-xl bg-zinc-900 border-t-[#818cf8] border-t-2">
             <ul className="relative flex h-full items-center justify-around">
                 <Cursor indicator={indicator} />
 
@@ -65,7 +65,7 @@ const MobileSideBar = () => {
                                 animate={{
                                     y: isActive ? -27 : 0,
                                     scale: isActive ? 1.25 : 1,
-                                    color: isActive ? "#ffffff" : "#a1a1aa",
+                                    color: isActive ? "#818cf8" : "#737373",
                                 }}
                                 transition={{
                                     type: "spring",
@@ -85,7 +85,7 @@ const MobileSideBar = () => {
 
 const Cursor = ({ indicator }: { indicator: Indicator }) => (
     <motion.div
-        className="absolute h-14 bottom-1/2 rounded-full bg-zinc-900 border-white border-4"
+        className="absolute h-14 bottom-1/2 rounded-full bg-gradient-to-b from-indigo-600/20 to-transparent border-t-2 border-indigo-500/50 border-4"
         animate={{ ...indicator }}
 
         transition={{ type: "spring", stiffness: 500, damping: 30 }}

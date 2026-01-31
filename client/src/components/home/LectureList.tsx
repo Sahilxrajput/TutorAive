@@ -1,9 +1,8 @@
 import type { ILecture } from "@/types/type";
 import LectureCard from "./LectureCard";
-
+import { motion } from 'framer-motion'
 interface Props {
     lectures: ILecture[];
-    onOpen: (id: string) => void;
 }
 
 const CANCELLED_VISIBLE_MS = 30 * 60 * 1000 // 30 minutes
@@ -33,7 +32,7 @@ const shouldShowLecture = (lecture: ILecture) => {
     }
 }
 
-const LectureList = ({ lectures, onOpen }: Props) => {
+const LectureList = ({ lectures }: Props) => {
     const visibleLectures = lectures
         .filter(shouldShowLecture)
         .sort((a, b) => {
@@ -56,12 +55,19 @@ const LectureList = ({ lectures, onOpen }: Props) => {
     }
 
     return (
-        <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-1  gap-4">
-            {visibleLectures.map(lecture => (
-                <LectureCard
-                    key={lecture._id}
-                    lecture={lecture}
-                />
+        <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-1 overflow-y-scroll h-[80vh] gap-4">
+            {visibleLectures.map((lecture, i) => (
+                <motion.div
+                    key={i}
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 1.5 + (i * 0.1) }}
+                >
+                    <LectureCard
+                        key={lecture._id}
+                        lecture={lecture}
+                    />
+                </motion.div>
             ))}
         </div>
     )
