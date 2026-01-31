@@ -1,5 +1,6 @@
 import { Routes, Route } from "react-router-dom";
 import { lazy, Suspense } from "react";
+import { Analytics } from '@vercel/analytics/react';
 
 // wrappers / layout (keep eager)
 import Layout from "./components/Layout";
@@ -39,60 +40,64 @@ const LeaderboardPage = lazy(
 
 const App: React.FC = () => {
     return (
-        <Suspense fallback={<div>Loading…</div>}>
-            <Routes>
-                <Route path="/" element={<LandingPage />} />
+        <>
+            <Analytics />
+            <Suspense fallback={<div>Loading…</div>}>
+                <Routes>
+                    <Route path="/" element={<LandingPage />} />
 
-                <Route element={<Layout />}>
-                    <Route path="/home" element={<Home />} />
-                    <Route path="community" element={<TweetFeed />} />
+                    <Route element={<Layout />}>
+                        <Route path="/home" element={<Home />} />
+                        <Route path="community" element={<TweetFeed />} />
 
-                    <Route path="notes">
-                        <Route index element={<BrowseNotes />} />
-                        <Route path="new" element={<SaveNotes />} />
-                        <Route path=":noteId" element={<Note />} />
-                    </Route>
+                        <Route path="notes">
+                            <Route index element={<BrowseNotes />} />
+                            <Route path="new" element={<SaveNotes />} />
+                            <Route path=":noteId" element={<Note />} />
+                        </Route>
 
-                    <Route path="quiz" element={<Quiz />} />
+                        <Route path="quiz" element={<Quiz />} />
 
-                    {/* Browse all classrooms */}
-                    <Route path="classrooms" element={<BrowseClassroom />} />
+                        {/* Browse all classrooms */}
+                        <Route path="classrooms" element={<BrowseClassroom />} />
 
-                    {/* Individual classroom */}
-                    <Route
-                        path="classrooms/:classroomId"
-                        element={
-                            <EnrolledRoute>
-                                <ClassroomLayout />
-                            </EnrolledRoute>
-                        }
-                    >
-                        <Route index element={<ClassroomOverview />} />
-                        <Route path="notes" element={<BrowseNotes />} />
-                        <Route path="assignments" element={<AssignmentPage />} />
-                        <Route path="leaderboard" element={<LeaderboardPage />} />
+                        {/* Individual classroom */}
                         <Route
-                            path="lecture/live/:lectureId"
-                            element={<LiveSession />}
+                            path="classrooms/:classroomId"
+                            element={
+                                <EnrolledRoute>
+                                    <ClassroomLayout />
+                                </EnrolledRoute>
+                            }
+                        >
+                            <Route index element={<ClassroomOverview />} />
+                            <Route path="notes" element={<BrowseNotes />} />
+                            <Route path="assignments" element={<AssignmentPage />} />
+                            <Route path="leaderboard" element={<LeaderboardPage />} />
+                            <Route
+                                path="lecture/live/:lectureId"
+                                element={<LiveSession />}
+                            />
+                        </Route>
+
+                        {/* Protected dashboard */}
+                        <Route
+                            path="dashboard"
+                            element={
+                                <ProtectedRoute>
+                                    <Dashboard />
+                                </ProtectedRoute>
+                            }
                         />
                     </Route>
 
-                    {/* Protected dashboard */}
-                    <Route
-                        path="dashboard"
-                        element={
-                            <ProtectedRoute>
-                                <Dashboard />
-                            </ProtectedRoute>
-                        }
-                    />
-                </Route>
+                    <Route path="auth" element={<Auth />} />
+                    <Route path="auth/success" element={<AuthSuccess />} />
+                    <Route path="*" element={<PageNotFound />} />
+                </Routes>
+            </Suspense>
+        </>
 
-                <Route path="auth" element={<Auth />} />
-                <Route path="auth/success" element={<AuthSuccess />} />
-                <Route path="*" element={<PageNotFound />} />
-            </Routes>
-        </Suspense>
     );
 };
 
