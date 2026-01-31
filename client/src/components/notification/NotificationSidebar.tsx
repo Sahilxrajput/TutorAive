@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import {
     Bell,
     Calendar,
+    Zap,
     BookOpen,
     MessageSquare,
     CheckCircle2,
@@ -13,7 +14,6 @@ import {
     SheetContent,
     SheetHeader,
     SheetTitle,
-    SheetTrigger,
     SheetDescription,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -27,9 +27,14 @@ import { useNotifications } from "@/tanStack/hooks/useNotifications";
 import type { INotification } from "@/types/type";
 import { cn } from "@/lib/utils";
 
-export function NotificationSidebar() {
+interface Props {
+    open: boolean,
+    setOpen: Dispatch<SetStateAction<boolean>>
+}
+
+export function NotificationSidebar({ open, setOpen }: Props) {
     const [notifications, setNotifications] = useState<INotification[]>([]);
-    const [activeTab, setActiveTab] = useState<"all" | "lecture" | "assignment" | "message">("all");
+    const [activeTab, setActiveTab] = useState<string>("all");
 
     const { data, isLoading } = useNotifications();
 
@@ -45,7 +50,6 @@ export function NotificationSidebar() {
             return n.type === activeTab;
         })
         .sort((a, b) => Number(a.isRead) - Number(b.isRead));
-
 
     const markAllAsRead = async () => {
         try {
@@ -82,115 +86,133 @@ export function NotificationSidebar() {
     };
 
     return (
-        <Sheet>
-            <SheetTrigger asChild>
-                <button className="relative">
-                    <Bell className="h-6 w-6" />
-                    {unreadCount > 0 && (
-                        <span className="absolute top-0 right-0 h-2 w-2 rounded-full bg-red-600" />
-                    )}
-                </button>
-            </SheetTrigger>
+        <Sheet open={open} onOpenChange={setOpen}>
+            <SheetContent className="w-[450px] sm:max-w-[520px] p-0 flex flex-col bg-black border-l border-white/10 shadow-2xl">
 
-            <SheetContent className="w-[400px] sm:w-[520px] p-0 flex flex-col">
-                <SheetHeader className="p-6 pb-2">
-                    <SheetTitle className="flex items-center gap-2">
-                        Notifications
-                        <Badge variant="secondary">{unreadCount}</Badge>
-                    </SheetTitle>
-                    <SheetDescription>
-                        Everything you missed while pretending to be productive.
+                {/* Header Section */}
+                <SheetHeader className="p-6 sm:p-8 pb-4 relative overflow-hidden shrink-0">
+                    {/* Background Energy Glow */}
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-600/10 blur-[60px] rounded-full -z-10" />
+
+                    <div className="flex items-center justify-between">
+                        <SheetTitle className="flex items-center gap-3 text-xl sm:text-2xl font-bold font-cinzel text-white">
+                            <Zap className="text-indigo-500 fill-indigo-500" size={20} />
+                            NOTIFICATIONS
+                        </SheetTitle>
+                        <Badge className="bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 font-oswald px-3 py-1">
+                            {unreadCount} NEW
+                        </Badge>
+                    </div>
+                    <SheetDescription className="text-neutral-500 font-light text-xs mt-2 uppercase tracking-widest font-oswald">
+                        Everything you missed while exploring the frontier.
                     </SheetDescription>
                 </SheetHeader>
 
                 <Tabs
                     defaultValue="all"
                     className="flex-1 flex flex-col min-h-0"
-                    onValueChange={(v) =>
-                        setActiveTab(v as "all" | "lecture" | "assignment" | "message")
-                    }
+                    onValueChange={(v) => setActiveTab(v)}
                 >
-                    <div className="px-6">
-                        <TabsList className="grid w-full grid-cols-4">
-                            <TabsTrigger value="all">All</TabsTrigger>
-                            <TabsTrigger value="lecture">Class</TabsTrigger>
-                            <TabsTrigger value="assignment">Tasks</TabsTrigger>
-                            <TabsTrigger value="message">Chat</TabsTrigger>
+                    <div className="px-6 sm:px-8 mt-2 shrink-0">
+                        <TabsList className="grid w-full grid-cols-4 bg-neutral-900/50 border border-white/5 p-1 rounded-xl">
+                            {["all", "lecture", "assignment", "message"].map((tab) => (
+                                <TabsTrigger
+                                    key={tab}
+                                    value={tab}
+                                    className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white text-[10px] font-bold font-oswald uppercase tracking-widest transition-all"
+                                >
+                                    {tab === "lecture" ? "Class" : tab === "assignment" ? "Tasks" : tab === "message" ? "Chat" : "All"}
+                                </TabsTrigger>
+                            ))}
                         </TabsList>
                     </div>
 
-                    <Separator className="mt-4" />
+                    <Separator className="mt-6 bg-white/5 shrink-0" />
 
-                    <ScrollArea className="flex-1 px-6 min-h-0">
-                        <div className="py-6 space-y-3">
+                    <ScrollArea className="flex-1 px-4 sm:px-8 min-h-0 overflow-x-hidden ">
+                        <div className="py-6 space-y-4">
                             {isLoading && (
-                                <p className="text-sm text-muted-foreground">
-                                    Loading notifications…
-                                </p>
+                                <div className="flex flex-col items-center justify-center py-20 gap-4">
+                                    <div className="w-8 h-8 border-2 border-indigo-500/20 border-t-indigo-500 rounded-full animate-spin" />
+                                    <p className="text-[10px] font-bold font-oswald text-neutral-600 uppercase tracking-[0.3em]">
+                                        Syncing Feed...
+                                    </p>
+                                </div>
                             )}
 
-                            {!isLoading && filteredNotifications.length === 0 && (
-                                <p className="text-sm text-muted-foreground">
-                                    No notifications. Miracles do happen.
-                                </p>
+                            {!isLoading && (!filteredNotifications || filteredNotifications.length === 0) && (
+                                <div className="flex flex-col items-center justify-center py-20 text-center">
+                                    <Bell className="text-neutral-800 mb-4" size={40} />
+                                    <p className="text-sm font-cinzel text-neutral-500 uppercase">
+                                        No new echoes found.
+                                    </p>
+                                </div>
                             )}
 
-                            {filteredNotifications.map(item => (
+                            {filteredNotifications && filteredNotifications.map(item => (
                                 <div
                                     key={item._id}
-                                    className={cn("flex gap-3 p-3 rounded-lg border transition", item.isRead ? "bg-background" : " bg-muted/40")}
+                                    className={cn(
+                                        "flex gap-4 p-4 rounded-2xl border transition-all duration-300 relative group w-full",
+                                        item.isRead
+                                            ? "bg-transparent border-white/5 opacity-60"
+                                            : "bg-indigo-500/5 border-indigo-500/20 shadow-[0_0_20px_rgba(79,70,229,0.05)]"
+                                    )}
                                 >
-                                    <div className="p-2 h-8 aspect-square rounded-full bg-muted">
-                                        {getIcon(item.type)}
+                                    {/* Icon Container */}
+                                    <div className="shrink-0">
+                                        <div className="w-10 h-10 rounded-xl bg-neutral-900 border border-white/5 flex items-center justify-center text-indigo-400 group-hover:scale-110 transition-transform">
+                                            {getIcon && getIcon(item.type)}
+                                        </div>
                                     </div>
 
-                                    <div className="flex-1">
-                                        <p className="text-sm font-medium">{item.message}</p>
-                                        <p className="text-xs text-muted-foreground">
-                                            {new Date(item.createdAt).toLocaleString()}
+                                    {/* Message Content - min-w-0 is critical for flex text-wrapping */}
+                                    <div className="flex-1 min-w-0 space-y-1">
+                                        <p className="text-sm font-medium text-white leading-tight break-all">
+                                            {item.message}
+                                        </p>
+                                        <p className="text-[10px] font-bold font-oswald text-neutral-600 uppercase tracking-widest">
+                                            {item.createdAt ? new Date(item.createdAt).toLocaleString() : ''}
                                         </p>
                                     </div>
 
+                                    {/* Mark as read interaction */}
                                     {!item.isRead && (
                                         <div
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 markAsRead(item._id);
                                             }}
-                                            className="group mt-2 h-4 w-4 flex items-center justify-center
-                 cursor-pointer"
+                                            className="shrink-0 flex items-start pt-1"
                                             title="Mark as read"
                                         >
-                                            {/* Blue dot */}
-                                            <span className="h-2 w-2 rounded-full bg-blue-500 
-                       group-hover:hidden" />
-
-                                            {/* Check icon on hover */}
-                                            <Check
-                                                size={14}
-                                                className="hidden text-blue-500 group-hover:block"
-                                            />
+                                            <div className="relative cursor-pointer group/dot">
+                                                <span className="block h-2 w-2 rounded-full bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.8)] transition-all group-hover/dot:scale-0" />
+                                                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/dot:opacity-100 transition-opacity">
+                                                    <Check size={14} className="text-indigo-400" />
+                                                </div>
+                                            </div>
                                         </div>
                                     )}
                                 </div>
-
                             ))}
                         </div>
                     </ScrollArea>
                 </Tabs>
 
-                <div className="p-6 border-t">
+                {/* Footer Action */}
+                <div className="p-6 sm:p-8 border-t border-white/5 bg-neutral-950/50 backdrop-blur-md shrink-0">
                     <Button
-                        variant="outline"
-                        className="w-full"
+                        variant="ghost"
+                        className="w-full h-12 bg-indigo-600 text-white hover:bg-indigo-500 rounded-xl font-bold font-oswald tracking-[0.2em] uppercase text-[10px] transition-all"
                         onClick={markAllAsRead}
                         disabled={unreadCount === 0}
                     >
-                        <CheckCircle2 className="mr-2 h-4 w-4" />
-                        Mark all as read
+                        <CheckCircle2 className="mr-3 h-4 w-4" />
+                        Acknowledge All
                     </Button>
                 </div>
             </SheetContent>
         </Sheet>
-    );
+    )
 }

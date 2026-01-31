@@ -1,6 +1,6 @@
 import { Outlet, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import SideBar from "./SideBar";
+import GlobalSideBar from "./GlobalSideBar";
 import MobileNavBar from "./MobileNavbar";
 import { useHideSidebar } from "@/hooks/useHideSidebar";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -15,7 +15,7 @@ const Layout = () => {
     return (
         <div className="flex h-screen overflow-hidden transition-colors duration-500">
             {!hideSidebar && (
-                isMobile ? <MobileNavBar /> : <SideBar />
+                isMobile ? <MobileNavBar /> : <GlobalSideBar />
             )}
 
             <main className="flex-1 overflow-y-auto bg- bg-[#FEFEF7]">

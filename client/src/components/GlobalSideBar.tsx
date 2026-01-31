@@ -12,6 +12,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import defaultAvatar from '@/./assets/image/avatar.png'
 import useAuth from "@/hooks/useAuth";
+import { NotificationSidebar } from "./notification/NotificationSidebar";
 
 interface Indicator {
     top: number;
@@ -45,7 +46,8 @@ const Cursor = ({ indicator }: { indicator: Indicator }) => (
     </motion.div>
 );
 
-const SideBar = () => {
+const GlobalSideBar = () => {
+    const [NotificationOpen, setNotificationOpen] = useState(false);
     const containerRef = useRef<HTMLDivElement | null>(null);
     const activeElRef = useRef<HTMLElement | null>(null);
     const navigate = useNavigate();
@@ -82,7 +84,7 @@ const SideBar = () => {
         }
     }, [location.pathname]);
 
-    return (
+    return (<>
         <aside className="hidden md:flex h-screen w-20 bg-black border-r border-white/5 flex-col items-center justify-between py-8 relative z-[100] backdrop-blur-xl">
 
             <Avatar className="flex flex-col items-center justify-center">
@@ -129,7 +131,8 @@ const SideBar = () => {
 
             {/* Bottom Actions */}
             <div className="flex flex-col items-center gap-6">
-                <button className="text-neutral-600 hover:text-indigo-400 transition-colors relative">
+                <button className={cn("text-neutral-600 hover:text-indigo-400 transition-colors relative", NotificationOpen && "text-indigo-400")}
+                    onClick={() => setNotificationOpen((prev) => !prev)}>
                     <Bell size={22} />
                     <span className="absolute -top-1 -right-1 w-2 h-2 bg-indigo-500 rounded-full border border-black shadow-[0_0_10px_rgba(99,102,241,0.5)]" />
                 </button>
@@ -149,7 +152,9 @@ const SideBar = () => {
             {/* Background Glow Pulse */}
             <div className="absolute top-0 left-0 w-full h-1/3 bg-gradient-to-b from-indigo-500/20 to-transparent pointer-events-none" />
         </aside>
+        <NotificationSidebar open={NotificationOpen} setOpen={setNotificationOpen} />
+    </>
     );
 };
 
-export default SideBar
+export default GlobalSideBar
