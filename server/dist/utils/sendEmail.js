@@ -9,18 +9,18 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.sendClassStatusEmail = exports.sendAssignmentEmail = void 0;
+exports.sendContactMail = exports.sendClassStatusEmail = exports.sendAssignmentEmail = void 0;
 const nodemailer_1 = require("nodemailer");
+const transporter = (0, nodemailer_1.createTransport)({
+    service: "gmail",
+    secure: true,
+    port: 465,
+    auth: {
+        user: process.env.MAIL_USER,
+        pass: process.env.MAIL_PASS,
+    },
+});
 const sendAssignmentEmail = (_a) => __awaiter(void 0, [_a], void 0, function* ({ toEmail, classroomName, assignmentId, }) {
-    const transporter = (0, nodemailer_1.createTransport)({
-        service: "gmail",
-        secure: true,
-        port: 465,
-        auth: {
-            user: process.env.MAIL_USER,
-            pass: process.env.MAIL_PASS,
-        },
-    });
     const assignmentUrl = `${process.env.SERVER_URL}/assignments/${assignmentId}`;
     const mailOptions = {
         from: `"Online Tutor" <online@tutor.in>`,
@@ -92,7 +92,7 @@ const sendAssignmentEmail = (_a) => __awaiter(void 0, [_a], void 0, function* ({
   </div>
   `,
     };
-    const info = yield transporter.sendMail(mailOptions);
+    yield transporter.sendMail(mailOptions);
 });
 exports.sendAssignmentEmail = sendAssignmentEmail;
 const CLASS_STATUS_CONFIG = {
@@ -155,15 +155,6 @@ const CLASS_STATUS_CONFIG = {
 };
 // type EmailStatus = Exclude<ClassStatus, "scheduled">;
 const sendClassStatusEmail = (_a) => __awaiter(void 0, [_a], void 0, function* ({ toEmail, classroomName = "Advanced Backend", lectureId, status, title, }) {
-    const transporter = (0, nodemailer_1.createTransport)({
-        service: "gmail",
-        secure: true,
-        port: 465,
-        auth: {
-            user: process.env.MAIL_USER,
-            pass: process.env.MAIL_PASS,
-        },
-    });
     const lectureUrl = `${process.env.SERVER_URL}/lectures/${lectureId}`;
     const config = CLASS_STATUS_CONFIG[status];
     yield transporter.sendMail({
@@ -200,3 +191,19 @@ const sendClassStatusEmail = (_a) => __awaiter(void 0, [_a], void 0, function* (
     });
 });
 exports.sendClassStatusEmail = sendClassStatusEmail;
+const sendContactMail = (_a) => __awaiter(void 0, [_a], void 0, function* ({ name, email, subject, message, }) {
+    yield transporter.sendMail({
+        from: `"TutorAive Contact" <${process.env.EMAIL_USER}>`,
+        to: process.env.CONTACT_USER,
+        subject: "New Contact Message",
+        html: `
+      <h3>New Contact Submission</h3>
+      <p><b>Name:</b> ${name}</p>
+      <p><b>Email:</b> ${email}</p>
+      <p><b>Role:</b> ${subject}</p>
+      <p><b>Message:</b></p>
+      <p>${message}</p>
+    `,
+    });
+});
+exports.sendContactMail = sendContactMail;

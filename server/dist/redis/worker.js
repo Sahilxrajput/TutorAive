@@ -8,9 +8,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createRedisWorker = createRedisWorker;
 // workers/notification.worker.ts
@@ -18,10 +15,9 @@ const bullmq_1 = require("bullmq");
 const classroom_model_1 = require("../models/classroom.model");
 const notification_model_1 = require("../models/notification.model");
 const notification_emitter_1 = require("../sockets/emitters/notification.emitter");
-const ioredis_1 = __importDefault(require("ioredis"));
-const connection = new ioredis_1.default(process.env.REDIS_URL, {
-    maxRetriesPerRequest: null,
-});
+// const connection = new IORedis(process.env.REDIS_URL!, {
+//   maxRetriesPerRequest: null,
+// });
 function createRedisWorker() {
     const worker = new bullmq_1.Worker("notifications", (job) => __awaiter(this, void 0, void 0, function* () {
         var _a;
@@ -183,7 +179,11 @@ function createRedisWorker() {
                 throw new Error("jobname mismatch");
         }
     }), {
-        connection,
+        connection: {
+            host: process.env.REDIS_HOST,
+            port: Number(process.env.REDIS_PORT),
+            password: process.env.REDIS_PASSWORD,
+        },
         concurrency: 2,
     });
     worker.on("completed", (job) => __awaiter(this, void 0, void 0, function* () {

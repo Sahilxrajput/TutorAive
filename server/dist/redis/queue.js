@@ -18,17 +18,23 @@ const ioredis_1 = __importDefault(require("ioredis"));
 const connection = new ioredis_1.default(process.env.REDIS_URL, {
     maxRetriesPerRequest: null,
 });
-exports.notificationQueue = new bullmq_1.Queue("notifications", { connection });
-connection
-    .ping()
-    .then((res) => {
-    console.log("Redis says:", res); // should be PONG
-    process.exit(0);
-})
-    .catch((err) => {
-    console.error("Redis is not reachable:", err);
-    process.exit(1);
+exports.notificationQueue = new bullmq_1.Queue("notifications", {
+    connection: {
+        host: process.env.REDIS_HOST,
+        port: Number(process.env.REDIS_PORT),
+        password: process.env.REDIS_PASSWORD,
+    },
 });
+// connection
+//   .ping()
+//   .then((res) => {
+//     console.log("Redis says:", res); // should be PONG
+//     process.exit(0);
+//   })
+//   .catch((err) => {
+//     console.error("Redis is not reachable:", err);
+//     process.exit(1);
+//   });
 const addAssignmentNotificationJob = (_a) => __awaiter(void 0, [_a], void 0, function* ({ classroomId, classroomTitle, assignmentId, title, dueDate, }) {
     yield exports.notificationQueue.add("assignment-notification", { assignmentId, classroomId, classroomTitle, title, dueDate }, {
         attempts: 5,
