@@ -120,7 +120,7 @@ const HowItWorks = ({ activeTab = 'student' }: { activeTab: string }) => {
             
             {/* Ambient Background Glows */}
             <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-600/5 blur-[120px] pointer-events-none rounded-full z-0" />
-            <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-indigo-600/5  pointer-events-none rounded-full z-50" />
+            <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-indigo-600/5 blur-[120px] pointer-events-none rounded-full z-50" />
 
             <div className="max-w-7xl mx-auto px-8">
                 {/* Header Section */}

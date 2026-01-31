@@ -162,7 +162,7 @@ export default function HeroPage({ activeTab, setActiveTab }: Props) {
                         transition={{ duration: 0.8, delay: 1 }}
                         className="flex flex-wrap justify-center gap-6 pt-4"
                     >
-                        <button className="px-10 py-4 bg-indigo-600 text-white rounded-full font-bold hover:bg-indigo-500 hover:scale-105 transition-all flex items-center gap-2 group shadow-2xl shadow-indigo-500/20"
+                        <button className="px-10 py-4 bg-indigo-600 text-white rounded-full font-bold hover:bg-indigo-500 hover:scale-105 transition-all flex items-center gap-2 group shadow-2xl shadow-indigo-500/20 animate-ripple-blue"
                             onClick={() => navigate('/home')}
                         >
                             Start Teaching <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />

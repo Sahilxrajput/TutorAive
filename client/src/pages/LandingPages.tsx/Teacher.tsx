@@ -80,7 +80,7 @@ const TeacherPage = () => {
 
 
     return (
-        <div className="min-h-screen bg-black text-neutral-200 selection:bg-indigo-500/30 overflow-hidden relative font-sans">
+        <div id='teachers' className="min-h-screen bg-black text-neutral-200 selection:bg-indigo-500/30 overflow-hidden relative font-sans">
 
             {/* Background Glow */}
             <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-[600px] h-[600px] bg-indigo-600/10 blur-[120px] rounded-full z-10" />
@@ -140,15 +140,14 @@ const TeacherPage = () => {
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                         onClick={() => navigate("/home")}
-                        className="px-10 py-4 bg-indigo-600 text-white rounded-full font-bold hover:bg-indigo-500 transition-all flex items-center gap-3 group shadow-2xl shadow-indigo-500/20 font-oswald tracking-widest text-sm"
+                        className="px-10 py-4 bg-indigo-600 animate-ripple-blue text-white rounded-full font-bold hover:bg-indigo-500 transition-all flex items-center gap-3 group shadow-2xl shadow-indigo-500/20 font-oswald tracking-widest text-sm "
                     >
                         BECOME AN INSTRUCTOR <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
                     </motion.button>
                 </div>
 
-                {/* RIGHT CONTENT (Visual) */}
                 {/* RIGHT CONTENT (Visual with Pop-out Effect) */}
-                <div className="w-full lg:w-1/2 relative flex justify-center pt-20"> {/* Added pt-20 to make room for the head */}
+                <div className="w-full lg:w-1/2 relative flex justify-center pt-20"> 
                     <motion.div
                         initial={{ opacity: 0, y: 40 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -185,12 +184,6 @@ const TeacherPage = () => {
                 </div>
             </div>
 
-            {/* Vertical Theme Text */}
-            <div className="absolute -right-32 bottom-20 rotate-90 opacity-[0.03] select-none pointer-events-none">
-                <h1 className="text-[6rem] font-black font-cinzel text-white leading-none uppercase">
-                    Instructor
-                </h1>
-            </div>
         </div>
     );
 };

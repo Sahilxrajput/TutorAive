@@ -2,7 +2,6 @@ import HowItWorks from './HowItWorks';
 import Testimonials from './Testimonials';
 import ContactSection from './ContactPage';
 import Footer from './Footer';
-import Pricing from './Pricing';
 import { useState } from 'react';
 import HeroPage from './HeroPage';
 import LandingNavbar from '@/components/landing/LandingNavbar';
@@ -19,7 +18,7 @@ const LandingPage = () => {
             <HowItWorks  activeTab={activeTab} />
             <Mission/>
             <Testimonials />
-            <Pricing /> 
+            {/* <Pricing />  */}
             <ContactSection />
             <Footer />
         </div>
