@@ -26,6 +26,7 @@ import API from "@/lib/api";
 import { useNotifications } from "@/tanStack/hooks/useNotifications";
 import type { INotification } from "@/types/type";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 interface Props {
     open: boolean,
@@ -53,22 +54,20 @@ export function NotificationSidebar({ open, setOpen }: Props) {
 
     const markAllAsRead = async () => {
         try {
-            const { data } = await API.patch("/notifications/mark-all-read");
+            await API.patch("/notifications/mark-all-read");
             setNotifications(prev =>
                 prev.map(n => ({ ...n, isRead: true }))
             );
-            console.log("data: mark ", data)
-        } catch (err) {
-            console.error("Failed to mark notifications as read", err);
+        } catch {
+            toast.info("Somthing goes wrong");
         }
     };
 
     const markAsRead = async (id: string) => {
         try {
-            const { data } = await API.patch(`/notifications/${id}/mark-read`);
-            console.log(data)
-        } catch (err) {
-            console.error("Failed to mark notification as read", err);
+            await API.patch(`/notifications/${id}/mark-read`);
+        } catch {
+            toast.info("Somthing goes wrong");
         }
     }
 

@@ -1,23 +1,26 @@
 // src/pages/AuthSuccess.tsx
 import React, { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
 
 const AuthSuccess: React.FC = () => {
     const { refreshUser } = useAuth();
-  const navigate = useNavigate();
+    const navigate = useNavigate();
+    const [searchParams] = useSearchParams()
 
-  useEffect(() => {
-    (async () => {
-      // Backend already set the HTTP-only cookie. Refresh user to get accesstoken and fetch profile.
-      await refreshUser();
 
-      // navigate wherever you want after login
-      navigate("/dashboard");
-    })();
-  }, [refreshUser, navigate]);
+    useEffect(() => {
+        (async () => {
+            const accessToken = searchParams.get("accessToken")
+            if (!accessToken) return;
+            localStorage.setItem("accessToken", accessToken)
+            await refreshUser();
 
-  return <div>Logging you in…</div>;
+            navigate("/dashboard");
+        })();
+    }, [refreshUser, searchParams, navigate]);
+
+    return <div>Logging you in…</div>;
 };
 
 export default AuthSuccess;

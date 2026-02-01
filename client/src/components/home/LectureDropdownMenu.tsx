@@ -49,13 +49,12 @@ export function LectureDropdownMenu({ lecture , cn}: { lecture: ILecture, cn:str
             return toast.warning("Delay reason is required");
         }
 
-        const { data } = await API.put(`/classrooms/${classroomId}/lectures/${lecture._id}`, {
+        await API.put(`/classrooms/${classroomId}/lectures/${lecture._id}`, {
             status: "delayed",
             delayTime: Number(timeValue),
             reason,
         });
 
-        console.log("Update data: ", data)
     };
 
     const submitReschedule = async () => {
@@ -71,13 +70,12 @@ export function LectureDropdownMenu({ lecture , cn}: { lecture: ILecture, cn:str
             return toast.warning("New time must be in the future");
         }
 
-        const { data } = await API.put(`/classrooms/${classroomId}/lectures/${lecture._id}`, {
+        await API.put(`/classrooms/${classroomId}/lectures/${lecture._id}`, {
             status: "rescheduled",
             newStartTime: date.toISOString(),
             reason,
         });
 
-        console.log("Update data: ", data)
     };
 
     const submitCancel = async () => {
@@ -90,7 +88,6 @@ export function LectureDropdownMenu({ lecture , cn}: { lecture: ILecture, cn:str
             reason,
         });
 
-        console.log("Update data: ", data)
     };
 
     const handleSubmit = async () => {
@@ -123,11 +120,10 @@ export function LectureDropdownMenu({ lecture , cn}: { lecture: ILecture, cn:str
             return alert("Title cannot be empty");
         }
 
-        const { data } = await API.put(`/classrooms/${classroomId}/lectures/${lecture._id}`, {
+        await API.put(`/classrooms/${classroomId}/lectures/${lecture._id}`, {
             title: title.trim(),
         });
 
-        console.log("Update data: ", data)
     };
 
     const goLive = () => {

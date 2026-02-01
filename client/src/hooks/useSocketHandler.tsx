@@ -22,7 +22,6 @@ const useSocketHandler = (user?: IUser): UseSocketReturn => {
     // --- Cleanup function ---
     const cleanupSocket = useCallback(() => {
         if (socketRef.current) {
-            console.log("Disconnecting socket...");
             socketRef.current.disconnect();
             socketRef.current = null;
         }
@@ -36,23 +35,19 @@ const useSocketHandler = (user?: IUser): UseSocketReturn => {
         //Disconnect immediately if user logs out or token missing
         // 1. No token → no socket
         const token = localStorage.getItem("accessToken");
-        // console.log("localstorage token: ", token)
 
         // No token → no socket
         if (!token) {
             cleanupSocket();
-            console.log("no token: ")
             return;
         }
 
 
         //Prevent duplicate connections
         if (socketRef.current?.connected) {
-            console.log("Socket already connected, skipping init...");
             return;
         }
 
-        // console.log("getAccessToken: ", accessToken)
 
         // Create new socket connection
         const newSocket: Socket = io(backendUrl, {
@@ -67,7 +62,6 @@ const useSocketHandler = (user?: IUser): UseSocketReturn => {
 
         // --- Core connection events ---
         newSocket.on("connect", () => {
-            console.log("Connected to socket:", newSocket.id);
             setIsConnected(true);
         });
 
@@ -80,13 +74,11 @@ const useSocketHandler = (user?: IUser): UseSocketReturn => {
             console.error("Socket connection error:", err.message);
         });
 
-        newSocket.on("reconnect_attempt", (attempt) => {
-            console.log(`Reconnecting attempt ${attempt}...`);
-        });
+        // newSocket.on("reconnect_attempt", (attempt) => {
+        // });
 
-        newSocket.on("reconnect", (attempt) => {
-            console.log(`Reconnected after ${attempt} attempts`);
-        });
+        // newSocket.on("reconnect", (attempt) => {
+        // });
 
         // --- Custom events ---
         newSocket.on("online_users_updated", (users: IUser[]) => {
@@ -117,7 +109,6 @@ const useSocketHandler = (user?: IUser): UseSocketReturn => {
 
     const reconnectSocket = useCallback(() => {
         if (socketRef.current && !socketRef.current.connected) {
-            console.log(" Manually reconnecting socket...");
             socketRef.current.connect();
         }
     }, []);

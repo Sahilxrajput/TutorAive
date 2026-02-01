@@ -37,7 +37,6 @@ initSocket(server);
 app.use(
   cors({
     origin: process.env.CLIENT_URL, // your frontend URL
-    // origin:"*",
     credentials: true,
   }),
 );

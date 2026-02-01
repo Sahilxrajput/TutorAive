@@ -26,8 +26,7 @@ export const initSocket = async (httpServer: HttpServer) => {
   io = new Server(httpServer, {
     cors: {
       origin: process.env.CLIENT_URL,
-      //   origin: "*",
-      credentials: true, //@remind
+      credentials: true,
     },
   });
 

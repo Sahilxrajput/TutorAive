@@ -82,7 +82,6 @@ const LiveStudentPage = () => {
             }
 
             const { rtpCapabilities, error }: IJoinRoom = await socket.emitWithAck('join:live-session', Payload)
-            console.log("rtpCapabilities : ", rtpCapabilities)
 
             if (error) {
                 toast.error(error)
@@ -95,32 +94,26 @@ const LiveStudentPage = () => {
                 routerRtpCapabilities: rtpCapabilities
             })
             deviceRef.current = device
-            console.log('Device RTP Capabilities', device.rtpCapabilities)
 
             await createRecvTransport()
 
-            console.log("========================after transport======================")
 
         } catch (error: any) {
-            console.log(error)
             if (error.name === 'UnsupportedError')
-                console.log("browser not supported")
+                toast.error("browser not supported")
         }
     }
 
     const createRecvTransport = async () => {
-        if (!socket || !deviceRef.current) return console.log("device / socket not available for consumer")
+        if (!socket || !deviceRef.current) return 
 
         const downTransport = await socket.emitWithAck('createWebRtcTransport', { isSender: false, roomId: lectureId })
         if (downTransport.error) {
-            console.log(downTransport.error)
             return
         }
 
-        console.log("downTransport: ", downTransport)
 
         const consumerTransport = deviceRef.current.createRecvTransport(downTransport)
-        console.log("Recv create consumerTransport : ", consumerTransport)
 
         consumerTransport.on('connect', async ({ dtlsParameters }: { dtlsParameters: DtlsParameters }, cb: () => void) => {
             try {
@@ -131,14 +124,14 @@ const LiveStudentPage = () => {
                 })
 
                 if (res?.error) {
-                    return console.log("tranpsort connect error : ", res.error)
+                    return
                 }
                 // producerIdRef.current = res.producerId
 
                 // Tell the transport that parameters were transmitted.
                 cb()
-            } catch (error) {
-                console.log(error)
+            } catch  {
+                // console.log(error)
             }
         })
 
@@ -147,7 +140,6 @@ const LiveStudentPage = () => {
         const producers = await socket.emitWithAck('get-producres', { roomId: lectureId })
 
         for (const producerInfo of producers) {
-            console.log("producerInfo : ", producerInfo)
             const producerId = producerInfo.id;
             const appData: AppData = producerInfo.appData;
             await createConsumer(producerId, appData);
@@ -156,7 +148,7 @@ const LiveStudentPage = () => {
 
     const createConsumer = useCallback(async (producerId: string, appData: AppData) => {
         if (!socket || !deviceRef.current || !consumerTransportRef.current) {
-            return console.log("somthing is missing")
+            return
         }
         const res: { error?: string, id: string, producerId: string, kind: 'video' | 'audio', rtpParameters: RtpParameters } = await socket.emitWithAck('consume', {
             roomId: lectureId,
@@ -165,21 +157,18 @@ const LiveStudentPage = () => {
         })
 
         if (res.error) {
-            console.log("error while consume", res.error);
             return;
         }
 
         const recvTransport = consumerTransportRef.current;
 
         const consumer = await recvTransport.consume(res);
-        console.log("consumer ==> ", consumer);
         const { kind } = res;
         const mediatag = appData?.mediaTag;
 
         // CAM VIDEO 
         if (kind === 'video' && mediatag === "cam-video" && teacherVideoRef.current) {
             const stream = new MediaStream([consumer.track]);
-            console.log("video track", consumer.track)
             teacherVideoRef.current.srcObject = stream;
             teacherVideoRef.current.autoplay = true;
             teacherVideoRef.current.playsInline = true;
@@ -199,7 +188,8 @@ const LiveStudentPage = () => {
             const audioEl = document.createElement('audio');
             audioEl.autoplay = true;
             audioEl.srcObject = new MediaStream([consumer.track]);
-            audioEl.play().then(() => console.log("audio elm created successfully!")).catch(() => console.debug('audio play blocked'));
+            audioEl.play()
+            // .then(() => console.log("audio elm created successfully!")).catch(() => console.debug('audio play blocked'));
             document.body.appendChild(audioEl);
             socket.emit('consumer-resume', { roomId: lectureId, consumerId: consumer.id });
         }
@@ -211,7 +201,6 @@ const LiveStudentPage = () => {
 
             // ADD CLEANUP HERE
             consumer.on("transportclose", () => {
-                console.log("[screen] producer closed");
 
                 // 1. Clear the video element
                 if (screenVideoRef.current) {
@@ -240,7 +229,6 @@ const LiveStudentPage = () => {
 
             // ADD CLEANUP HERE
             consumer.on("transportclose", () => {
-                console.log("[screen] producer closed");
 
                 // 2. Reset refs
                 screenAudioConsumerRef.current = null;
@@ -270,7 +258,6 @@ const LiveStudentPage = () => {
 
     function attachScreenStream() {
         if (!screenVideoConsumerRef.current) {
-            console.log("screenVideoConsumerRef is not available")
             return;
         }
 

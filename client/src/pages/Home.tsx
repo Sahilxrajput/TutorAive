@@ -31,12 +31,8 @@ const Home = () => {
         if (!user) return
 
         const fetchAssignments = async () => {
-            try {
-                const { data } = await API.get(`/assignments/student/${user._id}`)
-                setPendingAssignments(data?.pending?.length ?? 0)
-            } catch (err) {
-                console.error('Assignment fetch failed', err)
-            }
+            const { data } = await API.get(`/assignments/student/${user._id}`)
+            setPendingAssignments(data?.pending?.length ?? 0)
         }
 
         fetchAssignments()

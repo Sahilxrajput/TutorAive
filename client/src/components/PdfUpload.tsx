@@ -87,7 +87,6 @@ export function PdfUploadDialog({ buttonText, title, cn, id, type, onComplete }:
             );
 
             cloudData = res.data;
-            console.log("cloud ", res.data)
 
         } catch (error) {
             toast.error("Upload failed");
@@ -120,10 +119,9 @@ export function PdfUploadDialog({ buttonText, title, cn, id, type, onComplete }:
                         resource_type: cloudData.resource_type,
                     };
 
-            const { data: dbData } = await API.post(saveUrl, payload);
+            await API.post(saveUrl, payload);
 
 
-            console.log("dbData:", dbData);
 
             toast.success(
                 type === "assignment"
@@ -134,9 +132,8 @@ export function PdfUploadDialog({ buttonText, title, cn, id, type, onComplete }:
 
             // after successfully upload and save into db
             onComplete?.(id)
-        } catch (error) {
+        } catch {
             toast.error("Database error");
-            console.log("database error:", error);
         } finally {
             setUploading(false)
             setProgress(0)

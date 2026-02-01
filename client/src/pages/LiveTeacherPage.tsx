@@ -51,9 +51,9 @@ const LiveTeacherPage = () => {
     const deviceRef = useRef<Device>(null);
     const navigate = useNavigate();
 
-    useEffect(()=>{
+    useEffect(() => {
         start()
-    },[])
+    }, [])
 
 
     async function start() {
@@ -213,15 +213,12 @@ const LiveTeacherPage = () => {
                 routerRtpCapabilities: rtpCapabilities
             })
             deviceRef.current = device
-            console.log('Device RTP Capabilities', device.rtpCapabilities)
 
             await createSendTransport()
 
-            console.log("========================after transport======================")
         } catch (error: unknown) {
-            console.log(error)
             if (error instanceof Error && error.name === 'UnsupportedError')
-                console.log("browser not supported")
+                toast.error("browser not supported")
         }
     }
 
@@ -244,13 +241,11 @@ const LiveTeacherPage = () => {
 
         const upTransport = await socket.emitWithAck('createWebRtcTransport', { isSender: true, roomId: lectureId })
         if (upTransport.error) {
-            console.log(upTransport.error)
             return
         }
 
-        console.log("uptransport: ", upTransport)
 
-        if (!deviceRef.current) return console.log("device not found")
+        if (!deviceRef.current) return 
         const producerTransport = deviceRef.current.createSendTransport(upTransport); //@remind ? think should i pass a new object with param properties
 
 
@@ -263,17 +258,16 @@ const LiveTeacherPage = () => {
                 })
 
                 if (res?.error) {
-                    return console.log("tranpsort connect error : ", res.error)
+                    return 
                 }
                 //@todo Tell the transport that parameters were transmitted.
                 cb()
-            } catch (error) {
-                console.log(error)
+            } catch {
+                // console.log(error)
             }
         })
 
         producerTransport.on('produce', async ({ kind, rtpParameters, appData }: { appData: AppData, rtpParameters: RtpParameters, kind: MediaKind }, cb: ({ id }: { id: string }) => void) => {
-            console.log("produce parameters :", { kind, rtpParameters, appData });
 
             try {
                 const { id, error } = await socket.emitWithAck('transport-produce', {
@@ -284,12 +278,10 @@ const LiveTeacherPage = () => {
                     appData,
                 });
 
-                if (error) return console.log("error : ", error)
-
-                console.log("return id : ", id)
+                if (error) return
                 cb(id)
-            } catch (error) {
-                console.log(error)
+            } catch {
+                // console.log(error)
             }
         })
 
@@ -299,7 +291,6 @@ const LiveTeacherPage = () => {
 
     const connectSendTransport = async () => {
         if (!producerTransportRef.current || !streamRef.current) {
-            console.log("producerTransport / streamRef missing");
             return;
         }
 
@@ -331,13 +322,13 @@ const LiveTeacherPage = () => {
                 codecOptions: { videoGoogleStartBitrate: 2000 },
             });
 
-            camProducerRef.current.on("trackended", () => {
-                console.log("[cam] track ended");
-            });
+            // camProducerRef.current.on("trackended", () => {
+            //     console.log("[cam] track ended");
+            // });
 
-            camProducerRef.current.on("transportclose", () => {
-                console.log("[cam] transport closed");
-            });
+            // camProducerRef.current.on("transportclose", () => {
+            //     console.log("[cam] transport closed");
+            // });
         }
     };
 
@@ -436,7 +427,6 @@ const LiveTeacherPage = () => {
         // If screen was never started, do nothing
         if (!screenProducerRef.current && !screenStreamRef.current) return;
         setIsScreenSharing(false)
-        console.log("[screen] stopped");
 
         // 1. Notify server FIRST
         if (socket) {

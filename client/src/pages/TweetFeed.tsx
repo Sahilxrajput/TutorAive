@@ -53,7 +53,6 @@ export default function TweetFeed() {
                 t.author?.username?.toLowerCase().includes(q)
             );
         }
-        console.log(tweets)
         return tweets;
     }, [data, filter, search]);
 

@@ -25,7 +25,6 @@ const Quiz: React.FC = () => {
       try {
         const res = await API.get("/quizs/generate");
         const quizData = res.data;
-        console.log("Quiz Data:", quizData);
         setData(quizData);
       } catch (error) {
         console.error("Failed to fetch quiz:", error);

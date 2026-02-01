@@ -69,8 +69,7 @@ export function StartClass({ showPopup, setShowPopup }: DateTimePickerProps) {
             } else {
                 toast.error(data.message);
             }
-        } catch (error) {
-            console.log(error)
+        } catch {
             setError("Failed to schedule class. Try again.");
         } finally {
             setLoading(false);
@@ -93,7 +92,6 @@ export function StartClass({ showPopup, setShowPopup }: DateTimePickerProps) {
                 startTime: new Date(),
                 classroomId,
             });
-            console.log("data : ", data)
 
             if (data.success) {
                 navigate(`/classrooms/${classroomId}/lecture/live/${data.data._id}`);
