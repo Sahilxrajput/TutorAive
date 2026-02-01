@@ -1,7 +1,8 @@
-import 'express'
+import "express";
 
 declare global {
   namespace Express {
+    interface User extends IUser {}
     interface Request {
       userId?: string;
       classroom?: IClassroom;
@@ -11,4 +12,4 @@ declare global {
     }
   }
 }
-export {}
+export {};

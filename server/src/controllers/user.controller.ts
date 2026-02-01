@@ -16,19 +16,6 @@ export const getUserProfile = async (req: any, res: any) => {
   }
 };
 
-export const myProfile = async (req: any, res: any) => {
-  try {
-    const user = await User.findById(req.userId).select("+password"); // convert to plain JS object
-    if (!user) return res.status(404).json({ error: "User not found" });
-
-    // exclude password
-    const { password, ...userData } = user.toObject();
-    res.status(200).json(userData);
-  } catch (err: any) {
-    res.status(500).json({ error: "Server error", message: err.message });
-  }
-};
-
 export async function getAllEnrolledClassrooms(req:any, res:any) {
   try {
     const user = await User.findById(req.userId).populate("enrolledClassrooms");

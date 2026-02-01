@@ -10,28 +10,25 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [user, setUser] = useState<IUser | null>(null);
-    const [isInstructor, setIsinstructor] = useState<boolean>(false);
+    const [isInstructor, setIsInstructor] = useState(false);
     const [loading, setLoading] = useState(true);
-    const [accessToken, setAccessToken] = useState<string | null>(null);
+    // const [authResolved, setAuthResolved] = useState(false);
+
 
     const refreshUser = useCallback(async () => {
         try {
             setLoading(true);
-            const { data } = await API.get("/auth/refresh");
-            // console.log("refrsh data", data)
-            setAccessToken(data.accessToken)
-            localStorage.setItem("accessToken", data.accessToken)
+            const { data: { user, accessToken } } = await API.get("/auth/refresh");
+            localStorage.setItem("accessToken", accessToken)
 
-            const { data: profile } = await API.get("/users/me")
-            // console.log("me: ", profile)
-            setIsinstructor(profile.role === "instructor")
+            setIsInstructor(user.role === "instructor")
 
             const updatedUser = {
-                ...profile,
-                profilePicture: profile?.profilePicture || defaultAvatar,
+                ...user,
+                profilePicture: user?.profilePicture || defaultAvatar,
             };
 
-            setUser(updatedUser ?? null);
+            setUser(updatedUser);
 
         } catch (err) {
             if (axios.isAxiosError(err)) {
@@ -44,6 +41,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 console.error("Unknown error", err);
             }
         } finally {
+            // setAuthResolved(true);
             setLoading(false);
         }
     }, []);
@@ -51,41 +49,41 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const signout = useCallback(async () => {
         try {
             const { data } = await API.get("/auth/signout");
-            console.dir(data, { depth: null });
-            setAccessToken(null)
             setUser(null);
+            setIsInstructor(false);
             toast.success(data.message)
-            localStorage.removeItem("accessToken")
-
         } catch (err) {
-            setAccessToken(null)
             console.error("Logout failed", err);
+        } finally {
+            localStorage.removeItem("accessToken")
         }
     }, []);
 
     const signin = useCallback(async (credentials: { email: string; password: string }) => {
         try {
             setLoading(true);
-            const { data } = await API.post("/auth/signin", credentials); // backend should authenticate and set cookie
-            console.log("login res: ", data)
-            setAccessToken(data.accessToken)
+            const { data } = await API.post("/auth/signin", credentials);
             localStorage.setItem("accessToken", data.accessToken)
             toast.success(data.message)
 
-            setIsinstructor(data.user.role === "instructor")
+            setIsInstructor(data.user.role === "instructor")
 
             const updatedUser = {
                 ...data.user,
-                profilePicture: data?.profilePicture || defaultAvatar,
+                profilePicture: data?.user?.profilePicture || defaultAvatar,
             };
 
             setUser(updatedUser ?? null);
 
-        } catch (err: any) {
-            console.error("Login failed", err.response.data.message);
-            toast.error(err.response.data.message ?? "login failed");
+        } catch (err) {
+            if (axios.isAxiosError(err)) {
+                toast.error(err.response?.data?.message ?? "Login failed");
+            } else {
+                toast.error("Unexpected error");
+            }
             setUser(null);
-        } finally {
+        }
+        finally {
             setLoading(false);
         }
     }, []);
@@ -95,7 +93,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }, [refreshUser]);
 
     return (
-        <AuthContext.Provider value={{ user, isInstructor, loading, refreshUser, accessToken, setAccessToken, setUser, signout, signin }}>
+        <AuthContext.Provider value={{ user, isInstructor, loading, refreshUser, setUser, signout, signin }}>
             {children}
         </AuthContext.Provider>
     );

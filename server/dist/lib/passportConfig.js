@@ -19,7 +19,7 @@ passport_1.default.use(new passport_google_oauth20_1.Strategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     callbackURL: `${process.env.SERVER_URL}/auth/callback/google`,
-}, (authToken, refreshToken, profile, done) => __awaiter(void 0, void 0, void 0, function* () {
+}, (_authToken, _refreshToken, profile, done) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b, _c, _d;
     try {
         let user = yield user_model_1.default.findOne({ oauthId: profile.id });

@@ -32,11 +32,8 @@ const generateAuthToken_1 = require("../utils/generateAuthToken");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const googleCallback = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const user = req.user;
-    const refreshToken = (0, generateAuthToken_1.generateRefreshToken)({
-        _id: user._id.toString(),
-        userName: user.userName,
-        role: user.role,
-    });
+    const refreshToken = (0, generateAuthToken_1.generateRefreshToken)(user);
+    const accessToken = (0, generateAuthToken_1.generateAccessToken)(user);
     // store hashed refresh token
     user.refreshToken = yield bcrypt_1.default.hash(refreshToken, 12);
     yield user.save();
@@ -47,22 +44,30 @@ const googleCallback = (req, res) => __awaiter(void 0, void 0, void 0, function*
         maxAge: 7 * 24 * 60 * 60 * 1000,
     });
     // redirect with no tokens in URL
-    res.redirect(`${process.env.CLIENT_URL}/auth/success`);
+    res.redirect(`${process.env.CLIENT_URL}/auth/success?accessToken=${accessToken}`);
 });
 exports.googleCallback = googleCallback;
-//@todo add firstname, lastname default
 const signup = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        let { email, firstName = "tony", lastName = "strak", userName, password, role, } = req.body;
-        // Check if user already exists
-        const existingUser = yield user_model_1.default.findOne({ email });
-        if (existingUser) {
-            return res.status(400).json({ message: "User already exists" });
+        let { email, firstName, lastName = "TutorAive user", userName, password, role, } = req.body;
+        // Check email
+        const emailExists = yield user_model_1.default.findOne({ email });
+        if (emailExists) {
+            return res.status(409).json({
+                field: "email",
+                message: "Email is already registered",
+            });
         }
-        // Hash password
+        // Check username
+        const usernameExists = yield user_model_1.default.findOne({ userName });
+        if (usernameExists) {
+            return res.status(409).json({
+                field: "userName",
+                message: "This username is already taken",
+            });
+        }
         const hashedPassword = yield bcrypt_1.default.hash(password, 12);
-        // @todo in validation set default value of lastname and user
-        const newUser = new user_model_1.default({
+        const savedUser = yield user_model_1.default.create({
             email,
             userName,
             firstName,
@@ -70,29 +75,36 @@ const signup = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             role,
             password: hashedPassword,
         });
-        // ensures your plain email/password users don’t insert { oauthId: null } into the DB.
-        // if (!oauthProvider) delete newUser.oauthProvider;
-        // if (!oauthId) delete newUser.oauthId;
-        const savedUser = yield newUser.save();
         const accessToken = (0, generateAuthToken_1.generateAccessToken)(savedUser);
         const refreshToken = (0, generateAuthToken_1.generateRefreshToken)(savedUser);
-        // save hashed refresh token
         savedUser.refreshToken = yield bcrypt_1.default.hash(refreshToken, 12);
         yield savedUser.save();
-        // Exclude password from response
         const _a = savedUser.toObject(), { password: _, refreshToken: __ } = _a, userData = __rest(_a, ["password", "refreshToken"]);
-        // Set token in HTTP-only cookie
         res.cookie("refreshToken", refreshToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
             sameSite: "lax",
-            maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+            maxAge: 7 * 24 * 60 * 60 * 1000,
         });
-        res.status(201).json({ user: userData, accessToken });
+        res.status(201).json({
+            success: true,
+            user: userData,
+            accessToken,
+        });
     }
     catch (err) {
+        // Backup safety net for race conditions
+        if (err.code === 11000) {
+            const field = Object.keys(err.keyPattern)[0];
+            return res.status(409).json({
+                field,
+                message: `${field} already exists`,
+            });
+        }
         console.error("Signup error:", err);
-        res.status(500).json({ message: "Failed to create user", err });
+        res.status(500).json({
+            message: "Failed to create user",
+        });
     }
 });
 exports.signup = signup;
@@ -143,23 +155,30 @@ const signout = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const refreshToken = req.cookies.refreshToken;
         if (refreshToken) {
-            const decoded = jsonwebtoken_1.default.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
-            yield user_model_1.default.findByIdAndUpdate(decoded._id, {
-                refreshToken: null,
-            });
+            const decoded = jsonwebtoken_1.default.decode(refreshToken);
+            if (decoded === null || decoded === void 0 ? void 0 : decoded._id) {
+                yield user_model_1.default.findByIdAndUpdate(decoded._id, {
+                    refreshToken: null,
+                });
+            }
         }
-        res.clearCookie("refreshToken", {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "lax",
-        });
-        return res.status(200).json({ message: "Logged out successfully" });
     }
-    catch (err) {
-        // Even if token is invalid/expired, logout should succeed
-        res.clearCookie("refreshToken");
-        return res.status(200).json({ message: "Logged out successfully" });
+    catch (_a) {
+        // intentionally ignored
     }
+    res.clearCookie("refreshToken", {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+    });
+    res.clearCookie("accessToken", {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+    });
+    return res.status(200).json({
+        message: "Logged out successfully",
+    });
 });
 exports.signout = signout;
 const deleteAccount = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -256,16 +275,21 @@ const refreshAccessToken = (req, res) => __awaiter(void 0, void 0, void 0, funct
     try {
         const decoded = jsonwebtoken_1.default.verify(token, process.env.REFRESH_TOKEN_SECRET);
         const user = yield user_model_1.default.findById(decoded._id);
-        if (!user || !user.refreshToken)
-            return res.sendStatus(403);
+        if (!user || !user.refreshToken) {
+            return res.sendStatus(401);
+        }
         const isValid = yield bcrypt_1.default.compare(token, user.refreshToken);
-        if (!isValid)
-            return res.sendStatus(403);
+        if (!isValid) {
+            return res.sendStatus(401);
+        }
         const newAccessToken = (0, generateAuthToken_1.generateAccessToken)(user);
-        return res.json({ accessToken: newAccessToken });
+        console.log("new access token: ", newAccessToken);
+        return res.json({ accessToken: newAccessToken, user });
     }
     catch (_a) {
-        return res.status(403).json({ message: "Refresh token expired" });
+        return res.status(401).json({
+            message: "Invalid or expired refresh token",
+        });
     }
 });
 exports.refreshAccessToken = refreshAccessToken;

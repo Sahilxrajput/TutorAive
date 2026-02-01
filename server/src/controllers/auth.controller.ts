@@ -14,11 +14,8 @@ import { HydratedDocument } from "mongoose";
 const googleCallback = async (req: Request, res: Response) => {
   const user = req.user as HydratedDocument<IUser>;
 
-  const refreshToken = generateRefreshToken({
-    _id: user._id.toString(),
-    userName: user.userName!,
-    role: user.role,
-  });
+  const refreshToken = generateRefreshToken(user);
+  const accessToken = generateAccessToken(user);
 
   // store hashed refresh token
   user.refreshToken = await bcrypt.hash(refreshToken, 12);
@@ -32,32 +29,43 @@ const googleCallback = async (req: Request, res: Response) => {
   });
 
   // redirect with no tokens in URL
-  res.redirect(`${process.env.CLIENT_URL}/auth/success`);
+  res.redirect(
+    `${process.env.CLIENT_URL}/auth/success?accessToken=${accessToken}`,
+  );
 };
 
-//@todo add firstname, lastname default
 const signup = async (req: Request, res: Response) => {
   try {
     let {
       email,
-      firstName = "tony",
-      lastName = "strak",
+      firstName,
+      lastName = "TutorAive user",
       userName,
       password,
       role,
     } = req.body;
 
-    // Check if user already exists
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(400).json({ message: "User already exists" });
+    // Check email
+    const emailExists = await User.findOne({ email });
+    if (emailExists) {
+      return res.status(409).json({
+        field: "email",
+        message: "Email is already registered",
+      });
     }
 
-    // Hash password
+    // Check username
+    const usernameExists = await User.findOne({ userName });
+    if (usernameExists) {
+      return res.status(409).json({
+        field: "userName",
+        message: "This username is already taken",
+      });
+    }
+
     const hashedPassword = await bcrypt.hash(password, 12);
 
-    // @todo in validation set default value of lastname and user
-    const newUser = new User({
+    const savedUser = await User.create({
       email,
       userName,
       firstName,
@@ -65,34 +73,41 @@ const signup = async (req: Request, res: Response) => {
       role,
       password: hashedPassword,
     });
-    // ensures your plain email/password users don’t insert { oauthId: null } into the DB.
-    // if (!oauthProvider) delete newUser.oauthProvider;
-    // if (!oauthId) delete newUser.oauthId;
-
-    const savedUser = await newUser.save();
 
     const accessToken = generateAccessToken(savedUser);
     const refreshToken = generateRefreshToken(savedUser);
 
-    // save hashed refresh token
     savedUser.refreshToken = await bcrypt.hash(refreshToken, 12);
     await savedUser.save();
 
-    // Exclude password from response
     const { password: _, refreshToken: __, ...userData } = savedUser.toObject();
 
-    // Set token in HTTP-only cookie
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    res.status(201).json({ user: userData, accessToken });
-  } catch (err) {
+    res.status(201).json({
+      success: true,
+      user: userData,
+      accessToken,
+    });
+  } catch (err: any) {
+    // Backup safety net for race conditions
+    if (err.code === 11000) {
+      const field = Object.keys(err.keyPattern)[0];
+      return res.status(409).json({
+        field,
+        message: `${field} already exists`,
+      });
+    }
+
     console.error("Signup error:", err);
-    res.status(500).json({ message: "Failed to create user", err });
+    res.status(500).json({
+      message: "Failed to create user",
+    });
   }
 };
 
@@ -151,28 +166,33 @@ const signout = async (req: Request, res: Response) => {
     const refreshToken = req.cookies.refreshToken;
 
     if (refreshToken) {
-      const decoded = jwt.verify(
-        refreshToken,
-        process.env.REFRESH_TOKEN_SECRET!,
-      ) as JwtPayload;
+      const decoded = jwt.decode(refreshToken) as JwtPayload;
 
-      await User.findByIdAndUpdate(decoded._id, {
-        refreshToken: null,
-      });
+      if (decoded?._id) {
+        await User.findByIdAndUpdate(decoded._id, {
+          refreshToken: null,
+        });
+      }
     }
-
-    res.clearCookie("refreshToken", {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-    });
-
-    return res.status(200).json({ message: "Logged out successfully" });
-  } catch (err) {
-    // Even if token is invalid/expired, logout should succeed
-    res.clearCookie("refreshToken");
-    return res.status(200).json({ message: "Logged out successfully" });
+  } catch {
+    // intentionally ignored
   }
+
+  res.clearCookie("refreshToken", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+  });
+
+  res.clearCookie("accessToken", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+  });
+
+  return res.status(200).json({
+    message: "Logged out successfully",
+  });
 };
 
 const deleteAccount = async (req: Request, res: Response) => {
@@ -296,17 +316,22 @@ const refreshAccessToken = async (req: Request, res: Response) => {
     ) as MyJwtPayload;
 
     const user = await User.findById(decoded._id);
-
-    if (!user || !user.refreshToken) return res.sendStatus(403);
+    if (!user || !user.refreshToken) {
+      return res.sendStatus(401);
+    }
 
     const isValid = await bcrypt.compare(token, user.refreshToken);
-    if (!isValid) return res.sendStatus(403);
+    if (!isValid) {
+      return res.sendStatus(401);
+    }
 
     const newAccessToken = generateAccessToken(user);
-
-    return res.json({ accessToken: newAccessToken });
+    console.log("new access token: ", newAccessToken);
+    return res.json({ accessToken: newAccessToken, user });
   } catch {
-    return res.status(403).json({ message: "Refresh token expired" });
+    return res.status(401).json({
+      message: "Invalid or expired refresh token",
+    });
   }
 };
 

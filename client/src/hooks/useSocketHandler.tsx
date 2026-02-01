@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { io, Socket } from "socket.io-client";
 import type { IUser } from "../types/type";
-import useAuth from "./useAuth";
 
 interface UseSocketReturn {
     socket: Socket | null;
@@ -17,7 +16,6 @@ const useSocketHandler = (user?: IUser): UseSocketReturn => {
     const [isConnected, setIsConnected] = useState(false);
     const [onlineUsers, setOnlineUsers] = useState<IUser[]>([]);
     const socketRef = useRef<Socket | null>(null);
-    const { accessToken } = useAuth();
 
     const backendUrl = useMemo(() => import.meta.env.VITE_SOCKET_URL as string, []);
 
@@ -59,7 +57,7 @@ const useSocketHandler = (user?: IUser): UseSocketReturn => {
         // Create new socket connection
         const newSocket: Socket = io(backendUrl, {
             auth: {
-                token: accessToken,
+                token: localStorage.getItem("accessToken"),
             },
             withCredentials: true,
             reconnection: true,
@@ -103,7 +101,7 @@ const useSocketHandler = (user?: IUser): UseSocketReturn => {
 
         // Cleanup on unmount or token change
         return () => cleanupSocket();
-    }, [user, accessToken, backendUrl, cleanupSocket]);
+    }, [user, backendUrl, cleanupSocket]);
 
     // --- Emitters ---
     const sendMessage = useCallback((message: string, roomId: string) => {

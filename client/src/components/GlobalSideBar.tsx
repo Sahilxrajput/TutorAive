@@ -137,7 +137,9 @@ const GlobalSideBar = () => {
                     <span className="absolute -top-1 -right-1 w-2 h-2 bg-indigo-500 rounded-full border border-black shadow-[0_0_10px_rgba(99,102,241,0.5)]" />
                 </button>
 
-                <Avatar className={cn("rounded-2xl cursor-pointer border transition-all duration-500",
+                <Avatar 
+                onClick={()=> navigate("/dashboard")}
+                className={cn("rounded-2xl cursor-pointer border transition-all duration-500",
                     location.pathname === "/dashboard"
                         ? "border-indigo-500 bg-indigo-500/10"
                         : "border-white/5 hover:border-white/20"

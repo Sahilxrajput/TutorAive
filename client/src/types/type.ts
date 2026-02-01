@@ -83,8 +83,6 @@ export interface IClassroom {
 export interface AuthContextValue {
   user: IUser | null;
   setUser: Dispatch<SetStateAction<IUser | null>>;
-  setAccessToken: Dispatch<SetStateAction<string | null>>;
-  accessToken: string | null;
   isInstructor: boolean;
   loading: boolean;
   refreshUser: () => Promise<void>;

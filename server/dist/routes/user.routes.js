@@ -9,8 +9,6 @@ const user_controller_1 = require("../controllers/user.controller");
 const router = (0, express_1.Router)();
 // auth
 router.use(auth_middleware_1.default);
-// profile
-router.get("/me", user_controller_1.myProfile);
 // get all the enrolled courses of user
 router.get("/enrolled", user_controller_1.getAllEnrolledClassrooms);
 // get a user by id
