@@ -79,150 +79,150 @@ const ContactSection = () => {
         }
     };
 
-    return (
-        <section id="contacts" className="py-24 bg-black relative overflow-hidden">
-            {/* Background Accent Glow */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-indigo-600/5 blur-[120px] rounded-full -z-10" />
-            <div className="max-w-7xl mx-auto px-8">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
+     return (
+            <section id="contacts" className="py-24 bg-background relative overflow-hidden">
+                {/* Background Glow */}
+                <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 blur-[120px] rounded-full -z-10 opacity-50" />
 
-                    {/* LEFT SIDE: INFO */}
-                    <motion.div
-                        initial={{ opacity: 0, x: -30 }}
-                        whileInView={{ opacity: 1, x: 0 }}
-                        viewport={{ once: true }}
-                        className="space-y-8"
-                    >
-                        <div>
-                            <span className="text-indigo-500 font-bold tracking-[0.3em] text-xs uppercase mb-4 block font-oswald">
-                                Get in Touch
-                            </span>
-                            <h2 className="text-5xl md:text-6xl font-bold font-cinzel text-white mb-6">
-                                LET'S START A <br />
-                                <span className="text-indigo-500 italic">CONVERSATION.</span>
-                            </h2>
-                            <p className="text-neutral-400 text-lg font-light max-w-md">
-                                Have questions about our classroom features? We're here to help you scale your learning journey.
-                            </p>
-                        </div>
+                <div className="max-w-7xl mx-auto px-6 md:px-12">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
 
-                        <div ref={ref} className="space-y-6">
-                            {contactInfo.map((item, i) => (
-                                <motion.div
-                                    key={i}
-                                    initial={{ opacity: 0, x: -50 }}
-                                    animate={isInView ? { opacity: 1, x: 0 } : {}}
-                                    transition={{ delay: 0.2 * i }}
-                                    className="flex items-center gap-3 group "
-                                >
-                                    <div className="w-12 h-12 rounded-2xl bg-neutral-900 border border-white/5 flex items-center justify-center text-indigo-400 group-hover:border-indigo-500/30 transition-all">
-                                        <item.icon size={22} />
-                                    </div>
-                                    <div>
-                                        <div className="text-[10px] text-neutral-500 uppercase tracking-widest font-bold font-oswald">{item.label}</div>
-                                        <a href={item.href} className="text-white hover:text-indigo-400 transition-colors">{item.value}</a>
-                                    </div>
-                                </motion.div>
-                            ))}
-                        </div>
-
-                        {/* Social Links */}
-                        <div className="flex gap-4 pt-4">
-
-
-
-                            {socialLinks.map(({ icon: Icon, href }, i) => (
-                                <motion.a
-                                    key={i}
-                                    whileHover={{ y: -5 }}
-                                    href={href}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="w-10 h-10 rounded-full bg-neutral-900 border border-white/5 flex items-center justify-center text-neutral-400 hover:text-white hover:border-indigo-500/50 transition-all"
-                                >
-                                    <Icon size={18} />
-                                </motion.a>
-                            ))}
-                        </div>
-                    </motion.div>
-
-                    {/* RIGHT SIDE: FORM */}
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.95, x: 30 }}
-                        whileInView={{ opacity: 1, scale: 1, x: 0 }}
-                        viewport={{ once: true }}
-                        className="bg-neutral-900/40 backdrop-blur-xl border border-white/5 p-8 md:p-12 rounded-[3rem] relative"
-                    >
-                        <form className="space-y-6"
-                            onSubmit={(e) => handleFormSubmit(e)}
+                        {/* LEFT SIDE: INFO */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            className="space-y-10"
                         >
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div className="space-y-2">
-                                    <label className="text-xs font-bold font-oswald text-neutral-500 uppercase tracking-widest ml-1">Name</label>
-                                    <input
-                                        onChange={(e) => setName(e.target.value)}
-                                        value={name}
-                                        type="text"
-                                        placeholder="Sahil Rajput"
-                                        className="w-full bg-black/50 border border-white/10 rounded-2xl px-6 py-4 text-white focus:outline-none focus:border-indigo-500/50 transition-all placeholder:text-neutral-700"
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-xs font-bold font-oswald text-neutral-500 uppercase tracking-widest ml-1">Email</label>
-                                    <input
-                                        onChange={(e) => setEmail(e.target.value)}
-                                        type="email"
-                                        value={email}
-                                        placeholder="sahil@bhu.ac.in"
-                                        className="w-full bg-black/50 border border-white/10 rounded-2xl px-6 py-4 text-white focus:outline-none focus:border-indigo-500/50 transition-all placeholder:text-neutral-700"
-                                    />
-                                </div>
+                            <div>
+                                <span className="text-primary font-bold tracking-[0.4em] text-[10px] uppercase mb-4 block font-oswald">
+                                    Get in Touch
+                                </span>
+                                <h2 className="text-5xl md:text-6xl font-bold font-cinzel text-foreground leading-tight mb-6">
+                                    LET'S START A <br />
+                                    <span className="text-primary italic font-medium font-montserrat">CONVERSATION.</span>
+                                </h2>
+                                <p className="text-muted-foreground text-lg font-inter max-w-md leading-relaxed">
+                                    Have questions about our classroom features? We're here to help you scale your learning journey.
+                                </p>
                             </div>
 
-                            <div className="space-y-2">
-                                <label className="text-xs font-bold font-oswald text-neutral-500 uppercase tracking-widest ml-1">Subject</label>
-                                <select className="w-full bg-black/50 border border-white/10 rounded-2xl px-6 py-4 text-white focus:outline-none focus:border-indigo-500/50 transition-all appearance-none cursor-pointer"
-                                    onChange={(e) => setSubject(e.target.value)}
-                                    value={subject}
+                            <div ref={ref} className="space-y-8">
+                                {contactInfo.map((item, i) => (
+                                    <motion.div
+                                        key={i}
+                                        initial={{ opacity: 0, x: -20 }}
+                                        animate={isInView ? { opacity: 1, x: 0 } : {}}
+                                        transition={{ delay: 0.1 * i }}
+                                        className="flex items-center gap-5 group"
+                                    >
+                                        <div className="w-14 h-14 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all duration-300">
+                                            <item.icon size={24} />
+                                        </div>
+                                        <div>
+                                            <div className="text-[10px] text-muted-foreground uppercase tracking-[0.2em] font-bold font-oswald mb-1">{item.label}</div>
+                                            <a href={item.href} className="text-foreground font-medium text-lg hover:text-primary transition-colors">
+                                                {item.value}
+                                            </a>
+                                        </div>
+                                    </motion.div>
+                                ))}
+                            </div>
+
+                            {/* Social Links */}
+                            <div className="flex gap-5 pt-6">
+                                {socialLinks.map(({ icon: Icon, href }, i) => (
+                                    <motion.a
+                                        key={i}
+                                        whileHover={{ scale: 1.1, y: -2 }}
+                                        href={href}
+                                        target="_blank"
+                                        className="w-12 h-12 rounded-xl bg-muted border border-border flex items-center justify-center text-muted-foreground hover:text-primary hover:border-primary/50 transition-all"
+                                    >
+                                        <Icon size={20} />
+                                    </motion.a>
+                                ))}
+                            </div>
+                        </motion.div>
+
+                        {/* RIGHT SIDE: FORM */}
+                        <motion.div
+                            initial={{ opacity: 0, x: 40 }}
+                            whileInView={{ opacity: 1, x: 0 }}
+                            viewport={{ once: true }}
+                            className="bg-card dark:bg-neutral-900/40 backdrop-blur-sm border border-border dark:border-white/5 p-8 md:p-10 rounded-[2.5rem] shadow-xl shadow-black/5"
+                        >
+                            <form className="space-y-5" onSubmit={handleFormSubmit}>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-bold font-oswald text-muted-foreground uppercase tracking-widest ml-1">Name</label>
+                                        <input
+                                            onChange={(e) => setName(e.target.value)}
+                                            value={name}
+                                            type="text"
+                                            placeholder="Sahil Rajput"
+                                            className="w-full bg-input/50 border border-transparent rounded-xl px-5 py-4 focus:bg-background focus:border-primary/30 focus:ring-4 focus:ring-primary/5 transition-all outline-none"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-bold font-oswald text-muted-foreground uppercase tracking-widest ml-1">Email</label>
+                                        <input
+                                            onChange={(e) => setEmail(e.target.value)}
+                                            value={email}
+                                            type="email"
+                                            placeholder="sahil@bhu.ac.in"
+                                            className="w-full bg-input/50 border border-transparent rounded-xl px-5 py-4 focus:bg-background focus:border-primary/30 focus:ring-4 focus:ring-primary/5 transition-all outline-none"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-bold font-oswald text-muted-foreground uppercase tracking-widest ml-1">Subject</label>
+                                    <div className="relative">
+                                        <select
+                                            className="w-full bg-input/50 border border-transparent rounded-xl px-5 py-4 appearance-none cursor-pointer focus:bg-background focus:border-primary/30 outline-none transition-all"
+                                            onChange={(e) => setSubject(e.target.value)}
+                                            value={subject}
+                                        >
+                                            <option value="general-inquiry">General Inquiry</option>
+                                            <option value="teacher-inquiry">Teacher Inquiry</option>
+                                            <option value="student-inquiry">Student Inquiry</option>
+                                            <option value="feedback-inquiry">Feedback</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-bold font-oswald text-muted-foreground uppercase tracking-widest ml-1">Message</label>
+                                    <textarea
+                                        value={message}
+                                        onChange={(e) => setMessage(e.target.value)}
+                                        rows={4}
+                                        placeholder="How can we help?"
+                                        className="w-full bg-input/50 border border-transparent rounded-xl px-5 py-4 focus:bg-background focus:border-primary/30 outline-none transition-all resize-none"
+                                    />
+                                </div>
+
+                                <button
+                                    type="submit"
+                                    disabled={!isFormValid || isSubmitting}
+                                    className={cn(
+                                        "w-full py-5 rounded-xl font-bold font-oswald tracking-[0.2em] uppercase text-sm flex items-center justify-center gap-3 transition-all duration-300",
+                                        isFormValid
+                                            ? "bg-foreground text-background hover:bg-primary hover:scale-[1.02] active:scale-[0.98]"
+                                            : "bg-muted text-muted-foreground opacity-50"
+                                    )}
                                 >
-                                    <option value="" disabled>Select a subject</option>
-                                    <option value={"general-inquiry"}>General Inquiry</option>
-                                    <option value={"teacher-inquiry"}>Teacher Inquiry</option>
-                                    <option value={"student-inquiry"}>Student Inquiry</option>
-                                    <option value={"feedback-inquiry"}>Feedback </option>
-                                </select>
-                            </div>
-
-                            <div className="space-y-2">
-                                <label className="text-xs font-bold font-oswald text-neutral-500 uppercase tracking-widest ml-1">Message</label>
-                                <textarea
-                                    value={message}
-                                    onChange={(e) => setMessage(e.target.value)}
-                                    rows={4}
-                                    placeholder="Tell us what's on your mind..."
-                                    required
-                                    className="w-full bg-black/50 border border-white/10 rounded-2xl px-6 py-4 text-white focus:outline-none focus:border-indigo-500/50 transition-all placeholder:text-neutral-700 resize-none"
-                                />
-                            </div>
-
-                            <button
-                                type="submit"
-                                disabled={!isFormValid || isSubmitting}
-                                className={cn("w-full py-5 rounded-2xl font-bold font-oswald tracking-[0.2em] uppercase text-sm flex items-center justify-center gap-3 transition-all",
-                                    isFormValid
-                                        ? "bg-indigo-600 text-white hover:bg-indigo-500 hover:shadow-2xl hover:shadow-indigo-500/20"
-                                        : "bg-neutral-800 text-neutral-500 cursor-not-allowed"
-                                )}
-                            >
-                                {isSubmitting ? "Sending..." : "Send Message"}
-                                <Send size={18} />
-                            </button>
-                        </form>
-                    </motion.div>
+                                    {isSubmitting ? "Sending..." : "Send Message"}
+                                    <Send size={18} />
+                                </button>
+                            </form>
+                        </motion.div>
+                    </div>
                 </div>
-            </div>
-        </section >
-    );
+            </section>
+        );
+    
 };
 
 export default ContactSection;

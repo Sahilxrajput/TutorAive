@@ -12,6 +12,9 @@ dist
 dist-ssr
 *.local
 
+src/pages/LandingPages/ProjectTimeLine.tsx
+src/pages/LandingPages/Pricing.tsx
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

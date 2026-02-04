@@ -1,4 +1,6 @@
-import { Github, Linkedin, Twitter, Instagram, Zap } from 'lucide-react';
+import { motion } from 'framer-motion';
+import GradientHeading  from '@/components/GradientHeading';
+import { Github, Linkedin, Twitter, Instagram, Send } from 'lucide-react';
 
 const Footer = () => {
     const socialLinks = [
@@ -7,7 +9,8 @@ const Footer = () => {
         { icon: Twitter, href: "https://x.com/SaahilxRajput" },
         { icon: Instagram, href: "https://www.instagram.com/sahil_rajput.env/" }
     ];
-    const links = [
+
+    const linkGroups = [
         {
             title: "Product",
             links: ["About Us", "How It Works", "FAQs", "Blog"]
@@ -18,84 +21,118 @@ const Footer = () => {
         },
         {
             title: "Educators",
-            links: ["Become an Instructor", "Create a Course", "Teaching Guidelines"]
+            links: ["Become Instructor", "Create Course", "Guidelines"]
         }
-    ]
+    ];
 
     return (
-        <footer className="bg-black border-t border-white/5  relative overflow-hidden">
-            {/* Ready to begin */}
+        <footer className="bg-background border-t border-border/50 relative overflow-hidden">
             
-                {/* <motion.h2
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    className="text-5xl md:text-7xl font-bold text-center border-b border-px border-[#121212] text-white py-12 font-cinzel"
-                >
-                    READY TO <span className="text-indigo-500 italic">BEGIN?</span>
-                </motion.h2> */}
-
-            <div className="absolute bottom-0 w-full h-[300px] bg-indigo-600/5 blur-[120px] rounded-full pointer-events-none z-0" />
-
-            <div className="max-w-7xl mx-auto px-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-16 my-10">
-
-                {/* Brand Column */}
-                <div className="lg:col-span-2 space-y-6">
-                    <div className="flex items-center gap-2">
-                        <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
-                            <Zap className="text-white fill-white" size={20} />
-                        </div>
-                        <span className="text-2xl font-bold tracking-tighter leading-none bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 via-white to-indigo-600 font-cinzel">TUTORAIVE</span>
-                    </div>
-
-                    <p className="text-neutral-400 text-sm leading-relaxed max-w-sm">
-                        Built for students. Empowered by educators. Transforming silent screen time into a vibrant, interactive digital classroom experience.
-                    </p>
-
-                    <div className="flex items-center gap-4">
-                        {socialLinks.map((social, i) => (
-                            <a
-                                key={i}
-                                href={social.href}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center text-neutral-500 hover:text-indigo-400 hover:border-indigo-500/50 hover:bg-indigo-500/5 transition-all duration-300"
-                            >
-                                <social.icon size={18} />
-                            </a>
-                        ))}
-                    </div>
+            {/* Top Banner */}
+            <div className="border-b border-border/50">
+                <div className="max-w-7xl mx-auto px-8 py-20 flex flex-col items-center text-center">
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        className="space-y-6"
+                    >
+                        <h2 className="text-5xl md:text-8xl font-bold font-cinzel text-foreground tracking-tighter leading-none uppercase">
+                            Ready to <span className="text-primary italic font-light">Begin?</span>
+                        </h2>
+                        <button className="px-10 py-4 bg-foreground text-background rounded-full font-oswald font-bold tracking-widest text-xs uppercase hover:bg-primary hover:text-white transition-all duration-300 shadow-xl shadow-black/5">
+                            Get Started Now
+                        </button>
+                    </motion.div>
                 </div>
-
-                {/* Link Columns */}
-                {links.map((col, i) => (
-                    <div key={i} className="space-y-6">
-                        <h5 className="text-white font-bold font-oswald text-xs uppercase tracking-[0.2em]">
-                            {col.title}
-                        </h5>
-                        <ul className="space-y-4">
-                            {col.links.map((link, j) => (
-                                <li key={j}>
-                                    <a href="#" className="text-neutral-500 text-sm hover:text-white transition-colors duration-200">
-                                        {link}
-                                    </a>
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
-                ))}
             </div>
 
-            {/* Bottom Bar */}
-            <div className="flex flex-col md:flex-row justify-between max-w-7xl mx-auto px-8 items-center gap-8 py-8 border-t border-white/5 text-neutral-600 text-sm">
-                <div className="flex items-center gap-2">
-                    <Zap size={16} className="text-indigo-500" />
-                    <span className="font-bold tracking-tighter leading-none bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 via-white to-indigo-600 font-cinzel">TUTORAIVE</span>
-                    <span className="ml-2">© 2026. Make Learning Feel ALIVE.</span>
+            {/* Background */}
+            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full h-[400px] bg-primary/5 blur-[120px] rounded-full pointer-events-none -z-10" />
+
+            <div className="max-w-7xl mx-auto px-8 pt-20 pb-12">
+                {/* Main Footer Content */}
+                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-16 mb-20">
+
+                    {/* Brand Column (Span 2) */}
+                    <div className="md:col-span-3 lg:col-span-2 space-y-8">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 relative">
+                                <img src="/logo.png" alt="logo" className="w-full h-full object-contain" />
+                            </div>
+                            <GradientHeading className="text-2xl tracking-tighter">
+                                TUTORAIVE
+                            </GradientHeading>
+                        </div>
+
+                        <p className="text-muted-foreground text-sm leading-relaxed max-w-sm font-inter font-light">
+                            Empowering educators and inspiring students through immersive, real-time digital classroom technology. Built for the future of learning.
+                        </p>
+
+                        <div className="flex items-center gap-4">
+                            {socialLinks.map((social, i) => (
+                                <a
+                                    key={i}
+                                    href={social.href}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="w-11 h-11 rounded-xl bg-muted border border-border flex items-center justify-center text-muted-foreground hover:bg-primary hover:text-white hover:border-primary transition-all duration-500 shadow-sm"
+                                >
+                                    <social.icon size={18} strokeWidth={1.5} />
+                                </a>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Navigation Link Groups */}
+                    {linkGroups.map((col, i) => (
+                        <div key={i} className="space-y-8">
+                            <h5 className="text-foreground font-bold font-oswald text-[10px] uppercase tracking-[0.3em]">
+                                {col.title}
+                            </h5>
+                            <ul className="space-y-4">
+                                {col.links.map((link, j) => (
+                                    <li key={j}>
+                                        <a href="#" className="text-muted-foreground text-sm hover:text-primary transition-colors duration-300 font-inter">
+                                            {link}
+                                        </a>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    ))}
+
+                    {/* Newsletter Column */}
+                    <div className="lg:col-span-1 space-y-8">
+                        <h5 className="text-foreground font-bold font-oswald text-[10px] uppercase tracking-[0.3em]">
+                            Stay Updated
+                        </h5>
+                        <div className="relative group">
+                            <input
+                                type="email"
+                                placeholder="Email"
+                                className="w-full bg-muted border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary transition-all"
+                            />
+                            <button className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-foreground text-background rounded-lg flex items-center justify-center hover:bg-primary transition-colors">
+                                <Send size={14} />
+                            </button>
+                        </div>
+                    </div>
                 </div>
-                <div className="flex gap-8">
-                    <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
-                    <a href="#" className="hover:text-white transition-colors">Terms of Service</a>
-                    <a href="#" className="hover:text-white transition-colors">Contact Support</a>
+
+                {/* Bottom Copyright Bar */}
+                <div className="pt-12 border-t border-border/50 flex flex-col md:flex-row justify-between items-center gap-8 text-[11px] font-bold font-oswald uppercase tracking-widest text-muted-foreground">
+                    <div className="flex items-center gap-3">
+                        <span className="text-primary tracking-normal">© 2026</span>
+                        <span>TUTORAIVE PLATFORM</span>
+                        <span className="text-[8px] opacity-20 hidden md:block">|</span>
+                        <span className="hidden md:block">MAKE LEARNING FEEL ALIVE</span>
+                    </div>
+                    <div className="flex gap-8">
+                        <a href="#" className="hover:text-primary transition-colors">Privacy</a>
+                        <a href="#" className="hover:text-primary transition-colors">Terms</a>
+                        <a href="#" className="hover:text-primary transition-colors">Support</a>
+                    </div>
                 </div>
             </div>
         </footer>

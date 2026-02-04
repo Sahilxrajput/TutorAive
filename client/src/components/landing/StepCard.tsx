@@ -15,28 +15,33 @@ const StepCard = ({ number, icon: Icon, title, description, delay }: Props) => (
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.8, delay }}
-        className="group relative p-10 rounded-[3rem] bg-neutral-900/40 border border-white/5 backdrop-blur-xl hover:border-indigo-500/30 transition-all duration-500 overflow-hidden"
+        /* Added h-full to make all cards in a row the same height */
+        className="group relative h-full p-10 rounded-[2.5rem] bg-card dark:bg-neutral-900/40 border border-border dark:border-white/5 backdrop-blur-xl hover:border-primary/30 hover:shadow-2xl hover:shadow-primary/5 transition-all duration-500 overflow-hidden flex flex-col"
     >
-        {/* Step Number Background */}
-        <span className="absolute -right-4 -top-4 text-[10rem] font-black text-white/[0.02] select-none pointer-events-none font-cinzel">
+        {/* Large Background Number - Adjusted for light/dark mode */}
+        <span className="absolute -right-2 -top-6 text-[10rem] font-black text-foreground/[0.03] dark:text-white/[0.02] select-none pointer-events-none font-cinzel leading-none">
             {number}
         </span>
 
-        <div className="relative z-10">
-            <div className="w-16 h-16 rounded-2xl bg-indigo-600/10 flex items-center justify-center mb-8 group-hover:scale-110 group-hover:bg-indigo-600/20 transition-all duration-500">
-                <Icon className="text-indigo-400" size={32} />
+        <div className="relative z-10 flex flex-col h-full">
+            {/* Icon Container */}
+            <div className="w-16 h-16 rounded-2xl bg-primary/5 dark:bg-dark/10 flex items-center justify-center mb-8 group-hover:scale-110 group-hover:bg-primary group-hover:text-white transition-all duration-500 text-primary">
+                <Icon size={30} strokeWidth={1.5} />
             </div>
 
-            <h3 className="text-2xl font-bold text-white mb-4 tracking-tight font-oswald uppercase">
+            {/* Title */}
+            <h3 className="text-xl font-bold text-foreground dark:text-white mb-4 tracking-wider font-oswald uppercase">
                 {title}
             </h3>
 
-            <p className="text-neutral-400 leading-relaxed font-light">
+            {/* Description - Added flex-grow to push footer down */}
+            <p className="text-muted-foreground dark:text-neutral-400 leading-relaxed font-inter font-light flex-grow">
                 {description}
             </p>
 
-            <div className="mt-8 flex items-center gap-2 text-indigo-400 text-xs font-bold tracking-[0.2em] uppercase font-oswald opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                Learn More <ArrowRight size={14} />
+            {/* Bottom Link - Now perfectly aligned at the bottom of all cards */}
+            <div className="mt-8 flex items-center gap-2 text-primary text-[10px] font-bold tracking-[0.2em] uppercase font-oswald translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500">
+                Dive Deeper <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
             </div>
         </div>
     </motion.div>

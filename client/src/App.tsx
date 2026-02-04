@@ -1,5 +1,5 @@
 import { Routes, Route } from "react-router-dom";
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { Analytics } from '@vercel/analytics/react';
 
 // wrappers / layout / loading (keep eager)
@@ -7,6 +7,7 @@ import Layout from "./components/Layout";
 import ProtectedRoute from "./wrapper/ProtectedRoute";
 import EnrolledRoute from "./wrapper/EnrolledRoute";
 import LoadingPage from "./pages/LandingPages/LoadingPage";
+import { initTheme } from "./lib/theme";
 
 // lazy pages
 const LandingPage = lazy(
@@ -40,10 +41,14 @@ const LeaderboardPage = lazy(
 );
 
 const App: React.FC = () => {
+    useEffect(() => {
+        initTheme();
+    }, []);
+
     return (
         <>
             <Analytics />
-            <Suspense fallback={<LoadingPage/>}>
+            <Suspense fallback={<LoadingPage />}>
                 <Routes>
                     <Route path="/" element={<LandingPage />} />
 

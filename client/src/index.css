@@ -3,44 +3,9 @@
 @import "tw-animate-css";
 @import "./styles/_variables.scss";
 @import "./styles/_keyframe-animations.scss";
+@tailwind utilities;
 
 @custom-variant dark (&:is(.dark *));
-
-/* Hide scrollbar but keep scroll functionality */
-.scrollbar-hide {
-  -ms-overflow-style: none; /* IE and Edge */
-  scrollbar-width: none; /* Firefox */
-}
-
-::-webkit-scrollbar {
-  width: 8px;
-}
-::-webkit-scrollbar-track {
-  background: #000;
-}
-::-webkit-scrollbar-thumb {
-  background: #222;
-  border-radius: 10px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #333;
-}
-
-.scrollbar-hide::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, Opera */
-}
-
-.gradient-primary {
-  background: radial-gradient(circle at center, #fafbfd 0%, #cfe0f3 80%);
-}
-
-.gradient-secondary {
-  background: radial-gradient(circle at center, #fffefb 0%, #f2e8dc 80%);
-}
-
-.gradient-tercery {
-  background: radial-gradient(circle at center, #f7fefc 0%, #d8f3ec 80%);
-}
 
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
@@ -50,7 +15,10 @@
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
   --color-popover: var(--popover);
+  --color-dark: var(--dark);
   --color-popover-foreground: var(--popover-foreground);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
   --color-secondary: var(--secondary);
@@ -73,6 +41,10 @@
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
 
+  --color-heading-main: var(--heading-main);
+  --color-heading-sub: var(--heading-sub);
+  --color-heading-hover: var(--heading-hover);
+
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
@@ -92,29 +64,28 @@
 }
 
 :root {
-  --radius: 0.625rem;
-  --background: oklch(98.237% 0.00844 348.495);
-  --foreground: oklch(0.141 0.005 285.823);
-  --card: oklch(1 0 0);
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --card: #ffffff;
+  --primary: #0d9488;
+  --dark: #134e4a;
+  --border: #e2e8f0;
+  --input: #f1f5f9;
+  --muted-foreground: #64748b;
+  --radius: 1.5rem; 
   --card-foreground: oklch(0.141 0.005 285.823);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.141 0.005 285.823);
-  /* --primary: oklch(0.21 0.006 285.885); */
-  --primary: #26d9d9;
-  --secondary: #b8c8ff;
-  --p: #e36ee5;
-  --s: #7e31e1;
-  --t: #c793ff;
+  --heading-main: rgba(79, 70, 229);
+  --heading-sub: rgba(99, 102, 241);
+  --heading-hover: rgba(99, 102, 241);
   --primary-foreground: oklch(0.985 0 0);
   --secondary-foreground: oklch(0.21 0.006 285.885);
+  --secondary: oklab(83.967% 0.00277 -0.07928);
   --muted: oklab(96.744% 0.00038 -0.00138);
-  /* --muted: #171717 */
-  --muted-foreground: oklch(0.552 0.016 285.938);
   --accent: oklch(0.967 0.001 286.375);
   --accent-foreground: oklch(0.21 0.006 285.885);
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.92 0.004 286.32);
-  --input: oklch(0.92 0.004 286.32);
   --ring: oklch(0.705 0.015 286.067);
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
@@ -134,22 +105,23 @@
 }
 
 .dark {
-  --background: oklch(0.141 0.005 285.823);
+  --dark: oklch(51.1% 0.262 276.966);
+  --primary: oklch(58.5% 0.233 277.117);
+  --primary-foreground: oklch(67.3% 0.182 276.935);
+  --secondary: ;
+  --secondary-foreground: ;
+  --background: oklch(0% 0 0);
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.21 0.006 285.885);
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.21 0.006 285.885);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.92 0.004 286.32);
-  --primary-foreground: oklch(0.21 0.006 285.885);
-  --secondary: oklch(0.274 0.006 286.033);
-  --secondary-foreground: oklch(0.985 0 0);
   --muted: oklch(0.274 0.006 286.033);
   --muted-foreground: oklch(0.705 0.015 286.067);
   --accent: oklch(0.274 0.006 286.033);
   --accent-foreground: oklch(0.985 0 0);
   --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
+  --border: oklch(100% 0.00011 271.152 / 0.1);
   --input: oklch(1 0 0 / 15%);
   --ring: oklch(0.552 0.016 285.938);
   --chart-1: oklch(0.488 0.243 264.376);
@@ -181,7 +153,7 @@
   .animate-ripple {
     animation: ripple 2s linear infinite;
   }
-  
+
   .animate-ripple-blue {
     animation: ripple-blue 2s linear infinite;
   }
@@ -217,7 +189,7 @@
 
 @keyframes ripple-blue {
   0% {
-    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4); /* blue */
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4);
   }
   70% {
     box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
@@ -227,7 +199,6 @@
   }
 }
 
-
 @layer base {
   * {
     border-color: var(--color-border);
@@ -236,8 +207,70 @@
     font-family: Inter;
   }
   body {
-    /* background-color: var(--background); */
-    background-color: #fefef7;
+    background-color: var(--background);
     color: var(--foreground);
   }
+}
+
+@layer components {
+  .heading-gradient {
+    @apply bg-gradient-to-r
+    from-[#26d9d9]
+    via-[#008586]
+    to-[#26d9d9]
+      bg-clip-text
+      text-transparent
+      uppercase
+      font-bold
+      tracking-tighter
+      leading-none
+      inline
+      font-cinzel;
+  }
+  .dark .heading-gradient {
+    @apply bg-gradient-to-r from-indigo-600 to-violet-600;
+  }
+  ::selection {
+    @apply selection:bg-green-500/30;
+  }
+
+  .dark ::selection {
+    @apply selection:bg-indigo-500/30;
+  }
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--background);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--muted-foreground);
+  border-radius: 10px;
+  border: 2px solid var(--background);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #333;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.gradient-primary {
+  background: radial-gradient(circle at center, #fafbfd 0%, #cfe0f3 80%);
+}
+
+.gradient-secondary {
+  background: radial-gradient(circle at center, #fffefb 0%, #f2e8dc 80%);
+}
+
+.gradient-tercery {
+  background: radial-gradient(circle at center, #f7fefc 0%, #d8f3ec 80%);
 }

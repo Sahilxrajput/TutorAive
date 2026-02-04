@@ -1,16 +1,10 @@
 import { useState, useEffect, useRef } from "react";
-import {
-    BookOpen,
-    Twitch,
-    Compass,
-    Bell,
-    Home
-} from "lucide-react";
+import { BookOpen, Twitch, Compass, Bell, Home } from "lucide-react";
 import { motion } from "framer-motion";
 import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
 import { useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import defaultAvatar from '@/./assets/image/avatar.png'
+import defaultAvatar from '@/assets/image/avatar.png'
 import useAuth from "@/hooks/useAuth";
 import { NotificationSidebar } from "./notification/NotificationSidebar";
 
@@ -37,16 +31,16 @@ const Cursor = ({ indicator }: { indicator: Indicator }) => (
         }}
         transition={{
             type: "spring",
-            stiffness: 400,
-            damping: 35
+            stiffness: 350,
+            damping: 30
         }}
     >
         {/* The "Electric" Glow Line */}
-        <div className="absolute left-0 top-1/4 h-1/2 w-[2px] bg-indigo-400 shadow-[0_0_15px_rgba(129,140,248,0.8)]" />
+        <div className="absolute left-0 top-1/4 h-1/2 w-[3px] bg-primary shadow-[0_0_20px_rgba(var(--primary-rgb),0.8)] rounded-full" />
     </motion.div>
 );
 
-const GlobalSideBar = () => {
+export default function GlobalSideBar() {
     const [NotificationOpen, setNotificationOpen] = useState(false);
     const containerRef = useRef<HTMLDivElement | null>(null);
     const activeElRef = useRef<HTMLElement | null>(null);
@@ -70,10 +64,8 @@ const GlobalSideBar = () => {
         });
     };
 
-    // Sync indicator with active route on load and state change
     useEffect(() => {
         if (!containerRef.current) return;
-
         const activeEl = containerRef.current.querySelector(
             `[data-path='${location.pathname}']`
         ) as HTMLElement | null;
@@ -84,79 +76,81 @@ const GlobalSideBar = () => {
         }
     }, [location.pathname]);
 
-    return (<>
-        <aside className="hidden md:flex h-screen w-20 bg-black border-r border-white/5 flex-col items-center justify-between py-8 relative z-[100] backdrop-blur-xl">
+    return (
+        <>
+            <aside className="hidden md:flex h-screen w-20 bg-background/80 dark:bg-black/40 border-r border-border dark:border-white/5 flex-col items-center justify-between py-8 relative z-[100] backdrop-blur-2xl transition-colors duration-500">
 
-            <Avatar className="flex flex-col items-center justify-center">
-                <AvatarImage className="object-contain w-16 rounded-full" src="./logo.png" alt="Logo" />
-                <AvatarFallback className="text-indigo-400 font-bold text-xs">
-                    SR
-                </AvatarFallback>
-                <span className="text-[10px] font-bold font-oswald leading-none bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 via-white to-indigo-600 tracking-widest uppercase">TutorAive</span>
-            </Avatar>
+                <div className="flex flex-col items-center gap-2 group cursor-pointer" onClick={() => navigate("/")}>
+                    <div className="relative w-12 h-12 rounded-2xl bg-card dark:bg-neutral-900 border border-border dark:border-white/10 flex items-center justify-center shadow-xl group-hover:scale-110 transition-transform">
+                        <img className="w-8 h-8 object-contain" src="/logo.png" alt="Logo" />
+                    </div>
+                    <span className="text-[8px] font-bold font-oswald text-muted-foreground uppercase tracking-[0.3em] group-hover:text-primary transition-colors">TutorAive</span>
+                </div>
 
-            {/* Main Navigation */}
-            <nav
-                ref={containerRef}
-                onPointerLeave={() => {
-                    if (activeElRef.current) {
-                        moveIndicator(activeElRef.current);
-                    }
-                }}
-                className="relative w-full flex flex-col items-center gap-4 px-2"
-            >
-                <Cursor indicator={indicator} />
+                <nav
+                    ref={containerRef}
+                    onPointerLeave={() => activeElRef.current && moveIndicator(activeElRef.current)}
+                    className="relative w-full flex flex-col items-center gap-6 px-3"
+                >
+                    <Cursor indicator={indicator} />
 
-                {navItems.map(({ id, icon: Icon, label }) => {
-                    const isActive = location.pathname === id;
-                    return (
-                        <div
-                            key={id}
-                            data-path={id}
-                            onPointerEnter={(e) => moveIndicator(e.currentTarget)}
-                            onClick={() => navigate(id)}
-                            className={`relative z-10 h-14 w-14 flex items-center justify-center rounded-xl transition-all duration-300 group cursor-pointer ${isActive ? 'text-indigo-400' : 'text-neutral-500 hover:text-neutral-200'
-                                }`}
-                        >
-                            <Icon size={24} strokeWidth={isActive ? 2.5 : 2} />
+                    {navItems.map(({ id, icon: Icon, label }) => {
+                        const isActive = location.pathname === id;
+                        return (
+                            <div
+                                key={id}
+                                data-path={id}
+                                onPointerEnter={(e) => moveIndicator(e.currentTarget)}
+                                onClick={() => navigate(id)}
+                                className={cn(
+                                    "relative z-10 h-12 w-12 flex items-center justify-center rounded-2xl transition-all duration-300 group cursor-pointer",
+                                    isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"
+                                )}
+                            >
+                                <Icon size={22} strokeWidth={isActive ? 2.5 : 2} />
 
-                            {/* Tooltip */}
-                            <div className="absolute left-20 px-3 py-1.5 bg-neutral-900 border border-white/10 rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-300 whitespace-nowrap z-50 shadow-2xl">
-                                <span className="text-[10px] font-bold font-oswald text-white uppercase tracking-widest">{label}</span>
+                                {/* Floating Tooltip */}
+                                <div className="absolute left-24 px-3 py-2 bg-popover/90 backdrop-blur-md border border-border rounded-xl opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-300 -translate-x-2 group-hover:translate-x-0 shadow-2xl">
+                                    <span className="text-[10px] font-bold font-oswald text-popover-foreground uppercase tracking-widest whitespace-nowrap">{label}</span>
+                                </div>
                             </div>
-                        </div>
-                    );
-                })}
-            </nav>
+                        );
+                    })}
+                </nav>
 
-            {/* Bottom Actions */}
-            <div className="flex flex-col items-center gap-6">
-                <button className={cn("text-neutral-600 hover:text-indigo-400 transition-colors relative", NotificationOpen && "text-indigo-400")}
-                    onClick={() => setNotificationOpen((prev) => !prev)}>
-                    <Bell size={22} />
-                    <span className="absolute -top-1 -right-1 w-2 h-2 bg-indigo-500 rounded-full border border-black shadow-[0_0_10px_rgba(99,102,241,0.5)]" />
-                </button>
+                <div className="flex flex-col items-center gap-8">
+                    <button
+                        className={cn(
+                            "p-3 rounded-2xl transition-all relative group",
+                            NotificationOpen ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted"
+                        )}
+                        onClick={() => setNotificationOpen((prev) => !prev)}
+                    >
+                        <Bell size={20} strokeWidth={2} />
+                        <span className="absolute top-3 right-3 w-2 h-2 bg-primary rounded-full border-2 border-background animate-pulse" />
+                    </button>
 
-                <Avatar 
-                onClick={()=> navigate("/dashboard")}
-                className={cn("rounded-2xl cursor-pointer border transition-all duration-500",
-                    location.pathname === "/dashboard"
-                        ? "border-indigo-500 bg-indigo-500/10"
-                        : "border-white/5 hover:border-white/20"
-                )}>
-                    <AvatarImage className="object-contain w-8 rounded-full" src={user?.profilePicture || defaultAvatar} alt="User" />
-                    <AvatarFallback className="text-indigo-400 font-bold text-xs">
-                        SR
-                    </AvatarFallback>
-                </Avatar>
-            </div>
+                    <div
+                        onClick={() => navigate("/dashboard")}
+                        className={cn(
+                            "relative w-12 h-12 rounded-full cursor-pointer border overflow-hidden transition-all duration-500 hover:scale-105 active:scale-95",
+                            location.pathname === "/dashboard"
+                                ? "border-primary shadow-[0_0_15px_rgba(var(--primary-rgb),0.3)]"
+                                : "border-border dark:border-white/10"
+                        )}
+                    >
+                        <Avatar className="w-full h-full">
+                            <AvatarImage className="object-cover w-full h-full" src={user?.profilePicture || defaultAvatar} />
+                            <AvatarFallback className="bg-primary/10 text-primary font-bold text-xs flex items-center justify-center w-full h-full">
+                                {user?.userName?.substring(0, 2).toUpperCase() || "SR"}
+                            </AvatarFallback>
+                        </Avatar>
+                    </div>
+                </div>
 
-            {/* Background Glow Pulse */}
-            <div className="absolute top-0 left-0 w-full h-1/3 bg-gradient-to-b from-indigo-500/20 to-transparent pointer-events-none" />
-        </aside>
-        <NotificationSidebar open={NotificationOpen} setOpen={setNotificationOpen} />
-    </>
+                <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-primary/30 to-transparent pointer-events-none opacity-50" />
+            </aside>
+            <NotificationSidebar open={NotificationOpen} setOpen={setNotificationOpen} />
+        </>
     );
 };
-
-export default GlobalSideBar

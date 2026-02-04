@@ -103,7 +103,7 @@ export interface IClassroom extends Document {
   currency: string;
   assignments: Types.ObjectId[];
   exams: Types.ObjectId[];
-  lectureIds?: string;
+  lectures?: string;
   createdAt: Date;
   status: "completed" | "active";
 }
