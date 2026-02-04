@@ -5,7 +5,6 @@ import CTACard from '@/components/landing/CTACard';
 import StepCard from '@/components/landing/StepCard';
 import StudentPage from './StudentPage';
 import TeacherPage from './TeacherPage';
-import SectionHeading from '@/components/landing/SectionHeading';
 
 const teacherSteps = [
     {
