@@ -26,7 +26,7 @@ import { toast } from "sonner"
 import { useNavigate } from "react-router-dom"
 import type { ILecture } from "@/types/type"
 
-export function LectureDropdownMenu({ lecture , cn}: { lecture: ILecture, cn:string }) {
+export function LectureDropdownMenu({ lecture, cn }: { lecture: ILecture, cn?: string }) {
     const classroomId = lecture.classroom._id ?? lecture.classroom
     const [dialogType, setDialogType] = useState<"delay" | "reschedule" | "cancel" | "title" | null>(null)
     const [title, setTitle] = useState("")
@@ -83,7 +83,7 @@ export function LectureDropdownMenu({ lecture , cn}: { lecture: ILecture, cn:str
             return toast.warning("Cancel reason is required");
         }
 
-        const { data } = await API.put(`/classrooms/${classroomId}/lectures/${lecture._id}`, {
+        await API.put(`/classrooms/${classroomId}/lectures/${lecture._id}`, {
             status: "cancelled",
             reason,
         });
@@ -109,9 +109,8 @@ export function LectureDropdownMenu({ lecture , cn}: { lecture: ILecture, cn:str
             }
 
             closeDialog();
-        } catch (err: any) {
-            console.error(err);
-            toast.warning(err?.response?.data?.message || "Something went wrong");
+        } catch {
+            toast.warning("Something went wrong");
         }
     };
 

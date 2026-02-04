@@ -70,7 +70,7 @@
   --primary: #0d9488;
   --dark: #134e4a;
   --border: #e2e8f0;
-  --input: #f1f5f9;
+  --input: hsl(210, 40%, 96%);
   --muted-foreground: #64748b;
   --radius: 1.5rem; 
   --card-foreground: oklch(0.141 0.005 285.823);
@@ -106,7 +106,7 @@
 
 .dark {
   --dark: oklch(51.1% 0.262 276.966);
-  --primary: oklch(58.5% 0.233 277.117);
+  --primary: rgb(97, 95, 255);
   --primary-foreground: oklch(67.3% 0.182 276.935);
   --secondary: ;
   --secondary-foreground: ;

@@ -7,6 +7,8 @@ import { cn } from "@/lib/utils";
 import defaultAvatar from '@/assets/image/avatar.png'
 import useAuth from "@/hooks/useAuth";
 import { NotificationSidebar } from "./notification/NotificationSidebar";
+import { ThemeToggle } from "./ThemeToggle";
+import Logo from "./Logo";
 
 interface Indicator {
     top: number;
@@ -81,11 +83,10 @@ export default function GlobalSideBar() {
             <aside className="hidden md:flex h-screen w-20 bg-background/80 dark:bg-black/40 border-r border-border dark:border-white/5 flex-col items-center justify-between py-8 relative z-[100] backdrop-blur-2xl transition-colors duration-500">
 
                 <div className="flex flex-col items-center gap-2 group cursor-pointer" onClick={() => navigate("/")}>
-                    <div className="relative w-12 h-12 rounded-2xl bg-card dark:bg-neutral-900 border border-border dark:border-white/10 flex items-center justify-center shadow-xl group-hover:scale-110 transition-transform">
-                        <img className="w-8 h-8 object-contain" src="/logo.png" alt="Logo" />
-                    </div>
+                    <Logo/>
                     <span className="text-[8px] font-bold font-oswald text-muted-foreground uppercase tracking-[0.3em] group-hover:text-primary transition-colors">TutorAive</span>
                 </div>
+                <ThemeToggle />
 
                 <nav
                     ref={containerRef}

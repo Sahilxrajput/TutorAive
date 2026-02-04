@@ -16,7 +16,7 @@ export default function GradientHeading({ children, className = "" }: Props) {
                 repeat: Infinity,
                 ease: "linear",
             }}
-            className={cn("relative inline-block pb-2 font-cinzel font-bold tracking-tighter bg-gradient-to-r from-primary via-dark to-primary bg-[length:200%_auto] bg-clip-text text-transparent drop-shadow-[0_0_15px_rgba(38,217,217,0.1)]",
+            className={cn("relative inline-block pb-2 font-cinzel font-bold tracking-tighter bg-gradient-to-r from-primary via-foreground to-dark bg-[length:200%_auto] bg-clip-text text-transparent drop-shadow-[0_0_15px_rgba(38,217,217,0.1)]",
                 className
             )}
         >

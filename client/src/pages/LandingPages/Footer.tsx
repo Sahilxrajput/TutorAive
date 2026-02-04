@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
-import GradientHeading  from '@/components/GradientHeading';
+import GradientHeading from '@/components/GradientHeading';
 import { Github, Linkedin, Twitter, Instagram, Send } from 'lucide-react';
+import Logo from '@/components/Logo';
 
 const Footer = () => {
     const socialLinks = [
@@ -27,7 +28,7 @@ const Footer = () => {
 
     return (
         <footer className="bg-background border-t border-border/50 relative overflow-hidden">
-            
+
             {/* Top Banner */}
             <div className="border-b border-border/50">
                 <div className="max-w-7xl mx-auto px-8 py-20 flex flex-col items-center text-center">
@@ -56,11 +57,9 @@ const Footer = () => {
 
                     {/* Brand Column (Span 2) */}
                     <div className="md:col-span-3 lg:col-span-2 space-y-8">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 relative">
-                                <img src="/logo.png" alt="logo" className="w-full h-full object-contain" />
-                            </div>
-                            <GradientHeading className="text-2xl tracking-tighter">
+                        <div className="flex gap-3">
+                            <Logo w={10} h={10}/>
+                            <GradientHeading className="text-2xl tracking-tighter mt-1">
                                 TUTORAIVE
                             </GradientHeading>
                         </div>

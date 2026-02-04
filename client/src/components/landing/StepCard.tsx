@@ -15,16 +15,13 @@ const StepCard = ({ number, icon: Icon, title, description, delay }: Props) => (
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.8, delay }}
-        /* Added h-full to make all cards in a row the same height */
         className="group relative h-full p-10 rounded-[2.5rem] bg-card dark:bg-neutral-900/40 border border-border dark:border-white/5 backdrop-blur-xl hover:border-primary/30 hover:shadow-2xl hover:shadow-primary/5 transition-all duration-500 overflow-hidden flex flex-col"
     >
-        {/* Large Background Number - Adjusted for light/dark mode */}
-        <span className="absolute -right-2 -top-6 text-[10rem] font-black text-foreground/[0.03] dark:text-white/[0.02] select-none pointer-events-none font-cinzel leading-none">
+        <span className="absolute -right-2 -top-6 text-[10rem] font-black text-foreground/[0.03] dark:text-white/[0.02] select-none pointer-events-none font-cinzel leading-none group-hover:text-dark/20">
             {number}
         </span>
 
         <div className="relative z-10 flex flex-col h-full">
-            {/* Icon Container */}
             <div className="w-16 h-16 rounded-2xl bg-primary/5 dark:bg-dark/10 flex items-center justify-center mb-8 group-hover:scale-110 group-hover:bg-primary group-hover:text-white transition-all duration-500 text-primary">
                 <Icon size={30} strokeWidth={1.5} />
             </div>
@@ -34,12 +31,10 @@ const StepCard = ({ number, icon: Icon, title, description, delay }: Props) => (
                 {title}
             </h3>
 
-            {/* Description - Added flex-grow to push footer down */}
             <p className="text-muted-foreground dark:text-neutral-400 leading-relaxed font-inter font-light flex-grow">
                 {description}
             </p>
 
-            {/* Bottom Link - Now perfectly aligned at the bottom of all cards */}
             <div className="mt-8 flex items-center gap-2 text-primary text-[10px] font-bold tracking-[0.2em] uppercase font-oswald translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500">
                 Dive Deeper <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
             </div>

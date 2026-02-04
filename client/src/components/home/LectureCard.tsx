@@ -1,151 +1,45 @@
-// import useAuth from "@/hooks/useAuth";
-// import type { ILecture } from "@/types/type";
-// import { CalendarRangeIcon, Radio } from "lucide-react";
-// import { formatDateTime } from "@/utils/splitDateTime";
-// import { LectureDropdownMenu } from "./LectureDropdownMenu";
-// import { cn } from "@/lib/utils";
-// import { useNavigate } from "react-router-dom";
-
-
-// const statusStyles: Record<
-//     ILecture["status"],
-//     { border: string; badge?: string }
-// > = {
-//     scheduled: {
-//         border: "border-blue-400 shadow-blue-100 bg-blue-50",
-//         badge: "bg-blue-500",
-//     },
-//     rescheduled: {
-//         border: "border-amber-400 shadow-amber-100 bg-amber-50",
-//         badge: "bg-amber-500",
-//     },
-//     live: {
-//         border: "border-red-500 bg-red-50 shadow-red-100 animate-pulse",
-//         badge: "bg-red-600",
-//     },
-//     delayed: {
-//         border: "border-orange-400 bg-orange-50 shadow-orange-100 border-dashed",
-//         badge: "bg-orange-500",
-//     },
-//     completed: {
-//         border: "border-gray-300 dark:border-zinc-700 shadow-gray-100 opacity-70",
-//     },
-//     cancelled: {
-//         border: "border-gray-400 opacity-60 shadow-gray-100",
-//     },
-// };
-
-// const LectureCard = ({ lecture }: { lecture: ILecture }) => {
-//     const { isInstructor } = useAuth();
-//     const style = statusStyles[lecture.status];
-//     const navigate = useNavigate();
-
-
-//     const onOpen = () => {
-//         navigate(`/classrooms/${lecture.classroom._id}/lecture/live/${lecture._id}`);
-//     }
-
-//     return (
-//         <div
-//             className={cn(
-//                 "p-2 rounded-lg flex flex-col overflow-clip items-center justify-center shadow-sm hover:shadow-lg hover:scale-105 relative transition-all duration-200 ease-in-out group bg-white dark:bg-zinc-900 cursor-pointer border-2",
-//                 style.border,
-//                 lecture.status === "cancelled" && "line-through"
-//             )}
-//         >
-//             {/* STATUS BADGE */}
-//             {style.badge && (
-//                 <div
-//                     className={cn(
-//                         "absolute top-2 left-2 z-20 flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold text-white",
-//                         style.badge
-//                     )}
-//                 >
-//                     {lecture.status === "live" && (
-//                         <Radio size={10} className="animate-pulse" />
-//                     )}
-//                     {lecture.status.toUpperCase()}
-//                 </div>
-//             )}
-
-//             {/* Instructor menu */}
-//             {isInstructor && (
-//                 <div className="absolute top-2 right-2 z-20">
-//                     <LectureDropdownMenu cn={style.border} lecture={lecture} />
-//                 </div>
-//             )}
-
-//             {/* Title */}
-//             <h2 className="font-semibold text-lg text-gray-900 dark:text-gray-100 text-center">
-//                 {lecture.title}
-//             </h2>
-
-//             {/* Classroom */}
-//             <h3 className="font-light text-sm pb-2 text-muted-foreground">
-//                 {lecture.classroom?.title || "No classroom"}
-//             </h3>
-
-//             {/* Time */}
-//             <p className="text-sm flex items-center text-gray-600 dark:text-gray-400">
-//                 <CalendarRangeIcon className="w-4 h-4 mr-1" />
-//                 {formatDateTime(lecture.newStartTime ?? lecture.startTime)}
-//             </p>
-
-//             {/* Join button ONLY when live */}
-//             {lecture.status === "live" && (
-//                 <button
-//                     onClick={(e) => {
-//                         e.stopPropagation();
-//                         onOpen();
-//                     }}
-//                     className="mt-3 rounded-md bg-red-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-red-700 transition"
-//                 >
-//                     Join Live
-//                 </button>
-//             )}
-//         </div>
-//     );
-// };
-
-// export default LectureCard;
-
-
+import { motion } from "framer-motion";
+import { CalendarRangeIcon, Radio, ArrowRight } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import useAuth from "@/hooks/useAuth";
 import type { ILecture } from "@/types/type";
-import { CalendarRangeIcon, Radio } from "lucide-react";
 import { formatDateTime } from "@/utils/splitDateTime";
 import { LectureDropdownMenu } from "./LectureDropdownMenu";
 import { cn } from "@/lib/utils";
-import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
 
 const statusStyles: Record<
     ILecture["status"],
-    { badge?: string; text?: string }
+    { badge: string; text: string; glow: string }
 > = {
     scheduled: {
-        badge: "text-indigo-400",
+        badge: "text-primary bg-primary/10 border-primary/20",
         text: "Scheduled",
+        glow: "group-hover:shadow-primary/5",
     },
     rescheduled: {
-        badge: "text-amber-400",
+        badge: "text-amber-500 bg-amber-500/10 border-amber-500/20",
         text: "Rescheduled",
+        glow: "group-hover:shadow-amber-500/5",
     },
     live: {
-        badge: "text-red-500",
-        text: "Live",
+        badge: "text-red-500 bg-red-500/10 border-red-500/20",
+        text: "Live Now",
+        glow: "shadow-red-500/20 group-hover:shadow-red-500/30",
     },
     delayed: {
-        badge: "text-orange-400",
+        badge: "text-orange-500 bg-orange-500/10 border-orange-500/20",
         text: "Delayed",
+        glow: "group-hover:shadow-orange-500/5",
     },
     completed: {
-        badge: "text-neutral-500",
+        badge: "text-muted-foreground bg-muted border-border",
         text: "Completed",
+        glow: "opacity-70",
     },
     cancelled: {
-        badge: "text-neutral-600",
+        badge: "text-muted-foreground bg-muted border-border",
         text: "Cancelled",
+        glow: "opacity-50 grayscale",
     },
 };
 
@@ -155,68 +49,88 @@ const LectureCard = ({ lecture }: { lecture: ILecture }) => {
     const style = statusStyles[lecture.status];
 
     const onOpen = () => {
-        navigate(
-            `/classrooms/${lecture.classroom._id}/lecture/live/${lecture._id}`
-        );
+        navigate(`/classrooms/${lecture.classroom._id}/lecture/live/${lecture._id}`);
     };
 
     return (
         <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.4 }}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            whileHover={{ y: -4 }}
+            onClick={lecture.status !== "cancelled" ? onOpen : undefined}
             className={cn(
-                "p-5 rounded-2xl bg-neutral-900/40 border border-white/5 backdrop-blur-md hover:border-indigo-500/30 transition-all cursor-pointer group relative",
-                lecture.status === "cancelled" && "opacity-60 line-through"
+                "group relative p-6 rounded-[2rem] transition-all duration-500 cursor-pointer overflow-hidden",
+                "bg-card/60 dark:bg-neutral-900/40 backdrop-blur-xl border border-border dark:border-white/5 shadow-2xl ",
+                style.glow,
+                lecture.status === "cancelled" && "line-through cursor-not-allowed"
             )}
         >
-            {/* STATUS + MENU */}
-            <div className="flex justify-between items-start mb-2">
-                <span
-                    className={cn(
-                        "text-[9px] font-bold uppercase tracking-widest",
-                        style.badge
-                    )}
-                >
+            {/* Background Glow for Live sessions */}
+            {lecture.status === "live" && (
+                <div className="absolute -right-10 -top-10 w-32 h-32 bg-red-500/10 blur-[50px] rounded-full pointer-events-none" />
+            )}
+
+            {/* STATUS HEADER */}
+            <div className="flex justify-between items-center mb-6">
+                <div className={cn(
+                    "flex items-center gap-2 px-3 py-1 rounded-full border text-[9px] font-bold uppercase tracking-[0.15em] font-oswald",
+                    style.badge
+                )}>
                     {lecture.status === "live" && (
-                        <Radio size={10} className="inline mr-1 animate-pulse" />
+                        <Radio size={10} className="animate-pulse" />
                     )}
                     {style.text}
-                </span>
+                </div>
 
                 {isInstructor && (
-                    <LectureDropdownMenu cn="text-white" lecture={lecture} />
+                    <div onClick={(e) => e.stopPropagation()} className="relative z-20">
+                        <LectureDropdownMenu lecture={lecture} />
+                    </div>
                 )}
             </div>
 
-            {/* TITLE */}
-            <h4 className="text-white font-bold text-sm mb-3 group-hover:text-indigo-400 transition-colors uppercase tracking-wide">
-                {lecture.title}
-            </h4>
+            {/* MAIN CONTENT */}
+            <div className="space-y-4">
+                <div>
+                    <h4 className="text-foreground dark:text-white font-bold text-lg leading-tight font-cinzel tracking-tight group-hover:text-primary transition-colors">
+                        {lecture.title}
+                    </h4>
+                    <p className="text-[11px] text-muted-foreground mt-1 font-oswald uppercase tracking-wider font-medium">
+                        {lecture.classroom?.title || "Standalone Session"}
+                    </p>
+                </div>
 
-            {/* CLASSROOM */}
-            <p className="text-[10px] text-neutral-500 mb-3">
-                {lecture.classroom?.title || "No classroom"}
-            </p>
+                <div className="flex items-center gap-4 py-2 border-y border-border/40 dark:border-white/5">
+                    <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground font-oswald uppercase tracking-widest">
+                        <CalendarRangeIcon size={14} className="text-primary" />
+                        {formatDateTime(lecture.newStartTime ?? lecture.startTime)}
+                    </div>
+                </div>
+            </div>
 
-            {/* TIME */}
-            <p className="text-[10px] flex items-center text-neutral-500">
-                <CalendarRangeIcon className="w-3 h-3 mr-1" />
-                {formatDateTime(lecture.newStartTime ?? lecture.startTime)}
-            </p>
+            {/* ACTION FOOTER */}
+            <div className="mt-6 flex items-center justify-between">
+                <span className="text-[10px] font-bold text-primary uppercase tracking-[0.2em] opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-[-10px] group-hover:translate-x-0">
+                    View Details
+                </span>
 
-            {/* JOIN BUTTON */}
-            {lecture.status === "live" && (
-                <button
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        onOpen();
-                    }}
-                    className="mt-4 w-full rounded-lg bg-red-600/90 px-4 py-2 text-xs font-bold uppercase tracking-widest text-white hover:bg-red-600 transition"
-                >
-                    Join Live
-                </button>
-            )}
+                {lecture.status === "live" ? (
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onOpen();
+                        }}
+                        className="bg-red-600 text-white px-5 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-red-500 hover:scale-105 transition-all shadow-lg shadow-red-500/20"
+                    >
+                        Join Live
+                    </button>
+                ) : (
+                    <div className="w-8 h-8 rounded-xl bg-primary/5 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all duration-300">
+                        <ArrowRight size={16} />
+                    </div>
+                )}
+            </div>
         </motion.div>
     );
 };

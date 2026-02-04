@@ -20,9 +20,9 @@ type SocialLink = {
 
 
 const contactInfo: ContactInfoItem[] = [
-    { icon: Mail, label: "Email Us", value: "hello@aive.edu", href: "mailto:hello@aive.edu" },
-    { icon: MessageSquare, label: "Live Chat", value: "Available 24/7", href: "#" },
-    { icon: MapPin, label: "Location", value: "Varanasi, Uttar Pradesh, India", href: "#" }
+    { icon: Mail, label: "Email Us", value: "sahilrazput18@gmail.com", href: "mailto:sahilrazput18@gmail.com" },
+    { icon: MessageSquare, label: "Live Chat", value: "Available 24/7", href: "#contact" },
+    { icon: MapPin, label: "Location", value: "Varanasi, Uttar Pradesh, India", href: "#contact" }
 ]
 
 const socialLinks: SocialLink[] = [
@@ -160,7 +160,7 @@ const ContactSection = () => {
                                             onChange={(e) => setName(e.target.value)}
                                             value={name}
                                             type="text"
-                                            placeholder="Sahil Rajput"
+                                            placeholder="John doe"
                                             className="w-full bg-input/50 border border-transparent rounded-xl px-5 py-4 focus:bg-background focus:border-primary/30 focus:ring-4 focus:ring-primary/5 transition-all outline-none"
                                         />
                                     </div>
@@ -170,7 +170,7 @@ const ContactSection = () => {
                                             onChange={(e) => setEmail(e.target.value)}
                                             value={email}
                                             type="email"
-                                            placeholder="sahil@bhu.ac.in"
+                                            placeholder="john@example.com"
                                             className="w-full bg-input/50 border border-transparent rounded-xl px-5 py-4 focus:bg-background focus:border-primary/30 focus:ring-4 focus:ring-primary/5 transition-all outline-none"
                                         />
                                     </div>

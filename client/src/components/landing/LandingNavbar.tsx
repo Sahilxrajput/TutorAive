@@ -6,6 +6,8 @@ import { ScrollToPlugin } from "gsap/ScrollToPlugin"
 import { useGSAP } from "@gsap/react"
 import GradientHeading from "../GradientHeading"
 import { ThemeToggle } from "../tiptap-templates/simple/theme-toggle"
+import Logo from "../Logo"
+
 
 gsap.registerPlugin(ScrollToPlugin)
 
@@ -24,6 +26,7 @@ const Navbar = () => {
     const navigate = useNavigate()
     const menuRef = useRef<HTMLDivElement>(null)
     const [open, setOpen] = useState(false)
+
 
     useGSAP(() => {
         if (!menuRef.current) return
@@ -53,17 +56,11 @@ const Navbar = () => {
                 <div className="flex justify-between items-center px-6 py-3 rounded-2xl border border-border/40 bg-background/60 backdrop-blur-xl shadow-lg shadow-black/5">
 
                     <div
-                        className="flex items-center gap-3 cursor-pointer group"
+                        className="flex gap-3 cursor-pointer group"
                         onClick={() => scrollToSection("hero-scetion")}
                     >
-                        <div className="w-8 h-8 relative">
-                            <img
-                                className="w-full h-full object-contain group-hover:rotate-12 transition-transform duration-300"
-                                src="/logo.png"
-                                alt="logo"
-                            />
-                        </div>
-                        <GradientHeading className="text-xl tracking-tighter">
+                        <Logo />
+                        <GradientHeading className="text-xl mt-[2px] tracking-tighter">
                             TUTORAIVE
                         </GradientHeading>
                     </div>
