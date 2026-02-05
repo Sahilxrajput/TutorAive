@@ -1,7 +1,7 @@
 import express from "express";
 import {
   attendanceLock,
-  getAllClassroomLectures,
+  getClassroomLectures,
   getAllLecturesForInstructor,
   getAllLecturesForStudent,
   getAllScheduleLecturesForClassroom,
@@ -28,7 +28,10 @@ router.get("/created", getAllLecturesForInstructor);
 router.get("/my", getAllLecturesForStudent);
 
 // Get all lectures created for a specific classroom. Route param: classroomId
-router.get("/all/:classroomId", getAllClassroomLectures);
+router.get(
+  "/all/:classroomId",
+  getClassroomLectures,
+);
 
 // @ok  Instructor: get scheduled (upcoming) lectures visible to the instructor
 router.get("/scheduled/created", getAllScheduleLecturesForInstructor);

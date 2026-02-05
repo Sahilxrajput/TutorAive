@@ -72,18 +72,10 @@ const App: React.FC = () => {
                             path="classrooms/:classroomId"
                             element={
                                 <EnrolledRoute>
-                                    <ClassroomLayout />
+                                    <ClassroomOverview />
                                 </EnrolledRoute>
                             }
                         >
-                            <Route index element={<ClassroomOverview />} />
-                            <Route path="notes" element={<BrowseNotes />} />
-                            <Route path="assignments" element={<AssignmentPage />} />
-                            <Route path="leaderboard" element={<LeaderboardPage />} />
-                            <Route
-                                path="lecture/live/:lectureId"
-                                element={<LiveSession />}
-                            />
                         </Route>
 
                         {/* Protected dashboard */}

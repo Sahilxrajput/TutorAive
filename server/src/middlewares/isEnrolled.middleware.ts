@@ -1,6 +1,7 @@
 // middlewares/isEnrolled.ts
 import { Request, Response, NextFunction } from "express";
 import {Classroom} from "../models/classroom.model";
+import { Types } from "mongoose";
 
 export const isEnrolled = async (
   req: Request,
@@ -29,9 +30,9 @@ export const isEnrolled = async (
     }
 
     // Allow the creator as well
-    const isOwner = classroom.teacher.toString() === userId!.toString();
+    const isOwner = classroom.teacher?.toString() === userId!.toString();
     const isStudent = classroom.students.some(
-      (_id: any) => _id.toString() === userId!.toString()
+      (_id: Types.ObjectId) => _id.toString() === userId!.toString()
     );
     console.log("isStudent", isStudent);
     console.log("isOwner", isOwner);
@@ -44,6 +45,7 @@ export const isEnrolled = async (
 
     next();
   } catch (error) {
+    console.log(error)
     res.status(500).json({ message: "Internal server error", error });
   }
 };

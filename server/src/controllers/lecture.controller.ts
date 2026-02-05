@@ -253,27 +253,33 @@ export const getAllLecturesForStudent = async (req: Request, res: Response) => {
   }
 };
 
-export const getAllClassroomLectures = async (req: Request, res: Response) => {
+export const getClassroomLectures = async (req: Request, res: Response) => {
   try {
-    const classroom = await Classroom.findOne({
-      _id: req.params.classroomId,
-      // students: req.userId,
-    });
+    const { classroomId } = req.params;
 
-    //@todo security check
+    const classroom = await Classroom.findById(classroomId);
 
     if (!classroom) {
       throw new Error("You are not enrolled in this classroom");
     }
 
+    const isEnrolled = classroom.students.includes(
+      new Types.ObjectId(req.userId),
+    );
+
+    if (!isEnrolled)
+      return res.status(403).json({ message: "User is not enrolled" });
+
     const myLectures = await Lecture.find({
-      classroom: req.params.classroomId,
-    }).sort({ startTime: 1 });
+      classroom: classroomId,
+    })
+      .populate("createdBy", "userName firstName")
+      .sort({ startTime: 1 });
 
     return res.status(200).json({
       success: true,
       message: `Successfully fetched your lectures for classroom ${classroom.title}.`,
-      data: myLectures,
+      data: myLectures ?? [],
     });
   } catch (error) {
     handleError(res, error, "Failed to fetch classroom lectures for student.");

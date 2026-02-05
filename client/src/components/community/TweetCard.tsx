@@ -24,6 +24,7 @@ const TweetCard = forwardRef<HTMLDivElement, Props>(({ tweet, index }, ref) => {
     const likeTweet = useLikeTweet();
     const deleteTweet = useDeleteTweet(tweet._id);
 
+
     const isLiked = !!user && tweet.likes?.includes(user?._id);
     const isOwner = user?._id === tweet.author?._id;
     const isRepost = !!tweet.parentTweet;

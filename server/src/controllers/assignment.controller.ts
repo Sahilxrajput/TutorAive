@@ -244,7 +244,7 @@ export const getMyAssignmentProgress = async (req: Request, res: Response) => {
       submitted,
       pending,
     });
-  } catch (err: any) {
+  } catch {
     res.status(500).json({ success: false, message: err?.message });
   }
 };

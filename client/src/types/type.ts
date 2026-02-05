@@ -166,7 +166,10 @@ export interface ILecture {
     | "completed"
     | "cancelled";
   title: string;
-  createdBy?: string;
+  createdBy?: {
+    userName?: string;
+    firstName: string;
+  };
   delayReason?: string;
   cancelReason?: string;
   createdAt?: Date;
