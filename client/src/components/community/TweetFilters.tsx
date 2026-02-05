@@ -1,43 +1,37 @@
-import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { Cpu, Globe, Radio, ShieldCheck } from "lucide-react";
 import type { Dispatch, SetStateAction } from "react";
 
-
-export type TweetFilter =
-    | "all"
-    | "general"
-    | "mentorship"
-    | "problem"
-    | "news"
-    | "repost";
-
 interface Props {
-    active: TweetFilter;
-    setActive: Dispatch<SetStateAction<TweetFilter>>;
+    active: string;
+    setActive: Dispatch<SetStateAction<string>>;
 }
 
-
-const filters: TweetFilter[] = [
-    "all",
-    "general",
-    "mentorship",
-    "problem",
-    "news",
-    "repost",
+const filters = [
+    { id: "all", label: "Global", icon: Globe },
+    { id: "mentorship", label: "Guidance", icon: ShieldCheck },
+    { id: "problem", label: "Errors", icon: Cpu },
+    { id: "news", label: "Updates", icon: Radio },
 ];
 
 export default function TweetFilters({ active, setActive }: Props) {
     return (
-        <div className="flex gap-2 overflow-x-auto pb-1">
+        <div className="flex flex-wrap gap-2">
             {filters.map((f) => (
-                <Button
-                    key={f}
-                    variant={active === f ? "default" : "outline"}
-                    className="capitalize whitespace-nowrap"
-                    onClick={() => setActive(f)}
+                <button
+                    key={f.id}
+                    onClick={() => setActive(f.id)}
+                    className={cn(
+                        "flex items-center gap-2 px-5 py-2 rounded-xl text-[10px] font-bold font-oswald uppercase tracking-widest transition-all border",
+                        active === f.id
+                            ? "bg-primary text-white border-primary shadow-lg shadow-primary/20 scale-105"
+                            : "bg-muted/50 text-muted-foreground border-transparent hover:border-border"
+                    )}
                 >
-                    {f}
-                </Button>
+                    <f.icon size={12} />
+                    {f.label}
+                </button>
             ))}
         </div>
     );
-}
+};

@@ -12,7 +12,7 @@ const handleError = (
   res: Response,
   error: any,
   defaultMessage: string = "Internal Server Error",
-  statusCode: number = 500,
+  statusCode: number = 500
 ) => {
   console.error(error); // Log the detailed error for debugging
   return res.status(statusCode).json({
@@ -25,10 +25,10 @@ const handleError = (
 export const createTweet = async (req: Request, res: Response) => {
   try {
     const { content, type } = req.body;
-    
+
     const mentionedUserIds = await extractMentionedUserIds(
       content,
-      req.userId!,
+      req.userId!
     );
 
     const tweetData: any = {
@@ -56,7 +56,7 @@ export const createTweet = async (req: Request, res: Response) => {
           (error, result) => {
             if (error) reject(error);
             else resolve(result);
-          },
+          }
         );
 
         stream.end(req?.file?.buffer);
@@ -130,7 +130,7 @@ export const getAllTweets = async (req: Request, res: Response) => {
       ? slicedTweets[slicedTweets.length - 1]._id
       : null;
 
-      console.log("tweets:", slicedTweets.length);
+    console.log("tweets:", slicedTweets.length);
 
     res.status(200).json({
       message: "Tweets fetched successfully",
@@ -142,7 +142,6 @@ export const getAllTweets = async (req: Request, res: Response) => {
     handleError(res, error, "failed to fetch tweets");
   }
 };
-
 
 export const getTweetById = async (req: Request, res: Response) => {
   try {
@@ -196,13 +195,13 @@ export const toggleLikeTweet = async (req: Request, res: Response) => {
 
     // Convert all like IDs to string & check toggle state
     const alreadyLiked = tweet.likes.some(
-      (id: Types.ObjectId) => id.toString() === userId,
+      (id: Types.ObjectId) => id.toString() === userId
     );
 
     if (alreadyLiked) {
       // Remove like
       tweet.likes = tweet.likes.filter(
-        (id: Types.ObjectId) => id.toString() !== userId,
+        (id: Types.ObjectId) => id.toString() !== userId
       );
     } else {
       // Add like
@@ -237,14 +236,14 @@ export const repostTweet = async (req: Request, res: Response) => {
     const originalTweet = await Tweet.findById(req.params.id);
 
     if (!originalTweet) {
-      return res.status(404).json({ error: "Tweet not found" });
+      return res.status(404).json({ error: "Parent Tweet not found" });
     }
 
     const repost = await Tweet.create({
-      type: req.body.type || "general",
+      type: "repost",
       author: req.userId,
       parentTweet: originalTweet._id,
-      content: req.body.content?.trim() ?? undefined,
+      content: req.body?.content?.trim() ?? "",
     });
 
     // Notify original author (if not self)

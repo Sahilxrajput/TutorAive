@@ -83,7 +83,7 @@ export const useCreateTweet = () => {
           pages: old.pages.map((page: any) => ({
             ...page,
             data: page.data.map((tweet: ITweet) =>
-              tweet._id.startsWith("temp") ? fullTweet : tweet,
+              tweet._id.startsWith("temp") ? fullTweet : tweet
             ),
           })),
         };
@@ -106,9 +106,17 @@ export const useDeleteTweet = (tweetId: string) => {
     mutationFn: () => deleteTweet(tweetId),
     // onMutate
     onSuccess: () => {
-      qc.setQueryData(CACHE_KEY_TWEETS, (prev: ITweet[] = []) =>
-        prev.filter((t) => t._id !== tweetId),
-      );
+      qc.setQueryData(CACHE_KEY_TWEETS, (prev: any) => {
+        if (!prev?.pages) return prev;
+
+        return {
+          ...prev,
+          pages: prev.pages.map((page: any) => ({
+            ...page,
+            data: page.data.filter((t: ITweet) => t._id !== tweetId),
+          })),
+        };
+      });
     },
     onError: (err) => {
       notifyError(err);
@@ -125,8 +133,8 @@ export const useLikeTweet = () => {
     onSuccess: (updatedTweet) => {
       qc.setQueryData(CACHE_KEY_TWEETS, (prev: ITweet[] = []) =>
         prev.map((tweet) =>
-          tweet._id === updatedTweet._id ? updatedTweet : tweet,
-        ),
+          tweet._id === updatedTweet._id ? updatedTweet : tweet
+        )
       );
     },
     onError: (err) => {

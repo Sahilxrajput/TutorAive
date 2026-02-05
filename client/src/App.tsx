@@ -50,7 +50,7 @@ const App: React.FC = () => {
             <Analytics />
             <Suspense fallback={<LoadingPage />}>
                 <Routes>
-                    <Route path="/" element={<LandingPage />} />
+                    <Route path="/" element={<LoadingPage />} />
 
                     <Route element={<Layout />}>
                         <Route path="/home" element={<Home />} />

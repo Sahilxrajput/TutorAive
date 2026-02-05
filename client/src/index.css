@@ -72,7 +72,7 @@
   --border: #e2e8f0;
   --input: hsl(210, 40%, 96%);
   --muted-foreground: #64748b;
-  --radius: 1.5rem; 
+  --radius: 1.5rem;
   --card-foreground: oklch(0.141 0.005 285.823);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.141 0.005 285.823);
@@ -105,15 +105,27 @@
 }
 
 .dark {
-  --dark: oklch(51.1% 0.262 276.966);
+  --background: oklch(14.5% 0.005 285.8);
+  --foreground: oklch(98.5% 0 0);
+
+  --card: oklch(18% 0.006 285.9);
+  --card-foreground: oklch(98.5% 0 0);
+
   --primary: rgb(97, 95, 255);
-  --primary-foreground: oklch(67.3% 0.182 276.935);
+  --primary-foreground: oklch(98.5% 0 0);
+
+  --border: oklch(100% 0 0 / 8%);
+  /* ----------------- */
+  --dark: oklch(51.1% 0.262 276.966);
+  /* --border: oklch(100% 0.00011 271.152 / 0.1); */
+  /* --primary: rgb(97, 95, 255); */
+  /* --primary-foreground: oklch(67.3% 0.182 276.935); */
   --secondary: ;
   --secondary-foreground: ;
-  --background: oklch(0% 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.21 0.006 285.885);
-  --card-foreground: oklch(0.985 0 0);
+  /* --background: oklch(0% 0 0); */
+  /* --foreground: oklch(0.985 0 0); */
+  /* --card: oklch(0.21 0.006 285.885); */
+  /* --card-foreground: oklch(0.985 0 0); */
   --popover: oklch(0.21 0.006 285.885);
   --popover-foreground: oklch(0.985 0 0);
   --muted: oklch(0.274 0.006 286.033);
@@ -121,7 +133,6 @@
   --accent: oklch(0.274 0.006 286.033);
   --accent-foreground: oklch(0.985 0 0);
   --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(100% 0.00011 271.152 / 0.1);
   --input: oklch(1 0 0 / 15%);
   --ring: oklch(0.552 0.016 285.938);
   --chart-1: oklch(0.488 0.243 264.376);
@@ -142,6 +153,10 @@
 @layer utilities {
   button {
     cursor: pointer;
+  }
+  .code-glow {
+    @apply relative overflow-hidden rounded-xl border border-primary/20 bg-black/50 p-4;
+    box-shadow: 0 0 20px rgba(var(--primary-rgb), 0.1);
   }
   #button {
     cursor: pointer;
@@ -256,7 +271,15 @@
   border: 2px solid var(--background);
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #333;
+  background: var(--primary); /* Changes color based on your theme's energy */
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(var(--primary), 0.2);
+  border-radius: 10px;
 }
 
 .scrollbar-hide::-webkit-scrollbar {

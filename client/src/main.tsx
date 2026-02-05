@@ -6,7 +6,7 @@ import { BrowserRouter } from 'react-router-dom'
 import { AuthProvider } from './context/authContext'
 import { Toaster } from 'sonner'
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query"
-// import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
 import { SocketProvider } from './context/socketProvider'
 import { SearchProvider } from './context/SearchProvider'
 
@@ -38,6 +38,7 @@ createRoot(document.getElementById('root')!).render(
                                 richColors
                                 closeButton
                             />
+                            <ReactQueryDevtools />
                         </SocketProvider>
                     </SearchProvider>
                 </BrowserRouter>

@@ -128,7 +128,7 @@ export function NotificationSidebar({ open, setOpen }: Props) {
 
                     <Separator className="mt-6 bg-white/5 shrink-0" />
 
-                    <ScrollArea className="flex-1 px-4 sm:px-8 min-h-0 overflow-x-hidden ">
+                    <div className="flex-1 px-4 sm:px-8 min-h-0 overflow-x-hidden ">
                         <div className="py-6 space-y-4">
                             {isLoading && (
                                 <div className="flex flex-col items-center justify-center py-20 gap-4">
@@ -196,7 +196,7 @@ export function NotificationSidebar({ open, setOpen }: Props) {
                                 </div>
                             ))}
                         </div>
-                    </ScrollArea>
+                    </div>
                 </Tabs>
 
                 {/* Footer Action */}

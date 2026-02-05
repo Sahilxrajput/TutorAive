@@ -103,7 +103,7 @@ const LoadingPage = () => {
                         <motion.div
                             animate={{ scale: [1, 1.5, 1], opacity: [0.5, 1, 0.5] }}
                             transition={{ duration: 1.5, repeat: Infinity }}
-                            className="w-1.5 h-1.5 bg-indigo-500 rounded-full"
+                            className="w-1.5 h-1.5 bg-primary rounded-full"
                         />
                         <span className="text-[10px] font-bold font-oswald text-slate-400 dark:text-neutral-500 uppercase tracking-[0.4em]">
                             System Synchronizing
@@ -119,7 +119,7 @@ const LoadingPage = () => {
                                 initial={{ opacity: 0, x: -10 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 exit={{ opacity: 0, x: 10 }}
-                                className="text-[10px] font-bold font-oswald text-indigo-600 dark:text-indigo-400 uppercase tracking-widest italic"
+                                className="text-[10px] font-bold font-oswald text-primary uppercase tracking-widest italic"
                             >
                                 {statusMessages[statusIndex]}
                             </motion.p>
@@ -131,7 +131,7 @@ const LoadingPage = () => {
 
                     <div className="h-[3px] w-full bg-slate-200 dark:bg-white/10 rounded-full overflow-hidden relative border border-black/5">
                         <motion.div
-                            className="h-full bg-indigo-600 dark:bg-indigo-500 shadow-[0_0_20px_rgba(79,70,229,0.4)]"
+                            className="h-full bg-primary shadow-[0_0_20px_rgba(79,70,229,0.4)]"
                             animate={{ width: `${progress}%` }}
                             transition={{ ease: "circOut" }}
                         />

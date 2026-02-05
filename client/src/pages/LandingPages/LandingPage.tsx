@@ -12,7 +12,7 @@ const LandingPage = () => {
     const [activeTab, setActiveTab] = useState<string>('teacher');
 
     return (
-        <div className="min-h-screen bg-black text-neutral-200 selection:bg-indigo-500/30 overflow-x-hidden">
+        <div className="min-h-screen bg-background text-neutral-200 selection:bg-indigo-500/30 overflow-x-hidden">
             <LandingNavbar />
             <HeroPage activeTab={activeTab} setActiveTab={setActiveTab} />
             <HowItWorks  activeTab={activeTab} />
