@@ -11,6 +11,8 @@ export default function BroadcastSector() {
     const [sessions, setSessions] = useState<ILecture[]>([])
     const { classroomId } = useParams();
 
+
+
     useEffect(() => {
         const fetchBroadCasts = async () => {
             try {

@@ -95,9 +95,9 @@ const LoadingPage = () => {
 
                 <div className="text-center mb-12">
                     <GradientHeading>
-                        <h1 className="text-4xl font-cinzel tracking-[0.25em]">
+                        <span className="text-4xl font-cinzel tracking-[0.25em]">
                             TUTORAIVE
-                        </h1>
+                        </span>
                     </GradientHeading>
                     <div className="flex items-center justify-center gap-2 mt-4">
                         <motion.div
