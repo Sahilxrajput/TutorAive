@@ -1,7 +1,6 @@
 import { useState, useEffect, useMemo, ReactNode } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-    Search,
     MoreHorizontal,
     Filter,
     UserPlus,
@@ -23,7 +22,7 @@ import TweetAvatar from "../community/TweetAvatar";
 import { useParams } from "react-router-dom";
 import SectorHeader from "./SectorHeader";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "../ui/input-group";
-import AddStudentDialog from "./AddStudentDialog";
+import InvitationDialog from "./InvitationDialog";
 
 
 interface FrontierBadge {
@@ -55,6 +54,7 @@ const RosterSector = () => {
     const [totalPages, setTotalPages] = useState(1);
     const [totalStudents, setTotalStudents] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
+    const [openAddStudent, setOpenAddStudent] = useState(false)
 
     const { classroomId } = useParams();
 
@@ -93,7 +93,7 @@ const RosterSector = () => {
 
     return (
         <div className="min-h-screen p-4 md:p-8 lg:p-12 font-inter relative overflow-hidden ">
-
+            <InvitationDialog isOpen={openAddStudent} onClose={() => setOpenAddStudent(false)} />
             {/* Structural Depth Glows */}
             <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-primary/5 blur-[140px] rounded-full -z-10 pointer-events-none" />
             <div className="absolute bottom-0 right-0 w-96 h-96 bg-indigo-500/5 blur-[120px] rounded-full -z-10 pointer-events-none" />
@@ -114,7 +114,9 @@ const RosterSector = () => {
                         <button className="flex items-center gap-2 px-5 py-3 rounded-xl bg-card/40 border border-border dark:border-white/5 text-[10px] font-bold font-oswald uppercase tracking-widest hover:bg-muted/50 transition-all">
                             <Filter size={14} /> Filters
                         </button>
-                        <button className="flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-white text-[10px] font-bold font-oswald uppercase tracking-widest shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all">
+                        <button
+                            onClick={() => setOpenAddStudent(true)}
+                            className="flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-white text-[10px] font-bold font-oswald uppercase tracking-widest shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all">
                             <UserPlus size={14} /> Authorize Identity
                         </button>
                     </div>

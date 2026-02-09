@@ -38,32 +38,13 @@ export const getClassrooms = async (req: Request, res: Response) => {
   }
 };
 
-// get all enrolled classrooms
-// export const getAllEnrolledClassrooms = async (req: Request, res: Response) => {
-//   const classrooms = await Classroom.find({
-//     students: req.userId,
-//   });
-
-//   if (!classrooms)
-//     return res.status(404).json({
-//       message: "classrooms not found",
-//     });
-
-//   console.log("classrooms -> ", classrooms);
-//   return res.status(200).json({
-//     message: "fetch all enrolled classrooms",
-//     data: classrooms,
-//   });
-// };
-
 // Get a single classroom by ID
 export const getClassroomById = async (req: Request, res: Response) => {
   try {
     const classroom = await Classroom.findById(req.params.id)
-      .populate("teacher", "name email profilePicture")
+      .populate("teacher", "name email userName profilePicture")
       .populate("students", "name email profilePicture");
 
-    //@remind
     if (!classroom)
       return res.status(404).json({ message: "Classroom not found" });
 
@@ -104,28 +85,10 @@ export const deleteClassroom = async (req: Request, res: Response) => {
   }
 };
 
-// Join a classroom using joinCode
-export const enrollClassroomByCode = async (req: Request, res: Response) => {
-  try {
-    const { joinCode } = req.body;
-    const classroom = await Classroom.findOne({ joinCode });
-    if (!classroom)
-      return res.status(404).json({ message: "Invalid join code" });
-    const userID = new Types.ObjectId(req.userId);
-    if (!classroom.students.includes(userID)) {
-      classroom.students.push(userID);
-      await classroom.save();
-    }
-    res.json({ message: "Joined classroom successfully", classroom });
-  } catch (error) {
-    res.status(500).json({ message: "Error joining classroom", error });
-  }
-};
-
 export const enrollClassroom = async (req: Request, res: Response) => {
   try {
     const { classroomId } = req.body;
-    const userId = new Types.ObjectId(req.userId); // ensure this is populated by auth middleware
+    const userId = new Types.ObjectId(req.userId);
 
     const classroom = await Classroom.findById(classroomId);
     if (!classroom) {
@@ -182,9 +145,8 @@ export const archiveClassroom = async (req: Request, res: Response) => {
   }
 };
 
-export const getStudents = async (req:Request, res:Response) => {
+export const getStudents = async (req: Request, res: Response) => {
   try {
-
     // pagination values
     const page = Number(req.query.page) || 1;
     const limit = 1;
@@ -211,5 +173,4 @@ export const getStudents = async (req:Request, res:Response) => {
     console.error(error);
     res.status(500).json({ message: "Server error" });
   }
-
 };

@@ -8,6 +8,7 @@ import ProtectedRoute from "./wrapper/ProtectedRoute";
 import EnrolledRoute from "./wrapper/EnrolledRoute";
 import LoadingPage from "./pages/LandingPages/LoadingPage";
 import { initTheme } from "./lib/theme";
+import JoinSector from "./pages/JoinSector";
 
 // lazy pages
 const LandingPage = lazy(
@@ -18,7 +19,7 @@ const Dashboard = lazy(() => import("./pages/Dashboard"));
 const BrowseNotes = lazy(() => import("./pages/BrowseNotes"));
 const BrowseClassroom = lazy(() => import("./pages/BrowseClassroom"));
 const Quiz = lazy(() => import("./pages/Quiz"));
-const LiveSession = lazy(() => import("./pages/LiveSession"));
+// const LiveSession = lazy(() => import("./pages/LiveSession"));
 const SaveNotes = lazy(() => import("./pages/SaveNotes"));
 const Note = lazy(() => import("./pages/Note"));
 const TweetFeed = lazy(() => import("./pages/TweetFeed"));
@@ -51,10 +52,26 @@ const App: React.FC = () => {
                             <Route path=":noteId" element={<Note />} />
                         </Route>
 
+                        {/* Protected dashboard */}
+                        <Route
+                            path="dashboard"
+                            element={
+                                <ProtectedRoute>
+                                    <Dashboard />
+                                </ProtectedRoute>
+                            }
+                        />
+
                         <Route path="quiz" element={<Quiz />} />
 
                         {/* Browse all classrooms */}
                         <Route path="classrooms" element={<BrowseClassroom />} />
+
+                        <Route path="classrooms/:classroomId/join/:inviteCode" element={
+                            <ProtectedRoute>
+                                <JoinSector />
+                            </ProtectedRoute>
+                        } />
 
                         {/* Individual classroom */}
                         <Route
@@ -65,17 +82,6 @@ const App: React.FC = () => {
                                 </EnrolledRoute>
                             }
                         />
-                    </Route>
-
-                    {/* Protected dashboard */}
-                    <Route
-                        path="dashboard"
-                        element={
-                            <ProtectedRoute>
-                                <Dashboard />
-                            </ProtectedRoute>
-                        }
-                    >
                     </Route>
 
                     <Route path="auth" element={<Auth />} />

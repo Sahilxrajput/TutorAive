@@ -30,5 +30,5 @@ const resourceSchema = new mongoose_1.Schema({
 }, {
     timestamps: true,
 });
-const Resource = mongoose_1.models.Note || (0, mongoose_1.model)("Resource", resourceSchema);
+const Resource = mongoose_1.models.Resource || (0, mongoose_1.model)("Resource", resourceSchema);
 exports.default = Resource;

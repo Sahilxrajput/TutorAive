@@ -30,9 +30,7 @@ const authorizeOwner = (_a) => __awaiter(void 0, [_a], void 0, function* ({ reso
         let resource = null;
         // ───────── LECTURE ─────────
         if (resourceType === "lecture") {
-            console.log("resourceId:", resourceId);
             resource = yield lecture_model_1.default.findById(resourceId).populate("classroom");
-            console.log("resource:", resource);
             if (!resource) {
                 throw { status: 404, message: "Lecture not found" };
             }
@@ -57,11 +55,7 @@ const authorizeOwner = (_a) => __awaiter(void 0, [_a], void 0, function* ({ reso
         if (!classroomId) {
             throw { status: 500, message: "Classroom reference missing" };
         }
-        const classroom = yield classroom_model_1.Classroom.findById(classroomId);
-        if (!classroom) {
-            throw { status: 404, message: "Classroom not found" };
-        }
-        if (classroom.teacher.toString() !== userId) {
+        if (resource.teacher.toString() !== userId) {
             throw {
                 status: 403,
                 message: "You do not have permission to modify this resource",

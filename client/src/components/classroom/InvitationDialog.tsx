@@ -1,14 +1,22 @@
+import API from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
-import { AtSign, Bell, Check, Copy, Download, Mail, QrCode, X, ShieldCheck , UserPlus, Send, Zap } from "lucide-react";
-import { useState } from "react";
+import { AtSign, Bell, Check, Copy, Download, Mail, QrCode, X, ShieldCheck, UserPlus, Send, Zap, Loader2 } from "lucide-react";
+import { FormEvent, useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import { toast } from "sonner";
+import { notifyError } from "@/utils/notifyError";
+import { useClassroom } from "@/hooks/useClassroom";
 
-const AddStudentDialog = ({ isOpen, onClose }) => {
-    const [activeMethod, setActiveMethod] = useState("link"); // 'link' | 'qr' | 'notification' | 'email'
+const InvitationDialog = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => {
+    const [activeMethod, setActiveMethod] = useState("link");
     const [isCopied, setIsCopied] = useState(false);
-    const [deploymentStatus, setDeploymentStatus] = useState("idle"); // 'idle' | 'syncing' | 'complete'
-
-    const invitationLink = "https://tutoraive.frontier.io/join/sector-01-x92";
+    const [deploymentStatus, setDeploymentStatus] = useState<"idle" | "syncing" | "complete">("idle");
+    const [base64Data, setBase64Data] = useState("");
+    const [invitationLink, setInvitationLink] = useState("");
+    const [email, setEmail] = useState("");
+    const { classroomId } = useParams();
+    const { classroom } = useClassroom()
 
     const methods = [
         { id: "link", label: "Link", icon: Copy },
@@ -17,32 +25,76 @@ const AddStudentDialog = ({ isOpen, onClose }) => {
         { id: "email", label: "Email", icon: Mail },
     ];
 
+    useEffect(() => {
+        const createInvitation = async () => {
+            try {
+                const { data } = await API.get(`/classrooms/${classroomId}/create-invitation`);
+                setBase64Data(data.qrCode);
+                setInvitationLink(data.invitationLink);
+            } catch (e) {
+                notifyError(e);
+            }
+        };
+        if (isOpen) createInvitation();
+    }, [classroomId, isOpen]);
+
     const handleCopyLink = () => {
-        const textArea = document.createElement("textarea");
-        textArea.value = invitationLink;
-        document.body.appendChild(textArea);
-        textArea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textArea);
+        navigator.clipboard.writeText(invitationLink);
         setIsCopied(true);
+        toast.success("Coordinate copied to clipboard");
         setTimeout(() => setIsCopied(false), 2000);
     };
 
-    const handleDeployment = async (e) => {
+    const handleDeployment = async (e: FormEvent<HTMLElement>) => {
         e.preventDefault();
         setDeploymentStatus("syncing");
+        // Simulated logic for in-app notification search/deploy
         await new Promise(r => setTimeout(r, 1500));
         setDeploymentStatus("complete");
         setTimeout(() => {
             setDeploymentStatus("idle");
             onClose();
-        }, 1000);
+        }, 1500);
     };
+
+    const handleSendMail = async (e: FormEvent<HTMLElement>) => {
+        e.preventDefault();
+        try {
+            setDeploymentStatus("syncing");
+            const { data } = await API.post(`/classrooms/${classroomId}/send-invitation`, {
+                email: email.toLowerCase(),
+                invitationLink
+            });
+
+            setDeploymentStatus("complete");
+            toast.success(data.message || "Invitation Transmitted");
+
+            // Allow user to see "Verified/Complete" state before closing
+            setTimeout(() => {
+                setDeploymentStatus("idle");
+                onClose();
+                setEmail(""); // Reset form
+            }, 1500);
+        } catch (err) {
+            setDeploymentStatus("idle");
+            notifyError(err);
+        }
+    };
+
+    function downloadQR() {
+        const link = document.createElement("a");
+        link.href = base64Data;
+        link.download = `${classroom.title}-qr-code.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
 
     return (
         <AnimatePresence>
             {isOpen && (
-                <div className="fixed inset-0 z-[12000] flex items-center justify-center p-4">
+                <div className="fixed inset-0 flex z-50 items-center justify-center p-4">
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
@@ -64,7 +116,7 @@ const AddStudentDialog = ({ isOpen, onClose }) => {
                                     <UserPlus size={16} />
                                     <span className="text-[10px] font-bold font-oswald uppercase tracking-[0.4em]">Auth Protocol</span>
                                 </div>
-                                <h3 className="text-2xl font-bold font-cinzel uppercase text-foreground">Authorize Identity</h3>
+                                <h3 className="text-2xl font-bold font-cinzel uppercase text-foreground leading-none">Authorize Identity</h3>
                             </div>
                             <button onClick={onClose} className="p-2 rounded-full hover:bg-white/5 text-muted-foreground transition-all">
                                 <X size={20} />
@@ -77,7 +129,10 @@ const AddStudentDialog = ({ isOpen, onClose }) => {
                                 {methods.map((m) => (
                                     <button
                                         key={m.id}
-                                        onClick={() => setActiveMethod(m.id)}
+                                        onClick={() => {
+                                            setActiveMethod(m.id);
+                                            setDeploymentStatus("idle"); // Reset status when switching methods
+                                        }}
                                         className={cn(
                                             "relative flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all duration-500 group flex-shrink-0",
                                             activeMethod === m.id ? "text-primary" : "text-muted-foreground hover:text-foreground"
@@ -93,14 +148,14 @@ const AddStudentDialog = ({ isOpen, onClose }) => {
                             </div>
                         </div>
 
-                        <div className="p-8 min-h-[300px] flex flex-col justify-center">
+                        <div className="p-8 min-h-[320px] flex flex-col justify-center">
                             <AnimatePresence mode="wait">
                                 {activeMethod === "link" && (
                                     <motion.div key="link" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6">
                                         <div className="space-y-2">
                                             <h4 className="text-xs font-bold font-oswald text-muted-foreground uppercase tracking-widest">Public Sector Link</h4>
                                             <div className="flex items-center gap-2 p-4 rounded-xl bg-black/40 border border-white/5">
-                                                <input readOnly value={invitationLink} className="bg-transparent border-none outline-none w-full font-mono text-[10px] text-primary" />
+                                                <input readOnly value={invitationLink} className="bg-transparent border-none outline-none w-full font-mono text-sm text-primary" />
                                                 <button onClick={handleCopyLink} className="p-2 rounded-lg hover:bg-primary/20 text-primary transition-all">
                                                     {isCopied ? <Check size={16} /> : <Copy size={16} />}
                                                 </button>
@@ -112,23 +167,22 @@ const AddStudentDialog = ({ isOpen, onClose }) => {
 
                                 {activeMethod === "qr" && (
                                     <motion.div key="qr" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="flex flex-col items-center gap-6">
-                                        <div className="p-6 bg-white rounded-3xl shadow-[0_0_40px_rgba(var(--primary-rgb),0.1)] relative group">
-                                            {/* Mock QR Code SVG */}
-                                            <svg width="180" height="180" viewBox="0 0 100 100" className="text-slate-900">
-                                                <rect width="100" height="100" fill="none" />
-                                                <path d="M10,10 h30 v30 h-30 z M15,15 v20 h20 v-20 z" fill="currentColor" />
-                                                <path d="M60,10 h30 v30 h-30 z M65,15 v20 h20 v-20 z" fill="currentColor" />
-                                                <path d="M10,60 h30 v30 h-30 z M15,65 v20 h20 v-20 z" fill="currentColor" />
-                                                <path d="M60,60 h30 v30 h-30 z M65,65 v10 h10 v-10 z M80,80 h10 v10 h-10 z" fill="currentColor" />
-                                                <circle cx="50" cy="50" r="5" fill="#B8C8FF" className="animate-pulse" />
-                                            </svg>
+                                        <div className="p-4 bg-white rounded-3xl shadow-xl relative group">
+                                            {base64Data ? (
+                                                <img src={base64Data} alt="qrCode" className="w-32 h-32" />
+                                            ) : (
+                                                <div className="w-32 h-32 flex items-center justify-center"><Loader2 className="animate-spin text-primary" /></div>
+                                            )}
                                         </div>
-                                        <button className="flex items-center gap-2 px-6 py-3 rounded-xl border border-primary/20 text-primary font-oswald text-[10px] font-bold uppercase tracking-widest hover:bg-primary hover:text-white transition-all">
+                                        <button
+                                            onClick={downloadQR}
+                                            className="flex items-center gap-2 px-6 py-3 rounded-xl border border-primary/20 text-primary font-oswald text-[10px] font-bold uppercase tracking-widest hover:bg-primary hover:text-white transition-all"
+                                        >
                                             <Download size={14} /> Download Scan Matrix
                                         </button>
                                     </motion.div>
                                 )}
-
+                                {/* @todo */}
                                 {activeMethod === "notification" && (
                                     <motion.div key="notify" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6">
                                         <form onSubmit={handleDeployment} className="space-y-4">
@@ -136,15 +190,12 @@ const AddStudentDialog = ({ isOpen, onClose }) => {
                                                 <label className="text-[9px] font-bold font-oswald uppercase tracking-widest text-muted-foreground ml-1">Target Username</label>
                                                 <div className="relative">
                                                     <AtSign size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-primary/40" />
-                                                    <input placeholder="SEARCH USER..." className="w-full bg-black/40 border border-white/5 rounded-xl py-3.5 pl-11 pr-4 text-[10px] font-oswald uppercase tracking-widest focus:outline-none focus:border-primary/40 transition-all" />
+                                                    <input required placeholder="SEARCH USER..." className="w-full bg-black/40 border border-white/5 rounded-xl py-3.5 pl-11 pr-4 text-[10px] font-oswald uppercase tracking-widest focus:outline-none focus:border-primary/40 transition-all" />
                                                 </div>
                                             </div>
-                                            <div className="space-y-1.5">
-                                                <label className="text-[9px] font-bold font-oswald uppercase tracking-widest text-muted-foreground ml-1">Broadcast Message</label>
-                                                <textarea placeholder="OPTIONAL HANDSHAKE MESSAGE..." className="w-full h-24 bg-black/40 border border-white/5 rounded-xl p-4 text-[10px] font-inter focus:outline-none focus:border-primary/40 transition-all resize-none" />
-                                            </div>
-                                            <button disabled={deploymentStatus !== "idle"} type="submit" className="w-full py-4 rounded-xl bg-primary text-white font-oswald text-[10px] font-bold uppercase tracking-[0.3em] flex items-center justify-center gap-2">
-                                                {deploymentStatus === "syncing" ? "DEPLOING..." : deploymentStatus === "complete" ? "SUCCESS" : <>DEPLOY NOTIFICATION <Send size={14} /></>}
+                                            <button disabled={deploymentStatus !== "idle"} type="submit" className="w-full py-4 rounded-xl bg-primary text-white font-oswald text-[10px] font-bold uppercase tracking-[0.3em] flex items-center justify-center gap-2 disabled:opacity-50">
+                                                {deploymentStatus === "syncing" ? <Loader2 className="animate-spin" size={14} /> : deploymentStatus === "complete" ? <Check size={14} /> : <>DEPLOY NOTIFICATION <Send size={14} /></>}
+                                                {deploymentStatus === "syncing" ? "DEPLOYING..." : deploymentStatus === "complete" ? "SUCCESS" : ""}
                                             </button>
                                         </form>
                                     </motion.div>
@@ -152,19 +203,17 @@ const AddStudentDialog = ({ isOpen, onClose }) => {
 
                                 {activeMethod === "email" && (
                                     <motion.div key="email" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6">
-                                        <form onSubmit={handleDeployment} className="space-y-4">
+                                        <form onSubmit={handleSendMail} className="space-y-4">
                                             <div className="space-y-1.5">
                                                 <label className="text-[9px] font-bold font-oswald uppercase tracking-widest text-muted-foreground ml-1">Network Email Address</label>
                                                 <div className="relative">
                                                     <Mail size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-primary/40" />
-                                                    <input type="email" placeholder="NODE@FRONTIER.COM" className="w-full bg-black/40 border border-white/5 rounded-xl py-3.5 pl-11 pr-4 text-[10px] font-oswald uppercase tracking-widest focus:outline-none focus:border-primary/40 transition-all" required />
+                                                    <input type="email" onChange={(e) => setEmail(e.target.value)} value={email} placeholder="NODE@FRONTIER.COM" className="w-full bg-black/40 border border-white/5 rounded-xl py-3.5 pl-11 pr-4 text-[10px] font-oswald uppercase tracking-widest focus:outline-none focus:border-primary/40 transition-all" required />
                                                 </div>
                                             </div>
-                                            <div className="p-4 rounded-xl bg-muted/20 border border-white/5">
-                                                <p className="text-[9px] text-muted-foreground font-inter">Recipients will receive an official authorization email with sector access instructions.</p>
-                                            </div>
-                                            <button disabled={deploymentStatus !== "idle"} type="submit" className="w-full py-4 rounded-xl bg-primary text-white font-oswald text-[10px] font-bold uppercase tracking-[0.3em] flex items-center justify-center gap-2">
-                                                {deploymentStatus === "syncing" ? "TRANSMITTING..." : deploymentStatus === "complete" ? "VERIFIED" : <>TRANSMIT INVITATION <Zap size={14} /></>}
+                                            <button disabled={deploymentStatus !== "idle"} type="submit" className="w-full py-4 rounded-xl bg-primary text-white font-oswald text-[10px] font-bold uppercase tracking-[0.3em] flex items-center justify-center gap-2 disabled:opacity-50">
+                                                {deploymentStatus === "syncing" ? <Loader2 className="animate-spin" size={14} /> : deploymentStatus === "complete" ? <ShieldCheck size={14} /> : <>TRANSMIT INVITATION <Zap size={14} /></>}
+                                                {deploymentStatus === "syncing" ? "TRANSMITTING..." : deploymentStatus === "complete" ? "VERIFIED" : ""}
                                             </button>
                                         </form>
                                     </motion.div>
@@ -184,4 +233,4 @@ const AddStudentDialog = ({ isOpen, onClose }) => {
     );
 };
 
-export default AddStudentDialog;
+export default InvitationDialog;

@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.archiveClassroom = exports.enrollClassroom = exports.enrollClassroomByCode = exports.deleteClassroom = exports.updateClassroom = exports.getClassroomById = exports.getClassrooms = exports.createClassroom = void 0;
+exports.getStudents = exports.archiveClassroom = exports.enrollClassroom = exports.deleteClassroom = exports.updateClassroom = exports.getClassroomById = exports.getClassrooms = exports.createClassroom = void 0;
 const user_model_1 = __importDefault(require("../models/user.model"));
 const classroom_model_1 = require("../models/classroom.model");
 const mongoose_1 = require("mongoose");
@@ -50,28 +50,12 @@ const getClassrooms = (req, res) => __awaiter(void 0, void 0, void 0, function* 
     }
 });
 exports.getClassrooms = getClassrooms;
-// get all enrolled classrooms
-// export const getAllEnrolledClassrooms = async (req: Request, res: Response) => {
-//   const classrooms = await Classroom.find({
-//     students: req.userId,
-//   });
-//   if (!classrooms)
-//     return res.status(404).json({
-//       message: "classrooms not found",
-//     });
-//   console.log("classrooms -> ", classrooms);
-//   return res.status(200).json({
-//     message: "fetch all enrolled classrooms",
-//     data: classrooms,
-//   });
-// };
 // Get a single classroom by ID
 const getClassroomById = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const classroom = yield classroom_model_1.Classroom.findById(req.params.id)
-            .populate("teacher", "name email profilePicture")
+            .populate("teacher", "name email userName profilePicture")
             .populate("students", "name email profilePicture");
-        //@remind
         if (!classroom)
             return res.status(404).json({ message: "Classroom not found" });
         res.json(classroom);
@@ -110,29 +94,10 @@ const deleteClassroom = (req, res) => __awaiter(void 0, void 0, void 0, function
     }
 });
 exports.deleteClassroom = deleteClassroom;
-// Join a classroom using joinCode
-const enrollClassroomByCode = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const { joinCode } = req.body;
-        const classroom = yield classroom_model_1.Classroom.findOne({ joinCode });
-        if (!classroom)
-            return res.status(404).json({ message: "Invalid join code" });
-        const userID = new mongoose_1.Types.ObjectId(req.userId);
-        if (!classroom.students.includes(userID)) {
-            classroom.students.push(userID);
-            yield classroom.save();
-        }
-        res.json({ message: "Joined classroom successfully", classroom });
-    }
-    catch (error) {
-        res.status(500).json({ message: "Error joining classroom", error });
-    }
-});
-exports.enrollClassroomByCode = enrollClassroomByCode;
 const enrollClassroom = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { classroomId } = req.body;
-        const userId = new mongoose_1.Types.ObjectId(req.userId); // ensure this is populated by auth middleware
+        const userId = new mongoose_1.Types.ObjectId(req.userId);
         const classroom = yield classroom_model_1.Classroom.findById(classroomId);
         if (!classroom) {
             return res.status(404).json({ message: "Classroom not found" });
@@ -182,3 +147,30 @@ const archiveClassroom = (req, res) => __awaiter(void 0, void 0, void 0, functio
     }
 });
 exports.archiveClassroom = archiveClassroom;
+const getStudents = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        // pagination values
+        const page = Number(req.query.page) || 1;
+        const limit = 1;
+        const skip = (page - 1) * limit;
+        const classroom = req.authorizedResource;
+        const totalStudents = classroom.students.length;
+        // populate only required students
+        yield classroom.populate({
+            path: "students",
+            options: { skip, limit },
+        });
+        res.json({
+            totalStudents,
+            page,
+            limit,
+            students: classroom.students,
+            teacher: classroom.teacher,
+        });
+    }
+    catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Server error" });
+    }
+});
+exports.getStudents = getStudents;

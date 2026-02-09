@@ -1,4 +1,4 @@
-import mongoose, { Schema, model, models, Document, Types } from "mongoose";
+import { Schema, model, models } from "mongoose";
 import { IClassInvitation } from "../types/type";
 
 
@@ -14,7 +14,11 @@ const invitationSchema = new Schema<IClassInvitation>(
       ref: "User",
       required: true,
     },
-    inviteCode: { type: String, required: true, unique: true },
+    inviteCode: { 
+        type: String, 
+        required: true, 
+        unique: true 
+    },
     expiresAt: Date,
     maxUses: { type: Number, default: 0 }, // maxUses = 0 means unlimited.
     usedBy: [{ type: Schema.Types.ObjectId, ref: "User" }], // array tracks who used the link.
@@ -22,12 +26,10 @@ const invitationSchema = new Schema<IClassInvitation>(
   { timestamps: true }
 );
 
-/* Automatically delete invitation 1 day (24h) after expiry
-  MongoDB TTL (Time-To-Live) index will remove documents once (expiresAt + 24 hours) has passed.  */
 
 invitationSchema.index(
   { expiresAt: 1 },
-  { expireAfterSeconds: 60 * 60 * 24 } // 24 hours
+  { expireAfterSeconds: 60 * 60 * 24 * 3 } // 3 days
 );
 
 const Invitation =

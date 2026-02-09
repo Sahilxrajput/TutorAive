@@ -12,25 +12,29 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteInvitation = exports.useInvitation = exports.getInvitationByCode = exports.getInvitationsByClassroom = exports.createInvitation = void 0;
+exports.sendInvitationMail = exports.deleteInvitation = exports.useInvitation = exports.getInvitationByCode = exports.getInvitationsByClassroom = exports.createInvitation = void 0;
 const nanoid_1 = require("nanoid");
 const Invitation_model_1 = __importDefault(require("../models/Invitation.model"));
 const generateQrCode_1 = __importDefault(require("../utils/generateQrCode"));
 const classroom_model_1 = require("../models/classroom.model");
+const user_model_1 = __importDefault(require("../models/user.model"));
+const sendEmail_1 = require("../utils/sendEmail");
 // Create new invitation
 const createInvitation = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b;
     try {
-        const { classroomId, expiresAt, maxUses } = req.body;
+        const { classroomId } = req.params;
         const inviteCode = (0, nanoid_1.nanoid)(8); // short unique code
-        const invitation = yield Invitation_model_1.default.create({
+        yield Invitation_model_1.default.create({
             classroom: classroomId,
             createdBy: req.userId,
             inviteCode,
-            expiresAt,
-            maxUses: maxUses || 0,
+            maxUses: (_b = (_a = req.body) === null || _a === void 0 ? void 0 : _a.maxUses) !== null && _b !== void 0 ? _b : 0,
         });
-        const qrCode = (0, generateQrCode_1.default)(inviteCode);
-        res.status(201).json({ invitation, qrCode });
+        const invitationLink = `${process.env.CLIENT_URL}/classrooms/${classroomId}/join/${inviteCode}`;
+        const qrCode = yield (0, generateQrCode_1.default)(inviteCode);
+        console.log(qrCode);
+        res.status(201).json({ invitationLink, qrCode });
     }
     catch (err) {
         console.error("Error creating invitation:", err);
@@ -41,7 +45,9 @@ exports.createInvitation = createInvitation;
 //  Get all invitations for a classroom
 const getInvitationsByClassroom = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const invitations = yield Invitation_model_1.default.find({ classroom: req.params.id })
+        const invitations = yield Invitation_model_1.default.find({
+            classroom: req.params.classroomId,
+        })
             .populate("createdBy", "userName email")
             .sort({ createdAt: -1 });
         res.json(invitations);
@@ -90,17 +96,11 @@ const useInvitation = (req, res) => __awaiter(void 0, void 0, void 0, function* 
             return res.status(400).json({ message: "You already used this invite" });
         invitation.usedBy.push(req.userId);
         yield invitation.save();
-        // Auto-mark attendance
-        // const today = new Date();
-        // const startOfDay = new Date(today.setHours(0, 0, 0, 0));
-        // await Attendance.findOneAndUpdate(
-        //   { classroom: invitation. , user: req.userId, date: startOfDay },
-        //   { status: "present", date: new Date() },
-        //   { upsert: true, new: true }
-        // );
-        // Add user to classroom
         yield classroom_model_1.Classroom.findByIdAndUpdate(invitation.classroom, {
             $addToSet: { students: req.userId },
+        });
+        yield user_model_1.default.findByIdAndUpdate(req.userId, {
+            $addToSet: { enrolledClassrooms: invitation.classroom },
         });
         res.json({
             message: "Successfully joined classroom",
@@ -108,6 +108,7 @@ const useInvitation = (req, res) => __awaiter(void 0, void 0, void 0, function* 
         });
     }
     catch (err) {
+        console.log(err);
         res.status(500).json({ message: "Error using invitation", error: err });
     }
 });
@@ -130,3 +131,25 @@ const deleteInvitation = (req, res) => __awaiter(void 0, void 0, void 0, functio
     }
 });
 exports.deleteInvitation = deleteInvitation;
+//send class invite
+const sendInvitationMail = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { email, invitationLink } = req.body;
+        const classroom = req.authorizedResource;
+        if (!classroom)
+            return res.status(404).json({ message: "classroom is not found" });
+        const { teacher } = yield classroom.populate("teacher", "userName");
+        yield (0, sendEmail_1.sendClassInviteEmail)({
+            studentEmail: email,
+            teacherName: teacher === null || teacher === void 0 ? void 0 : teacher.userName,
+            classroomName: classroom.title,
+            invitationLink,
+        });
+        console.log("mail success");
+        res.json({ message: "Invitation sent successfully" });
+    }
+    catch (error) {
+        res.status(500).json({ message: "Failed to send invite", error });
+    }
+});
+exports.sendInvitationMail = sendInvitationMail;

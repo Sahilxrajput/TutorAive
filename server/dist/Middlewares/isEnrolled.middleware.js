@@ -16,29 +16,25 @@ const isEnrolled = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
     try {
         const classroomId = req.params.classroomId || req.body.classroomId;
         if (!classroomId) {
-            console.log("Classroom ID is required");
             return res.status(400).json({ message: "Classroom ID is required" });
         }
         const userId = req.userId;
         if (!userId) {
             return res.status(401).json({ message: "Unauthorized" });
         }
-        const classroom = yield classroom_model_1.Classroom.findById(classroomId).select("students createdBy");
+        const classroom = yield classroom_model_1.Classroom.findById(classroomId).select("students teacher");
         if (!classroom) {
-            console.log("Classroom not found");
             return res.status(404).json({ message: "Classroom not found" });
         }
         // Allow the creator as well
         const isOwner = ((_a = classroom.teacher) === null || _a === void 0 ? void 0 : _a.toString()) === userId.toString();
         const isStudent = classroom.students.some((_id) => _id.toString() === userId.toString());
-        console.log("isStudent", isStudent);
-        console.log("isOwner", isOwner);
         if (!isOwner && !isStudent) {
-            console.log("You are not enrolled/instructor in this classroom");
             return res
                 .status(403)
                 .json({ message: "You are not enrolled/instructor in this classroom" });
         }
+        req.authorizedResource = classroom;
         next();
     }
     catch (error) {

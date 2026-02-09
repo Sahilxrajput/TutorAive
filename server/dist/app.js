@@ -18,7 +18,6 @@ const auth_routes_1 = __importDefault(require("./routes/auth.routes"));
 const contact_routes_1 = __importDefault(require("./routes/contact.routes"));
 const classroom_routes_1 = __importDefault(require("./routes/classroom.routes"));
 const user_routes_1 = __importDefault(require("./routes/user.routes"));
-const invitation_routes_1 = __importDefault(require("./routes/invitation.routes"));
 const assignment_routes_1 = __importDefault(require("./routes/assignment.routes"));
 const submission_routes_1 = __importDefault(require("./routes/submission.routes"));
 const payment_routes_1 = __importDefault(require("./routes/payment.routes"));
@@ -50,7 +49,6 @@ app.use("/api/attendance", attendence_routes_1.default);
 app.use("/api/auth", auth_routes_1.default);
 app.use("/api/contact", contact_routes_1.default);
 app.use("/api/classrooms", classroom_routes_1.default);
-app.use("/api/invitations", invitation_routes_1.default);
 app.use("/api/lectures", lecture_route_1.default); // all required auth
 app.use("/api/notes", note_routes_1.default); // all required auth
 app.use("/api/notifications", notification_routes_1.default);

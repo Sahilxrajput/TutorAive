@@ -93,7 +93,8 @@ exports.updateClassroomValidator = [
     (0, express_validator_1.body)("tags").optional().isArray(),
 ];
 exports.joinClassroomByCodeValidator = [
-    (0, express_validator_1.body)("joinCode").notEmpty().withMessage("Join code is required"),
+    (0, express_validator_1.param)("code").notEmpty().withMessage("Join code is required"),
+    (0, express_validator_1.param)("classroomId").isMongoId().withMessage("Invalid Classroom ID"),
 ];
 exports.joinClassroomValidator = [
     (0, express_validator_1.body)("classroomId")

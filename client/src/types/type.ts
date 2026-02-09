@@ -46,6 +46,7 @@ export interface IClassroom {
   teacher: {
     _id: string;
     email: string;
+    userName: string;
   };
   joinCode: string;
   tags: string[];
@@ -53,7 +54,7 @@ export interface IClassroom {
   hours?: number;
   // curriculum: Object[];
   syllabus: string[];
-  // students?: Types.ObjectId[];
+  students: string[];
   // memberships?: Types.ObjectId[];
   // assignments?: Types.ObjectId[];
   // schedules?: Types.ObjectId[];

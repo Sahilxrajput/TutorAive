@@ -44,6 +44,13 @@ const ClassroomSchema = new Schema<IClassroom>(
       enum: ["active", "completed"],
       default: "active",
     },
+    joinCode: {
+      type: String,
+    },
+    joinCodeExpiresAt: {
+      type: Date,
+      default: null,
+    },
     currency: {
       type: String,
       required: function (this: IClassroom) {

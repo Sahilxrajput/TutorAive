@@ -114,6 +114,8 @@ export interface IClassroom extends Document {
   currency: string;
   assignments: Types.ObjectId[];
   exams: Types.ObjectId[];
+  joinCode: string;
+  joinCodeExpiresAt: Date;
   lectures?: string;
   createdAt: Date;
   status: "completed" | "active";

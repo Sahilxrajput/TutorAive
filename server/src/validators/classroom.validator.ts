@@ -1,4 +1,4 @@
-import { body, param } from "express-validator";
+import { body, param, query } from "express-validator";
 
 export const createClassroomValidator = [
   body("title")
@@ -111,7 +111,8 @@ export const updateClassroomValidator = [
 ];
 
 export const joinClassroomByCodeValidator = [
-  body("joinCode").notEmpty().withMessage("Join code is required"),
+  param("code").notEmpty().withMessage("Join code is required"),
+  param("classroomId").isMongoId().withMessage("Invalid Classroom ID"),
 ];
 
 export const joinClassroomValidator = [

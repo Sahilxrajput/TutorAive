@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateAssignment = exports.deleteAssignment = exports.getAssignmentsByClassroomId = exports.getAssignmentById = exports.getMyAssignmentProgress = exports.getStudentAssignmentProgress = exports.getAssignmentsForInstructor = exports.getAssignmentsOfStudent = exports.saveAssignment = exports.cloudinarySignature = void 0;
+exports.updateAssignment = exports.deleteAssignment = exports.getAssignmentsByClassroomId = exports.getAssignmentById = exports.getStudentAssignmentProgress = exports.getAssignmentsForInstructor = exports.getAssignmentsOfStudent = exports.saveAssignment = exports.cloudinarySignature = void 0;
 const assignment_model_1 = __importDefault(require("../models/assignment.model"));
 const classroom_model_1 = require("../models/classroom.model");
 const submission_model_1 = __importDefault(require("../models/submission.model"));
@@ -156,49 +156,31 @@ exports.getAssignmentsForInstructor = getAssignmentsForInstructor;
 const getStudentAssignmentProgress = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { classroomId, studentId } = req.params;
-        // 1. Get all assignments for the classroom
-        const assignments = yield assignment_model_1.default.find({ classroom: classroomId });
-        // 2. Get all submissions by this student for this classroom
-        const submissions = yield submission_model_1.default.find({ student: studentId });
-        // Convert submitted assignment IDs into a Set for fast lookup
-        const submittedIds = new Set(submissions.map((s) => s.assignment.toString()));
-        // 3. Split into pending + submitted
-        const submitted = assignments.filter((a) => submittedIds.has(a._id.toString()));
-        const pending = assignments.filter((a) => !submittedIds.has(a._id.toString()));
+        console.log(req.params);
+        const allClassroomAssignments = yield assignment_model_1.default.find({
+            classroom: classroomId,
+        });
+        const studentSubmissions = yield submission_model_1.default.find({
+            student: studentId,
+        }).populate("assignment");
+        // Filter submissions to only include those belonging to the current classroom
+        const classroomSubmissions = studentSubmissions.filter((sub) => sub.assignment && sub.assignment.classroom.toString() === classroomId);
+        // 3. Identify IDs of assignments that HAVE been submitted
+        const submittedAssignmentIds = new Set(classroomSubmissions.map((s) => s.assignment._id.toString()));
+        // 4. Pending: Assignments in this classroom that ARE NOT in the submitted IDs
+        const pending = allClassroomAssignments.filter((a) => !submittedAssignmentIds.has(a._id.toString()));
         res.status(200).json({
             success: true,
-            submitted,
-            pending,
+            submitted: classroomSubmissions, // This now sends the Submission objects
+            pending: pending, // This sends the Assignment objects
         });
     }
-    catch (err) {
-        res.status(500).json({ success: false, message: err === null || err === void 0 ? void 0 : err.message });
-    }
-});
-exports.getStudentAssignmentProgress = getStudentAssignmentProgress;
-const getMyAssignmentProgress = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const { classroomId } = req.params;
-        // 1. Get all assignments for the classroom
-        const assignments = yield assignment_model_1.default.find({ classroom: classroomId });
-        // 2. Get all submissions by this student for this classroom
-        const submissions = yield submission_model_1.default.find({ student: req.userId });
-        // Convert submitted assignment IDs into a Set for fast lookup
-        const submittedIds = new Set(submissions.map((s) => s.assignment.toString()));
-        // 3. Split into pending + submitted
-        const submitted = assignments.filter((a) => submittedIds.has(a._id.toString()));
-        const pending = assignments.filter((a) => !submittedIds.has(a._id.toString()));
-        res.status(200).json({
-            success: true,
-            submitted,
-            pending,
-        });
-    }
-    catch (_a) {
+    catch (error) {
+        console.error(error);
         res.status(500).json({ success: false, message: "Server error" });
     }
 });
-exports.getMyAssignmentProgress = getMyAssignmentProgress;
+exports.getStudentAssignmentProgress = getStudentAssignmentProgress;
 // Get single assignment
 const getAssignmentById = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {

@@ -44,6 +44,13 @@ const ClassroomSchema = new mongoose_1.Schema({
         enum: ["active", "completed"],
         default: "active",
     },
+    joinCode: {
+        type: String,
+    },
+    joinCodeExpiresAt: {
+        type: Date,
+        default: null,
+    },
     currency: {
         type: String,
         required: function () {

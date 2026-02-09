@@ -8,14 +8,12 @@ import {
   archiveClassroom,
   getStudents,
   enrollClassroom,
-  enrollClassroomByCode,
 } from "../controllers/classroom.controller";
 import {
   createClassroomValidator,
   updateClassroomValidator,
   joinClassroomValidator,
   idParamValidator,
-  createClassScheduleValidator,
   joinClassroomByCodeValidator,
 } from "../validators/classroom.validator";
 
@@ -38,6 +36,7 @@ import {
 } from "../controllers/assignment.controller";
 import { authorizeOwnerMiddleware } from "../middlewares/authorizeOwner.middleware";
 import { getResources, saveResources } from "../controllers/note.controller";
+import { createInvitation, sendInvitationMail, useInvitation } from "../controllers/invitation.controller";
 
 const router = express.Router();
 
@@ -53,11 +52,11 @@ router.get("/enrolled", getAllEnrolledClassrooms);
 router.get("/:id", idParamValidator, handleValidation, getClassroomById);
 
 // Join classroom by code
-router.post(
-  "/:id/join",
+router.get(
+  "/:classroomId/join/:code",
   joinClassroomByCodeValidator,
   handleValidation,
-  enrollClassroomByCode,
+  useInvitation,
 );
 
 //@todo enroll classroom by purchase
@@ -77,8 +76,20 @@ router.get(
 //!@check create a --------------------lecture / assignmnet/ students------------------------ in classroom
 router.get("/:classroomId/resources", isEnrolled, getResources);
 
-// isInstructor?+6++
+// isInstructor?
 router.use(isInstructor);
+
+router.get(
+  "/:classroomId/create-invitation",
+  authorizeOwnerMiddleware("classroom"),
+  createInvitation,
+);
+
+router.post(
+  "/:classroomId/send-invitation",
+  authorizeOwnerMiddleware("classroom"),
+  sendInvitationMail,
+);
 
 // Create a new classroom
 router.post("/", createClassroomValidator, handleValidation, createClassroom);
@@ -94,7 +105,7 @@ router.put(
   archiveClassroom,
 );
 
-router.get("/:classroomId/students", isEnrolled, getStudents)
+router.get("/:classroomId/students", isEnrolled, getStudents);
 
 //!@check create a --------------------lecture------------------------ in classroom
 router

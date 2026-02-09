@@ -2,27 +2,30 @@ import { Request, Response } from "express";
 import { nanoid } from "nanoid";
 import Invitation from "../models/Invitation.model";
 import genearteQrCode from "../utils/generateQrCode";
-import {Classroom} from "../models/classroom.model";
-import Attendance from "../models/attendence.model.";
+import { Classroom } from "../models/classroom.model";
+import User from "../models/user.model";
+import { sendClassInviteEmail } from "../utils/sendEmail";
+import { error } from "console";
 
 // Create new invitation
 export const createInvitation = async (req: Request, res: Response) => {
   try {
-    const { classroomId, expiresAt, maxUses } = req.body;
+    const { classroomId } = req.params;
 
     const inviteCode = nanoid(8); // short unique code
 
-    const invitation = await Invitation.create({
+    await Invitation.create({
       classroom: classroomId,
       createdBy: req.userId,
       inviteCode,
-      expiresAt,
-      maxUses: maxUses || 0,
+      maxUses: req.body?.maxUses ?? 0,
     });
 
-    const qrCode = genearteQrCode(inviteCode);
+    const invitationLink = `${process.env.CLIENT_URL}/classrooms/${classroomId}/join/${inviteCode}`;
 
-    res.status(201).json({ invitation, qrCode });
+    const qrCode = await genearteQrCode(inviteCode);
+    console.log(qrCode);
+    res.status(201).json({ invitationLink, qrCode });
   } catch (err) {
     console.error("Error creating invitation:", err);
     res.status(500).json({ message: "Error creating invitation", error: err });
@@ -32,10 +35,12 @@ export const createInvitation = async (req: Request, res: Response) => {
 //  Get all invitations for a classroom
 export const getInvitationsByClassroom = async (
   req: Request,
-  res: Response
+  res: Response,
 ) => {
   try {
-    const invitations = await Invitation.find({ classroom: req.params.id })
+    const invitations = await Invitation.find({
+      classroom: req.params.classroomId,
+    })
       .populate("createdBy", "userName email")
       .sort({ createdAt: -1 });
 
@@ -77,6 +82,7 @@ export const useInvitation = async (req: Request, res: Response) => {
     const invitation = await Invitation.findOne({
       inviteCode: req.params.code,
     });
+
     if (!invitation)
       return res.status(404).json({ message: "Invalid invite code" });
 
@@ -95,19 +101,12 @@ export const useInvitation = async (req: Request, res: Response) => {
     invitation.usedBy.push(req.userId);
     await invitation.save();
 
-    // Auto-mark attendance
-    // const today = new Date();
-    // const startOfDay = new Date(today.setHours(0, 0, 0, 0));
-
-    // await Attendance.findOneAndUpdate(
-    //   { classroom: invitation. , user: req.userId, date: startOfDay },
-    //   { status: "present", date: new Date() },
-    //   { upsert: true, new: true }
-    // );
-
-    // Add user to classroom
     await Classroom.findByIdAndUpdate(invitation.classroom, {
       $addToSet: { students: req.userId },
+    });
+
+    await User.findByIdAndUpdate(req.userId, {
+      $addToSet: { enrolledClassrooms: invitation.classroom },
     });
 
     res.json({
@@ -115,6 +114,7 @@ export const useInvitation = async (req: Request, res: Response) => {
       classroomId: invitation.classroom,
     });
   } catch (err) {
+    console.log(err)
     res.status(500).json({ message: "Error using invitation", error: err });
   }
 };
@@ -137,5 +137,30 @@ export const deleteInvitation = async (req: Request, res: Response) => {
     res.json({ message: "Invitation deleted successfully" });
   } catch (err) {
     res.status(500).json({ message: "Error deleting invitation", error: err });
+  }
+};
+
+//send class invite
+export const sendInvitationMail = async (req: Request, res: Response) => {
+  try {
+    const { email, invitationLink } = req.body;
+
+    const classroom = req.authorizedResource;
+
+    if (!classroom)
+      return res.status(404).json({ message: "classroom is not found" });
+
+    const { teacher } = await classroom.populate("teacher", "userName");
+
+    await sendClassInviteEmail({
+      studentEmail: email,
+      teacherName: teacher?.userName,
+      classroomName: classroom.title,
+      invitationLink,
+    });
+    console.log("mail success");
+    res.json({ message: "Invitation sent successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to send invite", error });
   }
 };
