@@ -6,7 +6,7 @@ export default function Auth() {
     const [isLoginPage, setIsLoginPage] = useState(true)
     return (
         <div
-            className="relative h-screen w-screen bg-[#B8C8FF] flex items-center justify-between"
+            className="relative h-screen w-screen bg-primary flex items-center justify-between"
         >
             <h1 className="text-4xl absolute font-cinzel top-8 left-20 text-card">TutorAive</h1>
 

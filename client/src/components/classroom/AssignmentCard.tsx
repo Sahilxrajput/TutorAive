@@ -3,16 +3,16 @@ import { motion } from 'framer-motion'
 import { cn } from "@/lib/utils";
 import { Calendar, CheckCircle2, ExternalLink, Orbit, ShieldCheck } from "lucide-react";
 import { IAssignment } from "@/types/type";
-import { PdfUploadDialog } from "../PdfUpload";
+import { PdfUploadDialog } from "./PdfUploadDialog";
 
 type AssignmentCardProps = {
     item: IAssignment;
     isPending: boolean;
-    onUploadComplete: (id: string) => void;
+    // onUploadComplete: (id: string) => void;
 };
 
 const AssignmentCard = forwardRef<HTMLDivElement, AssignmentCardProps>(
-    ({ item, isPending, onUploadComplete }, ref) => {
+    ({ item, isPending }, ref) => {
         return (
             <motion.div
                 ref={ref}
@@ -78,7 +78,7 @@ const AssignmentCard = forwardRef<HTMLDivElement, AssignmentCardProps>(
                 <div className="mt-8 flex gap-3 relative z-10">
                     {isPending ? (
                         <PdfUploadDialog
-                            onComplete={(id) => onUploadComplete(id)}
+                            // onComplete={(id) => onUploadComplete(id)}
                             buttonText="Initialize Upload"
                             type="submission"
                             title="Authorize Submission"
@@ -90,9 +90,13 @@ const AssignmentCard = forwardRef<HTMLDivElement, AssignmentCardProps>(
                         </button>
                     )}
 
-                    <button className="px-5 py-3 rounded-xl bg-muted/50 hover:bg-primary hover:text-white transition-all font-oswald text-[10px] font-bold uppercase tracking-widest flex items-center justify-center gap-2">
+                    <a
+                        href={item.file.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-5 py-3 rounded-xl bg-muted/50 hover:bg-primary hover:text-white transition-all font-oswald text-[10px] font-bold uppercase tracking-widest flex items-center justify-center gap-2">
                         <ExternalLink size={12} /> Intel
-                    </button>
+                    </a>
                 </div>
             </motion.div>
         );

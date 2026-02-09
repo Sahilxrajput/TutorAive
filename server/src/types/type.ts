@@ -39,6 +39,17 @@ export interface INotification extends Document {
   createdAt: Date;
 }
 
+export interface IResource extends Document {
+  title: string;
+  file?: {
+    url: string;
+    public_id: string;
+    resourceType?: string;
+  };
+  classroom: Types.ObjectId;
+  uploadedBy: Types.ObjectId;
+}
+
 export interface IAssignment extends Document {
   classroom: Types.ObjectId;
   title: string;

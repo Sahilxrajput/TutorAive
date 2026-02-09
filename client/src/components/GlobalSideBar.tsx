@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { BookOpen, Twitch, Compass, Bell, Home } from "lucide-react";
 import { motion } from "framer-motion";
 import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
-import { useLocation, useNavigate } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import defaultAvatar from '@/assets/image/avatar.png'
 import useAuth from "@/hooks/useAuth";
@@ -46,7 +46,6 @@ export default function GlobalSideBar() {
     const [NotificationOpen, setNotificationOpen] = useState(false);
     const containerRef = useRef<HTMLDivElement | null>(null);
     const activeElRef = useRef<HTMLElement | null>(null);
-    const navigate = useNavigate();
     const location = useLocation();
     const { user } = useAuth();
 
@@ -82,10 +81,10 @@ export default function GlobalSideBar() {
         <>
             <aside className="hidden md:flex h-screen w-20 bg-background/80 dark:bg-black/40 border-r border-border dark:border-white/5 flex-col items-center justify-between py-8 relative z-[100] backdrop-blur-2xl transition-colors duration-500">
 
-                <div className="flex flex-col items-center gap-2 group cursor-pointer" onClick={() => navigate("/")}>
-                    <Logo/>
+                <NavLink className="flex flex-col items-center gap-2 group cursor-pointer" to={"/"}>
+                    <Logo />
                     <span className="text-[8px] font-bold font-oswald text-muted-foreground uppercase tracking-[0.3em] group-hover:text-primary transition-colors">TutorAive</span>
-                </div>
+                </NavLink>
                 <ThemeToggle />
 
                 <nav
@@ -98,11 +97,11 @@ export default function GlobalSideBar() {
                     {navItems.map(({ id, icon: Icon, label }) => {
                         const isActive = location.pathname === id;
                         return (
-                            <div
+                            <NavLink
+                                to={id}
                                 key={id}
                                 data-path={id}
                                 onPointerEnter={(e) => moveIndicator(e.currentTarget)}
-                                onClick={() => navigate(id)}
                                 className={cn(
                                     "relative z-10 h-12 w-12 flex items-center justify-center rounded-2xl transition-all duration-300 group cursor-pointer",
                                     isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"
@@ -114,7 +113,7 @@ export default function GlobalSideBar() {
                                 <div className="absolute left-24 px-3 py-2 bg-popover/90 backdrop-blur-md border border-border rounded-xl opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-300 -translate-x-2 group-hover:translate-x-0 shadow-2xl">
                                     <span className="text-[10px] font-bold font-oswald text-popover-foreground uppercase tracking-widest whitespace-nowrap">{label}</span>
                                 </div>
-                            </div>
+                            </NavLink>
                         );
                     })}
                 </nav>
@@ -131,8 +130,8 @@ export default function GlobalSideBar() {
                         <span className="absolute top-3 right-3 w-2 h-2 bg-primary rounded-full border-2 border-background animate-pulse" />
                     </button>
 
-                    <div
-                        onClick={() => navigate("/dashboard")}
+                    <NavLink
+                        to={"dashboard"}
                         className={cn(
                             "relative w-12 h-12 rounded-full cursor-pointer border overflow-hidden transition-all duration-500 hover:scale-105 active:scale-95",
                             location.pathname === "/dashboard"
@@ -146,7 +145,7 @@ export default function GlobalSideBar() {
                                 {user?.userName?.substring(0, 2).toUpperCase() || "SR"}
                             </AvatarFallback>
                         </Avatar>
-                    </div>
+                    </NavLink>
                 </div>
 
                 <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-primary/30 to-transparent pointer-events-none opacity-50" />

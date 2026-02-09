@@ -15,7 +15,7 @@ router.get("/created", lecture_controller_1.getAllLecturesForInstructor);
 // Student: get all lectures available to the authenticated student (no classroom filter)
 router.get("/my", lecture_controller_1.getAllLecturesForStudent);
 // Get all lectures created for a specific classroom. Route param: classroomId
-router.get("/all/:classroomId", lecture_controller_1.getAllClassroomLectures);
+router.get("/all/:classroomId", lecture_controller_1.getClassroomLectures);
 // @ok  Instructor: get scheduled (upcoming) lectures visible to the instructor
 router.get("/scheduled/created", lecture_controller_1.getAllScheduleLecturesForInstructor);
 // @ok Student: get scheduled (upcoming) lectures visible to the student

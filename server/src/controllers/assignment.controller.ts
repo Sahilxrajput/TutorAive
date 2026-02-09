@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import Assignment from "../models/assignment.model";
-import {Classroom} from "../models/classroom.model";
+import { Classroom } from "../models/classroom.model";
 import Submission from "../models/submission.model";
 import {
   IAssignment,
@@ -11,7 +11,6 @@ import {
 import { cloudinary } from "../lib/cloudinary";
 import { addAssignmentNotificationJob } from "../redis/queue";
 
-
 export const cloudinarySignature = async (req: Request, res: Response) => {
   try {
     const { CLOUD_API_KEY, CLOUD_NAME, CLOUD_API_SECRET } = process.env;
@@ -20,16 +19,17 @@ export const cloudinarySignature = async (req: Request, res: Response) => {
     if (!classroom) return;
 
     const timestamp = Math.floor(Date.now() / 1000);
-    // const folder = "tweets";
-    const folder = "assignment files";
+    const folder = "tutoraive files";
 
     const signature = cloudinary.utils.api_sign_request(
       {
         timestamp,
         folder,
       },
-      CLOUD_API_SECRET!
+      CLOUD_API_SECRET!,
     );
+
+    console.log("signature : ", signature);
 
     return res.json({
       timestamp,
@@ -122,7 +122,7 @@ export const getAssignmentsOfStudent = async (req: Request, res: Response) => {
         .status(404)
         .json({ message: "User is not enrolled in any classroom." });
 
-    const classroomIds = classrooms.map((c:IClassroom) => c._id);
+    const classroomIds = classrooms.map((c: IClassroom) => c._id);
 
     // 2. Fetch assignments for all those classrooms
     const assignments = await Assignment.find({
@@ -134,16 +134,16 @@ export const getAssignmentsOfStudent = async (req: Request, res: Response) => {
 
     // Convert submitted assignment IDs into a Set for fast lookup
     const submittedIds = new Set(
-      submissions.map((s: ISubmission) => s.assignment.toString())
+      submissions.map((s: ISubmission) => s.assignment.toString()),
     );
 
     // 3. Split into pending + submitted
     const submitted = assignments.filter((a) =>
-      submittedIds.has(a._id.toString())
+      submittedIds.has(a._id.toString()),
     );
 
     const pending = assignments.filter(
-      (a) => !submittedIds.has(a._id.toString())
+      (a) => !submittedIds.has(a._id.toString()),
     );
 
     res.status(200).json({
@@ -162,7 +162,7 @@ export const getAssignmentsOfStudent = async (req: Request, res: Response) => {
 
 export const getAssignmentsForInstructor = async (
   req: Request,
-  res: Response
+  res: Response,
 ) => {
   try {
     const assignments = await Assignment.find({
@@ -181,72 +181,46 @@ export const getAssignmentsForInstructor = async (
   }
 };
 
-export const getStudentAssignmentProgress = async (req: Request, res: Response) => {
-  try {
-    const { classroomId, studentId } = req.params;
+export const getStudentAssignmentProgress = async (
+  req: Request,
+  res: Response,
+) => {
+   try {
+     const { classroomId, studentId } = req.params;
+    console.log(req.params)
+     const allClassroomAssignments = await Assignment.find({
+       classroom: classroomId,
+     });
 
-    // 1. Get all assignments for the classroom
-    const assignments = await Assignment.find({ classroom: classroomId });
+     const studentSubmissions = await Submission.find({
+       student: studentId,
+     }).populate("assignment");
 
-    // 2. Get all submissions by this student for this classroom
-    const submissions = await Submission.find({ student: studentId });
+     // Filter submissions to only include those belonging to the current classroom
+     const classroomSubmissions = studentSubmissions.filter(
+       (sub: any) =>
+         sub.assignment && sub.assignment.classroom.toString() === classroomId,
+     );
 
-    // Convert submitted assignment IDs into a Set for fast lookup
-    const submittedIds = new Set(
-      submissions.map((s: ISubmission) => s.assignment.toString())
-    );
+     // 3. Identify IDs of assignments that HAVE been submitted
+     const submittedAssignmentIds = new Set(
+       classroomSubmissions.map((s: any) => s.assignment._id.toString()),
+     );
 
-    // 3. Split into pending + submitted
-    const submitted = assignments.filter((a) =>
-      submittedIds.has(a._id.toString())
-    );
+     // 4. Pending: Assignments in this classroom that ARE NOT in the submitted IDs
+     const pending = allClassroomAssignments.filter(
+       (a) => !submittedAssignmentIds.has(a._id.toString()),
+     );
 
-    const pending = assignments.filter(
-      (a) => !submittedIds.has(a._id.toString())
-    );
-
-    res.status(200).json({
-      success: true,
-      submitted,
-      pending,
-    });
-  } catch (err: any) {
-    res.status(500).json({ success: false, message: err?.message });
-  }
-};
-
-export const getMyAssignmentProgress = async (req: Request, res: Response) => {
-  try {
-    const { classroomId } = req.params;
-
-    // 1. Get all assignments for the classroom
-    const assignments = await Assignment.find({ classroom: classroomId });
-
-    // 2. Get all submissions by this student for this classroom
-    const submissions = await Submission.find({ student: req.userId });
-
-    // Convert submitted assignment IDs into a Set for fast lookup
-    const submittedIds = new Set(
-      submissions.map((s: ISubmission) => s.assignment.toString())
-    );
-
-    // 3. Split into pending + submitted
-    const submitted = assignments.filter((a) =>
-      submittedIds.has(a._id.toString())
-    );
-
-    const pending = assignments.filter(
-      (a) => !submittedIds.has(a._id.toString())
-    );
-
-    res.status(200).json({
-      success: true,
-      submitted,
-      pending,
-    });
-  } catch {
-    res.status(500).json({ success: false, message: err?.message });
-  }
+     res.status(200).json({
+       success: true,
+       submitted: classroomSubmissions, // This now sends the Submission objects
+       pending: pending, // This sends the Assignment objects
+     });
+   } catch (error) {
+     console.error(error);
+     res.status(500).json({ success: false, message: "Server error" });
+   }
 };
 
 // Get single assignment
@@ -264,7 +238,7 @@ export const getAssignmentById = async (req: Request, res: Response) => {
 //get all assignment of a classroom
 export const getAssignmentsByClassroomId = async (
   req: Request,
-  res: Response
+  res: Response,
 ) => {
   try {
     const classroom = req.authorizedResource;
@@ -328,7 +302,7 @@ export const updateAssignment = async (req: Request, res: Response) => {
     const updated = await Assignment.findByIdAndUpdate(
       req.params.id,
       req.body,
-      { new: true }
+      { new: true },
     );
 
     res.json({ success: true, data: updated });

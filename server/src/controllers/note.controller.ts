@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import Note from "../models/note.model";
 import { ICollaborator, INote, IUser } from "../types/type";
 import User from "../models/user.model";
+import Resource from "../models/resource.model";
 
 export const saveNote = async (req: Request, res: Response) => {
   try {
@@ -60,7 +61,7 @@ export const getNotesByStatus = async (req: Request, res: Response) => {
       .populate("owner", "email profilePicture userName firstName lastName")
       .populate(
         "collaborators.user",
-        "profilePicture userName firstName lastName"
+        "profilePicture userName firstName lastName",
       )
       .sort({ updatedAt: -1 });
 
@@ -74,7 +75,6 @@ export const getNotesByStatus = async (req: Request, res: Response) => {
   }
 };
 
-
 export const getNoteById = async (req: Request, res: Response) => {
   try {
     const noteId = req.params.id;
@@ -85,7 +85,7 @@ export const getNoteById = async (req: Request, res: Response) => {
     const isOwner = note.owner.toString() === req.userId;
 
     const isCollaborator = note.collaborators.some(
-      (c: ICollaborator) => c.user.toString() === req.userId
+      (c: ICollaborator) => c.user.toString() === req.userId,
     );
 
     const isPublic = note.isPublic;
@@ -112,7 +112,7 @@ export const updateNote = async (req: Request, res: Response) => {
       note.owner.toString() === req.userId ||
       note.collaborators.some(
         (c: ICollaborator) =>
-          c.user.toString() === req.userId && c.access === "edit"
+          c.user.toString() === req.userId && c.access === "edit",
       );
 
     if (!canEdit)
@@ -197,13 +197,13 @@ export const pinToggler = async (req: Request, res: Response) => {
     if (!note) return res.status(404).json({ message: "Note not found" });
 
     const alreadyPinned = note.pinnedBy.some(
-      (u: string) => u.toString() === userId
+      (u: string) => u.toString() === userId,
     );
 
     if (alreadyPinned) {
       // Unpin
       note.pinnedBy = note.pinnedBy.filter(
-        (u: string) => u.toString() !== userId
+        (u: string) => u.toString() !== userId,
       );
     } else {
       // Pin
@@ -282,7 +282,7 @@ export const clearTrash = async (req: Request, res: Response) => {
       } else {
         // User is a collaborator → remove them from collaborators array
         note.collaborators = note.collaborators.filter(
-          (c: ICollaborator) => c.user.toString() !== userId.toString()
+          (c: ICollaborator) => c.user.toString() !== userId.toString(),
         );
         await note.save();
         updatedCount++;
@@ -322,7 +322,7 @@ export const addCollaborator = async (req: Request, res: Response) => {
 
     // Check if user already exists as collaborator
     const alreadyExists = note.collaborators.some(
-      (c) => c.user._id.toString() === user._id.toString()
+      (c) => c.user._id.toString() === user._id.toString(),
     );
 
     if (alreadyExists)
@@ -365,13 +365,13 @@ export const removeCollaborator = async (req: Request, res: Response) => {
 
     // Remove collaborator by comparing stringified ObjectIds
     const newCollaborators = note.collaborators.filter(
-      (c: ICollaborator) => c.user.toString() !== userToRemove._id.toString()
+      (c: ICollaborator) => c.user.toString() !== userToRemove._id.toString(),
     );
 
     const updatedNote = await Note.findByIdAndUpdate(
       noteId,
       { collaborators: newCollaborators },
-      { new: true }
+      { new: true },
     ).orFail();
 
     res.json({
@@ -394,5 +394,63 @@ export const searchQuery = async (req: Request, res: Response) => {
     res.json(notes);
   } catch (error) {
     res.status(500).json({ message: "Failed to search notes", error });
+  }
+};
+
+export const saveResources = async (req: Request, res: Response) => {
+  try {
+    const { url, publicId, title, resourceType } = req.body;
+    console.log(req.body);
+    const { classroomId } = req.params;
+
+    // 1. Authorization Check
+    const classroomDoc = req.authorizedResource;
+    if (!classroomDoc) return;
+
+    // 2. Save Resource
+    const resource = await Resource.create({
+      title,
+      uploadedBy: req.userId,
+      classroom: classroomId,
+      file: {
+        url,
+        resourceType,
+        publicId,
+      },
+    });
+
+    console.log("resource", resource);
+
+    //@todo Message Queue (Email/Push Notifications)
+
+    return res.status(201).json({
+      success: true,
+      message: "Resources posted successfully",
+      data: resource,
+    });
+  } catch (e) {
+    console.log(e);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to post resources",
+    });
+  }
+};
+
+export const getResources = async (req: Request, res: Response) => {
+  try {
+    const { classroomId } = req.params;
+
+    const resources = await Resource.find({ classroom: classroomId });
+
+    return res.status(200).json({
+      message: "Resources fetched successfully",
+      data: resources,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      message: "Server error",
+    });
   }
 };

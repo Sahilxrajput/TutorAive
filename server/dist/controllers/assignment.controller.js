@@ -25,12 +25,12 @@ const cloudinarySignature = (req, res) => __awaiter(void 0, void 0, void 0, func
         if (!classroom)
             return;
         const timestamp = Math.floor(Date.now() / 1000);
-        // const folder = "tweets";
-        const folder = "assignment files";
+        const folder = "tutoraive files";
         const signature = cloudinary_1.cloudinary.utils.api_sign_request({
             timestamp,
             folder,
         }, CLOUD_API_SECRET);
+        console.log("signature : ", signature);
         return res.json({
             timestamp,
             signature,
@@ -194,8 +194,8 @@ const getMyAssignmentProgress = (req, res) => __awaiter(void 0, void 0, void 0, 
             pending,
         });
     }
-    catch (err) {
-        res.status(500).json({ success: false, message: err === null || err === void 0 ? void 0 : err.message });
+    catch (_a) {
+        res.status(500).json({ success: false, message: "Server error" });
     }
 });
 exports.getMyAssignmentProgress = getMyAssignmentProgress;

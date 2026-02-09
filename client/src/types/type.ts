@@ -43,7 +43,10 @@ export interface IClassroom {
   description?: string;
   price?: number;
   isPublic: boolean;
-  createdBy: string;
+  teacher: {
+    _id: string;
+    email: string;
+  };
   joinCode: string;
   tags: string[];
   modules?: number;
@@ -176,7 +179,19 @@ export interface ILecture {
   updatedAt?: Date;
 }
 
-// Example of how you might use this in your Service
+export interface IResource {
+  title: string;
+  file: {
+    url: string;
+    public_id: string;
+    resourceType?: string;
+  };
+  classroom: string;
+  uploadedBy: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export interface ILectureWOPopulate {
   _id: string;
   classroom: string; // Now stores only the classroom ID
@@ -225,16 +240,34 @@ export interface ITweet {
 
 export interface IAssignment {
   _id: string;
+  classroom: string;
   title: string;
   description: string;
   dueDate: string;
   createdBy: string;
+  file: {
+    url: string;
+    public_id: string;
+    resource_type: string;
+  };
   maxPoints?: number;
-  attachment: string;
-  status: "pending" | "submitted";
   createdAt: string;
   updatedAt: string;
-  classroom: string;
+}
+export interface ISubmission {
+  _id: string;
+  assignment: IAssignment;
+  status: "submitted" | "graded";
+  student: string;
+  file: {
+    url: string;
+    public_id: string;
+    resource_type: string;
+  };
+  marks?: number;
+  content?: number;
+  feedback?: string;
+  updatedAt: string;
 }
 
 export type ClassStatus =

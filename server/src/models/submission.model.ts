@@ -1,4 +1,4 @@
-import { Schema, model, models, Document, Types } from "mongoose";
+import { Schema, model, models } from "mongoose";
 import { ISubmission } from "../types/type";
 
 const submissionSchema = new Schema<ISubmission>(

@@ -35,7 +35,6 @@ const server = http_1.default.createServer(app);
 (0, sockets_1.initSocket)(server);
 app.use((0, cors_1.default)({
     origin: process.env.CLIENT_URL, // your frontend URL
-    // origin:"*",
     credentials: true,
 }));
 app.use(express_1.default.json());

@@ -37,7 +37,7 @@ router.get("/:id", isEnrolled, getAssignmentById);
 // Instructor-only routes
 // router.use(isInstructor); //@check no need
 
-router.post("/:classroomId/cloudinary/signature", authorizeOwnerMiddleware, cloudinarySignature);
+router.post("/:classroomId/cloudinary/signature", authorizeOwnerMiddleware("classroom"), cloudinarySignature);
 
 router.post(
   "/:classroomId/save",

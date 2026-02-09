@@ -209,22 +209,22 @@ const toggleLikeTweet = (req, res) => __awaiter(void 0, void 0, void 0, function
 });
 exports.toggleLikeTweet = toggleLikeTweet;
 const repostTweet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c;
+    var _a, _b, _c, _d;
     try {
         const originalTweet = yield tweet_model_1.default.findById(req.params.id);
         if (!originalTweet) {
-            return res.status(404).json({ error: "Tweet not found" });
+            return res.status(404).json({ error: "Parent Tweet not found" });
         }
         const repost = yield tweet_model_1.default.create({
-            type: req.body.type || "general",
+            type: "repost",
             author: req.userId,
             parentTweet: originalTweet._id,
-            content: (_b = (_a = req.body.content) === null || _a === void 0 ? void 0 : _a.trim()) !== null && _b !== void 0 ? _b : undefined,
+            content: (_c = (_b = (_a = req.body) === null || _a === void 0 ? void 0 : _a.content) === null || _b === void 0 ? void 0 : _b.trim()) !== null && _c !== void 0 ? _c : "",
         });
         // Notify original author (if not self)
         if (originalTweet.author.toString() !== req.userId) {
             (0, queue_1.addTweetNotificationJob)({
-                actorName: (_c = req.userName) !== null && _c !== void 0 ? _c : "someone",
+                actorName: (_d = req.userName) !== null && _d !== void 0 ? _d : "someone",
                 userId: originalTweet.author.toString(),
                 tweetId: originalTweet._id.toString(),
                 action: "repost",

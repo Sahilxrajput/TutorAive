@@ -15,6 +15,7 @@ const lecture_validtor_1 = require("../validators/lecture.validtor");
 const isEnrolled_middleware_1 = require("../middlewares/isEnrolled.middleware");
 const assignment_controller_1 = require("../controllers/assignment.controller");
 const authorizeOwner_middleware_1 = require("../middlewares/authorizeOwner.middleware");
+const note_controller_1 = require("../controllers/note.controller");
 const router = express_1.default.Router();
 // Get all classrooms
 router.get("/", classroom_controller_1.getClassrooms);
@@ -48,4 +49,11 @@ router
     .put(lecture_validtor_1.updateLectureValidator, handleValidation_1.handleValidation, (0, authorizeOwner_middleware_1.authorizeOwnerMiddleware)("lecture"), lecture_controller_1.updateLecture)
     .delete(classroom_validator_1.idParamValidator, handleValidation_1.handleValidation, (0, authorizeOwner_middleware_1.authorizeOwnerMiddleware)("lecture"), classroom_controller_1.deleteClassroom);
 router.get("/:classroomId/students/:studentId/assignment-progress", isEnrolled_middleware_1.isEnrolled, assignment_controller_1.getStudentAssignmentProgress);
+//! create a --------------------lecture------------------------ in classroom
+router
+    .route("/:classroomId/resources")
+    .post((0, authorizeOwner_middleware_1.authorizeOwnerMiddleware)("classroom"), assignment_controller_1.cloudinarySignature);
+//   .get(enrollMiddleware, resource)
+//@todo middleware
+router.post("/:classroomId/resources/save", (0, authorizeOwner_middleware_1.authorizeOwnerMiddleware)("classroom"), note_controller_1.saveResources);
 exports.default = router;

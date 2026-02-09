@@ -2,12 +2,13 @@ import { AnimatePresence, motion } from "framer-motion";
 import SectorHeader from "./SectorHeader";
 import { BookOpen, Download, FileText, Plus, Upload, X } from "lucide-react";
 import { FormEvent, useEffect, useState } from "react";
-import useAuth from "@/hooks/useAuth";
 import API from "@/lib/api";
 import { useParams } from "react-router-dom";
 import { toast } from "sonner";
 import axios from "axios";
 import { Progress } from "../ui/progress";
+import { IResource } from "@/types/type";
+import { useClassroom } from "@/hooks/useClassroom";
 
 
 const ArchiveSector = () => {
@@ -16,9 +17,9 @@ const ArchiveSector = () => {
     const [uploading, setUploading] = useState(false)
     const [progress, setProgress] = useState(0)
     const [file, setFile] = useState<File | null>(null)
-    const [files, setFiles] = useState([]);
+    const [files, setFiles] = useState<IResource[]>([]);
 
-    const { isInstructor } = useAuth();
+    const { isClassInstructor } = useClassroom();
     const { classroomId } = useParams();
 
     useEffect(() => {
@@ -122,7 +123,7 @@ const ArchiveSector = () => {
 
             <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
                 <SectorHeader title="Knowledge Vault" subtitle="Authorized course materials and archives" icon={BookOpen} />
-                {isInstructor && (
+                {isClassInstructor && (
                     <motion.button
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
@@ -135,7 +136,7 @@ const ArchiveSector = () => {
                 )}
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-4 mt-6">
                 {files && files.map((file, i) => (
                     <div key={i} className="flex items-center justify-between p-6 rounded-3xl bg-card/40 border border-border dark:border-white/5 hover:bg-primary/5 transition-all group">
                         <div className="flex items-center gap-4">
@@ -144,12 +145,18 @@ const ArchiveSector = () => {
                             </div>
                             <div>
                                 <p className="font-bold text-sm text-foreground uppercase font-oswald tracking-wide">{file.title}</p>
-                                <p className="text-[10px] text-muted-foreground">• Last Sync: {file.updatedAt}</p>
+                                <p className="text-[10px] text-muted-foreground">• Last Sync: {new Date(file.updatedAt).toLocaleString(undefined, {
+                                    dateStyle: "medium", timeStyle: "short"
+                                })}</p>
                             </div>
                         </div>
-                        <button className="p-3 rounded-xl bg-primary/10 text-primary opacity-0 group-hover:opacity-100 transition-all">
+                        <a href={file.file.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="p-3 rounded-xl bg-primary/10 text-primary opacity-0 group-hover:opacity-100 transition-all"
+                        >
                             <Download size={18} />
-                        </button>
+                        </a>
                     </div>
                 ))}
             </div>

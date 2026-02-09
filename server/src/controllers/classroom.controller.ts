@@ -62,6 +62,7 @@ export const getClassroomById = async (req: Request, res: Response) => {
     const classroom = await Classroom.findById(req.params.id)
       .populate("teacher", "name email profilePicture")
       .populate("students", "name email profilePicture");
+
     //@remind
     if (!classroom)
       return res.status(404).json({ message: "Classroom not found" });
@@ -179,4 +180,36 @@ export const archiveClassroom = async (req: Request, res: Response) => {
   } catch (error) {
     res.status(500).json({ message: "Error archiving classroom", error });
   }
+};
+
+export const getStudents = async (req:Request, res:Response) => {
+  try {
+
+    // pagination values
+    const page = Number(req.query.page) || 1;
+    const limit = 1;
+    const skip = (page - 1) * limit;
+
+    const classroom = req.authorizedResource;
+
+    const totalStudents = classroom.students.length;
+
+    // populate only required students
+    await classroom.populate({
+      path: "students",
+      options: { skip, limit },
+    });
+
+    res.json({
+      totalStudents,
+      page,
+      limit,
+      students: classroom.students,
+      teacher: classroom.teacher,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+
 };

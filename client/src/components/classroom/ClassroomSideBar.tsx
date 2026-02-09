@@ -1,8 +1,14 @@
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion'
 import { BookOpen, Radio, Target, Users } from 'lucide-react';
+import { Dispatch, SetStateAction } from 'react';
 
-export default function ClassroomNavbar({ activeTab, setActiveTab }) {
+interface Props {
+    activeTab: string;
+    setActiveTab: Dispatch<SetStateAction<string>>;
+}
+
+export default function ClassroomNavbar({ activeTab, setActiveTab }: Props) {
     const sectors = [
         { id: "intel", label: "Intel", icon: Target, sub: "Assignments" },
         { id: "broadcasts", label: "Broadcasts", icon: Radio, sub: "Lectures" },

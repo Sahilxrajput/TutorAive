@@ -35,8 +35,7 @@ const initSocket = (httpServer) => __awaiter(void 0, void 0, void 0, function* (
     exports.io = new socket_io_1.Server(httpServer, {
         cors: {
             origin: process.env.CLIENT_URL,
-            //   origin: "*",
-            credentials: true, //@remind
+            credentials: true,
         },
     });
     const classroom = exports.io.of("/classroom");

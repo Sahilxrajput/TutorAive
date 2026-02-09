@@ -6,6 +6,7 @@ import {
   updateClassroom,
   deleteClassroom,
   archiveClassroom,
+  getStudents,
   enrollClassroom,
   enrollClassroomByCode,
 } from "../controllers/classroom.controller";
@@ -33,9 +34,10 @@ import {
 import { isEnrolled } from "../middlewares/isEnrolled.middleware";
 import {
   getStudentAssignmentProgress,
-  getMyAssignmentProgress,
+  cloudinarySignature,
 } from "../controllers/assignment.controller";
 import { authorizeOwnerMiddleware } from "../middlewares/authorizeOwner.middleware";
+import { getResources, saveResources } from "../controllers/note.controller";
 
 const router = express.Router();
 
@@ -66,15 +68,16 @@ router.post(
   enrollClassroom,
 );
 
-//!@check create a --------------------lecture/Assignmnet------------------------ in classroom
-//get classroom assignments of student pending  + submitted
 router.get(
-  "/:classroomId/my-assignment-progress",
-  isEnrolled, // techer / enrolled student -> true
-  getMyAssignmentProgress,
+  "/:classroomId/students/:studentId/assignment-progress",
+  isEnrolled,
+  getStudentAssignmentProgress,
 );
 
-// isInstructor?
+//!@check create a --------------------lecture / assignmnet/ students------------------------ in classroom
+router.get("/:classroomId/resources", isEnrolled, getResources);
+
+// isInstructor?+6++
 router.use(isInstructor);
 
 // Create a new classroom
@@ -90,6 +93,8 @@ router.put(
   handleValidation,
   archiveClassroom,
 );
+
+router.get("/:classroomId/students", isEnrolled, getStudents)
 
 //!@check create a --------------------lecture------------------------ in classroom
 router
@@ -116,10 +121,18 @@ router
     deleteClassroom,
   );
 
-router.get(
-  "/:classroomId/students/:studentId/assignment-progress",
-  isEnrolled,
-  getStudentAssignmentProgress,
+//! create a --------------------lecture------------------------ in classroom
+router.post(
+  "/:classroomId/resources",
+  authorizeOwnerMiddleware("classroom"),
+  cloudinarySignature,
+);
+
+//@todo middleware
+router.post(
+  "/:classroomId/resources/save",
+  authorizeOwnerMiddleware("classroom"),
+  saveResources,
 );
 
 export default router;

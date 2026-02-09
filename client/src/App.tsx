@@ -25,20 +25,9 @@ const TweetFeed = lazy(() => import("./pages/TweetFeed"));
 const Auth = lazy(() => import("./pages/Auth"));
 const AuthSuccess = lazy(() => import("./pages/AuthSuccess"));
 const PageNotFound = lazy(() => import("./pages/PageNotFound"));
+const ClassroomPage = lazy(() => import("./pages/ClassroomPage"));
 
-// classroom (heavy → lazy)
-const ClassroomLayout = lazy(
-    () => import("./components/classroom/ClassroomLayout")
-);
-const ClassroomOverview = lazy(
-    () => import("./components/classroom/ClassroomOverview")
-);
-const AssignmentPage = lazy(
-    () => import("./components/classroom/Assignments")
-);
-const LeaderboardPage = lazy(
-    () => import("./components/LeaderboardPage")
-);
+
 
 const App: React.FC = () => {
     useEffect(() => {
@@ -72,28 +61,28 @@ const App: React.FC = () => {
                             path="classrooms/:classroomId"
                             element={
                                 <EnrolledRoute>
-                                    <ClassroomOverview />
+                                    <ClassroomPage />
                                 </EnrolledRoute>
                             }
-                        >
-                        </Route>
-
-                        {/* Protected dashboard */}
-                        <Route
-                            path="dashboard"
-                            element={
-                                <ProtectedRoute>
-                                    <Dashboard />
-                                </ProtectedRoute>
-                            }
                         />
+                    </Route>
+
+                    {/* Protected dashboard */}
+                    <Route
+                        path="dashboard"
+                        element={
+                            <ProtectedRoute>
+                                <Dashboard />
+                            </ProtectedRoute>
+                        }
+                    >
                     </Route>
 
                     <Route path="auth" element={<Auth />} />
                     <Route path="auth/success" element={<AuthSuccess />} />
                     <Route path="*" element={<PageNotFound />} />
                 </Routes>
-            </Suspense>
+            </Suspense >
         </>
 
     );

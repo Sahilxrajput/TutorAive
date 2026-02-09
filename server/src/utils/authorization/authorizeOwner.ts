@@ -30,10 +30,8 @@ export const authorizeOwner = async ({
 
     // ───────── LECTURE ─────────
     if (resourceType === "lecture") {
-        console.log("resourceId:", resourceId);
-        resource = await Lecture.findById(resourceId).populate("classroom");
-        console.log("resource:", resource);
-    
+      resource = await Lecture.findById(resourceId).populate("classroom");
+
       if (!resource) {
         throw { status: 404, message: "Lecture not found" };
       }
@@ -67,13 +65,7 @@ export const authorizeOwner = async ({
       throw { status: 500, message: "Classroom reference missing" };
     }
 
-    const classroom = await Classroom.findById(classroomId);
-
-    if (!classroom) {
-      throw { status: 404, message: "Classroom not found" };
-    }
-
-    if (classroom.teacher.toString() !== userId) {
+    if (resource.teacher.toString() !== userId) {
       throw {
         status: 403,
         message: "You do not have permission to modify this resource",

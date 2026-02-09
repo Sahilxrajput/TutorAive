@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.isEnrolled = void 0;
 const classroom_model_1 = require("../models/classroom.model");
 const isEnrolled = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     try {
         const classroomId = req.params.classroomId || req.body.classroomId;
         if (!classroomId) {
@@ -28,7 +29,7 @@ const isEnrolled = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
             return res.status(404).json({ message: "Classroom not found" });
         }
         // Allow the creator as well
-        const isOwner = classroom.teacher.toString() === userId.toString();
+        const isOwner = ((_a = classroom.teacher) === null || _a === void 0 ? void 0 : _a.toString()) === userId.toString();
         const isStudent = classroom.students.some((_id) => _id.toString() === userId.toString());
         console.log("isStudent", isStudent);
         console.log("isOwner", isOwner);
@@ -41,6 +42,7 @@ const isEnrolled = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
         next();
     }
     catch (error) {
+        console.log(error);
         res.status(500).json({ message: "Internal server error", error });
     }
 });

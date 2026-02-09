@@ -12,10 +12,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.attendanceLock = exports.getAllScheduleLecturesForClassroom = exports.getAllClassroomLectures = exports.getAllLecturesForStudent = exports.getAllLecturesForInstructor = exports.getAllScheduleLecturesForStudent = exports.getAllScheduleLecturesForInstructor = exports.deleteLecture = exports.updateLecture = exports.createLecture = void 0;
+exports.attendanceLock = exports.getAllScheduleLecturesForClassroom = exports.getClassroomLectures = exports.getAllLecturesForStudent = exports.getAllLecturesForInstructor = exports.getAllScheduleLecturesForStudent = exports.getAllScheduleLecturesForInstructor = exports.deleteLecture = exports.updateLecture = exports.createLecture = void 0;
 const classroom_model_1 = require("../models/classroom.model");
 const lecture_model_1 = __importDefault(require("../models/lecture.model"));
 const queue_1 = require("../redis/queue");
+const mongoose_1 = require("mongoose");
 const handleError = (res, error, defaultMessage = "Internal Server Error", statusCode = 500) => {
     console.error(error); // Log the detailed error for debugging
     return res.status(statusCode).json({
@@ -216,30 +217,32 @@ const getAllLecturesForStudent = (req, res) => __awaiter(void 0, void 0, void 0,
     }
 });
 exports.getAllLecturesForStudent = getAllLecturesForStudent;
-const getAllClassroomLectures = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const getClassroomLectures = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const classroom = yield classroom_model_1.Classroom.findOne({
-            _id: req.params.classroomId,
-            // students: req.userId,
-        });
-        //@todo security check
+        const { classroomId } = req.params;
+        const classroom = yield classroom_model_1.Classroom.findById(classroomId);
         if (!classroom) {
             throw new Error("You are not enrolled in this classroom");
         }
+        const isEnrolled = classroom.students.includes(new mongoose_1.Types.ObjectId(req.userId));
+        if (!isEnrolled)
+            return res.status(403).json({ message: "User is not enrolled" });
         const myLectures = yield lecture_model_1.default.find({
-            classroom: req.params.classroomId,
-        }).sort({ startTime: 1 });
+            classroom: classroomId,
+        })
+            .populate("createdBy", "userName firstName")
+            .sort({ startTime: 1 });
         return res.status(200).json({
             success: true,
             message: `Successfully fetched your lectures for classroom ${classroom.title}.`,
-            data: myLectures,
+            data: myLectures !== null && myLectures !== void 0 ? myLectures : [],
         });
     }
     catch (error) {
         handleError(res, error, "Failed to fetch classroom lectures for student.");
     }
 });
-exports.getAllClassroomLectures = getAllClassroomLectures;
+exports.getClassroomLectures = getClassroomLectures;
 const getAllScheduleLecturesForClassroom = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const classroomId = req.params.classroomId;

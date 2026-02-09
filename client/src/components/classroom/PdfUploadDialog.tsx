@@ -12,17 +12,20 @@ import { Progress } from "@/components/ui/progress"
 import { toast } from "sonner"
 import API from "@/lib/api"
 import axios from "axios"
+import { motion } from 'framer-motion'
+import { LucideIcon } from "lucide-react"
 
 interface Props {
     buttonText: string
     type: "assignment" | "resource" | "note" | "submission"
     id: string
+    Icon?: LucideIcon
     title: string
     cn?: string
     onComplete?: (id: string) => void
 }
 
-export function PdfUploadDialog({ buttonText, title, cn, id, type, onComplete }: Props) {
+export function PdfUploadDialog({ buttonText, title, cn, id, type, Icon, onComplete }: Props) {
     const [open, setOpen] = useState(false)
     const [file, setFile] = useState<File | null>(null)
     const [description, setDescription] = useState("")
@@ -144,11 +147,15 @@ export function PdfUploadDialog({ buttonText, title, cn, id, type, onComplete }:
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button
-                    className={`px-4 py-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600 transition ${cn}`}
+                <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className={`flex items-center gap-2 px-6 py-3 rounded-2xl bg-primary text-primary-foreground font-bold shadow-lg shadow-primary/20 hover:brightness-110 transition-all ${cn}` 
+                    }
                 >
-                    {buttonText}
-                </Button>
+                    {Icon && <Icon size={20} />}
+                    <span>{buttonText}</span>
+                </motion.button>
             </DialogTrigger>
 
             <DialogContent className="sm:max-w-md">

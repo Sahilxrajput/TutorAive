@@ -12,9 +12,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.searchQuery = exports.removeCollaborator = exports.addCollaborator = exports.clearTrash = exports.permanentlyDelete = exports.archiveToggler = exports.pinToggler = exports.trashToggler = exports.changeAccess = exports.updateNote = exports.getNoteById = exports.getNotesByStatus = exports.saveNote = void 0;
+exports.saveResources = exports.searchQuery = exports.removeCollaborator = exports.addCollaborator = exports.clearTrash = exports.permanentlyDelete = exports.archiveToggler = exports.pinToggler = exports.trashToggler = exports.changeAccess = exports.updateNote = exports.getNoteById = exports.getNotesByStatus = exports.saveNote = void 0;
 const note_model_1 = __importDefault(require("../models/note.model"));
 const user_model_1 = __importDefault(require("../models/user.model"));
+const resource_model_1 = __importDefault(require("../models/resource.model"));
 const saveNote = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         console.log("body", req.body);
@@ -359,3 +360,41 @@ const searchQuery = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     }
 });
 exports.searchQuery = searchQuery;
+const saveResources = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { pdfUrl, public_id, title, resource_type } = req.body;
+        console.log(req.body);
+        const { classroomId } = req.params;
+        // 1. Authorization Check
+        const classroomDoc = req.authorizedResource;
+        console.log(classroomDoc);
+        if (!classroomDoc)
+            return;
+        // 2. Save Resource
+        const resource = yield resource_model_1.default.create({
+            title,
+            uploadedBy: req.userId,
+            classroom: classroomId,
+            file: {
+                url: pdfUrl,
+                resourceType: resource_type,
+                publicId: public_id,
+            },
+        });
+        console.log("resource", resource);
+        //@todo Message Queue (Email/Push Notifications)
+        return res.status(201).json({
+            success: true,
+            message: "Resources posted successfully",
+            data: resource,
+        });
+    }
+    catch (e) {
+        console.log(e);
+        return res.status(500).json({
+            success: false,
+            message: "Failed to post resources",
+        });
+    }
+});
+exports.saveResources = saveResources;

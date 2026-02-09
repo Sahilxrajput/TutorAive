@@ -1,8 +1,8 @@
-import { ITweet } from '@/types/type'
+import { IUser } from '@/types/type'
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 
 interface Props {
-    author: ITweet["author"],
+    author: IUser,
     size: number
 }
 

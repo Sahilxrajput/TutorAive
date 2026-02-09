@@ -26,6 +26,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             const updatedUser = {
                 ...user,
                 profilePicture: user?.profilePicture || defaultAvatar,
+                lastName: user?.lastName ?? "TutorAive",
+                userName: user?.userName ?? "TutorAive User",
             };
 
             setUser(updatedUser);

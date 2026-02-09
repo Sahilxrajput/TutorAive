@@ -1,25 +1,16 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-    FileText,
     Terminal,
-    Radio,
-    BookOpen,
     Activity,
-    PlayCircle,
-    ArrowRight,
-    Download,
     Video,
     Mic
 } from "lucide-react";
 import ClassroomNavbar from "./ClassroomSideBar";
-import AssignmentPage from "./Assignments";
+import AssignmentSector from "./AssignmentSector";
 import ArchiveSector from "./ArchiveSector";
 import BroadcastSector from "./BroadcastSector";
-
-
-
-
+import RosterSector from "./RosterSector";
 
 
 export default function Classroom() {
@@ -27,9 +18,10 @@ export default function Classroom() {
 
     const renderSector = () => {
         switch (activeTab) {
-            case "intel": return <AssignmentPage />;
+            case "intel": return <AssignmentSector />;
             case "broadcasts": return <BroadcastSector />;
             case "archives": return <ArchiveSector />;
+            case "roster": return <RosterSector />;
             default: return (
                 <div className="py-32 text-center opacity-40 flex flex-col items-center">
                     <Activity size={48} className="text-primary animate-pulse mb-4" />
@@ -38,7 +30,6 @@ export default function Classroom() {
             );
         }
     };
-
 
     return (
         <div className="min-h-screen bg-background text-foreground transition-colors duration-500 relative overflow-hidden font-inter">
@@ -78,7 +69,7 @@ export default function Classroom() {
                         <div className="flex items-center gap-2"><Video size={14} /> <span className="text-[10px] font-bold font-oswald uppercase tracking-widest">SFU Link Ready</span></div>
                         <div className="flex items-center gap-2"><Mic size={14} /> <span className="text-[10px] font-bold font-oswald uppercase tracking-widest">Audio Decryption Active</span></div>
                     </div>
-                    <p className="text-[10px] font-bold font-oswald uppercase tracking-[0.4em]">SAHIL RAJPUT • BHU CS TERMINAL</p>
+                    <p className="text-[10px] font-bold font-oswald uppercase tracking-[0.4em]">Personnel Management v4.2.</p>
                 </footer>
             </div>
         </div>
