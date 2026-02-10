@@ -76,7 +76,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             };
 
             setUser(updatedUser ?? null);
-
+            
         } catch (err) {
             if (axios.isAxiosError(err)) {
                 toast.error(err.response?.data?.message ?? "Login failed");

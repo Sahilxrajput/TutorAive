@@ -38,8 +38,7 @@ const signup = async (req: Request, res: Response) => {
   try {
     let {
       email,
-      firstName,
-      lastName = "TutorAive user",
+      name,
       userName,
       password,
       role,
@@ -47,12 +46,18 @@ const signup = async (req: Request, res: Response) => {
 
     // Check email
     const emailExists = await User.findOne({ email });
+
     if (emailExists) {
       return res.status(409).json({
         field: "email",
         message: "Email is already registered",
       });
     }
+
+ const parts = name.trim().split(" ");
+
+ const firstName = parts[0] || "";
+ const lastName = parts.slice(1).join(" ") || "";
 
     // Check username
     const usernameExists = await User.findOne({ userName });

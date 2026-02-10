@@ -43,7 +43,7 @@ const MobileSideBar = () => {
     };
 
     return (
-        <nav className="fixed bottom-0 left-0 right-0 z-50 h-14 rounded-t-xl bg-zinc-900 border-t-[#818cf8] border-t-2">
+        <nav className="fixed bottom-0 left-0 right-0 z-50 h-14 rounded-t-xl bg-muted dark:bg-zinc-900 border-t-primary border-t-2">
             <ul className="relative flex h-full items-center justify-around">
                 <Cursor indicator={indicator} />
 
@@ -53,7 +53,7 @@ const MobileSideBar = () => {
                     return (
                         <li
                             key={id}
-                            className="z-10 flex h-14 w-14 items-center justify-center text-zinc-400"
+                            className="z-10 flex h-14 w-14 items-center justify-center"
                             onPointerEnter={(e) => updateIndicator(e.currentTarget, id)}
                             onClick={(e) => {
                                 setActive(id);
@@ -73,7 +73,7 @@ const MobileSideBar = () => {
                                     damping: 25,
                                 }}
                             >
-                                <Icon size={22} />
+                                <Icon className="text-primary" size={22} />
                             </motion.div>
                         </li>
                     );
@@ -85,7 +85,7 @@ const MobileSideBar = () => {
 
 const Cursor = ({ indicator }: { indicator: Indicator }) => (
     <motion.div
-        className="absolute h-14 bottom-1/2 rounded-full bg-gradient-to-b from-indigo-600/20 to-transparent border-t-2 border-indigo-500/50 border-4"
+        className="absolute h-14 bottom-1/2 rounded-full bg-gradient-to-b from-primary/20 to-transparent border-t-2 border-primary/50 border-4"
         animate={{ ...indicator }}
 
         transition={{ type: "spring", stiffness: 500, damping: 30 }}
