@@ -6,9 +6,11 @@ import {
     Globe,
     Sparkles,
     MonitorPlay,
-    Plus
+    AlertCircle,
+    CheckCircle2,
+    X
 } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useSearchShortcut } from "@/hooks/useSearchShortcut";
 import { IClassroom } from "@/types/type";
 import API from "@/lib/api";
@@ -16,13 +18,15 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import SectorCard from "@/components/classroom/CourseCard";
 import LunchButton from "@/components/classroom/LunchButton";
+import { notifyError } from "@/utils/notifyError";
+import { Skeleton } from "@/components/ui/skeleton";
 
 
 const BrowseClassroom = () => {
     const navigate = useNavigate();
     const [search, setSearch] = useState("");
     const [selectedTag, setSelectedTag] = useState("All");
-    const [enrolledIds, setEnrolledIds] = useState([]);
+    const [enrolledIds, setEnrolledIds] = useState<string[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const searchInputRef = useRef(null);
     const { register } = useSearchShortcut();
@@ -31,59 +35,22 @@ const BrowseClassroom = () => {
     const [selectedCourse, setSelectedCourse] = useState<IClassroom | null>(null);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [courses, setCourses] = useState<IClassroom[]>([]);
-    const [enrolledCourses, setEnrolledCourses] = useState<string[]>([]);
 
     useEffect(() => {
         register(searchInputRef.current);
         return () => register(null);
     }, [register]);
 
-    const uniqueTags = useMemo(() => {
-        const allTags = courses.flatMap((c) => c.tags || []);
-        return ["All", ...Array.from(new Set(allTags)).slice(0, 8)];
-    }, [courses]);
-
-    const filteredCourses = useMemo(() => {
-        const q = search.trim().toLowerCase();
-        return courses.filter((course) => {
-            const matchesSearch = !q || course.title?.toLowerCase().includes(q) || course.description?.toLowerCase().includes(q);
-            const matchesTag = selectedTag === "All" || course.tags?.includes(selectedTag);
-            return matchesSearch && matchesTag;
-        });
-    }, [courses, search, selectedTag]);
-
-    const enrolledList = filteredCourses.filter((c) => enrolledCourses.includes(c._id));
-    const availableList = filteredCourses.filter((c) => !enrolledCourses.includes(c._id));
-
-    const handleEnrollClick = (course: IClassroom) => {
-        if (enrolledCourses.includes(course._id)) {
-            navigate(`/classrooms/${course._id}`);
-            return;
-        }
-        setSelectedCourse(course);
-        setIsDialogOpen(true);
-    };
-
-    const handleConfirmEnroll = async () => {
-        if (!selectedCourse) return;
-        try {
-            const { data } = await API.post("/classrooms/enroll", { classroomId: selectedCourse._id });
-            toast.success(data.message);
-            setEnrolledCourses((prev) => [...prev, selectedCourse._id]);
-            navigate(`/classrooms/${selectedCourse._id}`);
-        } catch (err) { console.error(err); } finally { setIsDialogOpen(false); }
-    };
-
     useEffect(() => {
         const loadFrontierData = async () => {
-            setIsLoading(true);
             try {
+                setIsLoading(true);
                 const [allRes, enrolledRes] = await Promise.all([
                     API.get("/classrooms"),
                     API.get("/users/enrolled")
                 ]);
                 setCourses(allRes.data.data);
-                setEnrolledIds(enrolledRes.data);
+                setEnrolledIds(enrolledRes.data.map((c: IClassroom) => c._id));
             } catch {
                 toast.error("Failed to sync with Frontier Database.");
             } finally {
@@ -99,14 +66,60 @@ const BrowseClassroom = () => {
         }
     }, [register, isLoading]);
 
+    const uniqueTags = useMemo(() => {
+        const allTags = courses.flatMap((c) => c.tags || []);
+        return ["All", ...Array.from(new Set(allTags)).slice(0, 8)];
+    }, [courses]);
 
-    const filtered = useMemo(() => {
-        return courses.filter(c => {
-            const matchSearch = c.title.toLowerCase().includes(search.toLowerCase());
-            const matchTag = selectedTag === "All" || c.tags.includes(selectedTag);
-            return matchSearch && matchTag;
+    const filteredResults = useMemo(() => {
+        const q = search.trim().toLowerCase();
+        return courses.filter((course) => {
+            const matchesSearch = !q || course.title?.toLowerCase().includes(q) || course.description?.toLowerCase().includes(q);
+            const matchesTag = selectedTag === "All" || course.tags?.includes(selectedTag);
+            return matchesSearch && matchesTag;
         });
     }, [courses, search, selectedTag]);
+
+    // SEPARATION LOGIC
+    const enrolledList = useMemo(() =>
+        filteredResults.filter((c) => enrolledIds.includes(c._id)),
+        [filteredResults, enrolledIds]);
+
+    const availableList = useMemo(() =>
+        filteredResults.filter((c) => !enrolledIds.includes(c._id)),
+        [filteredResults, enrolledIds]);
+
+    // const filtered = useMemo(() => {
+    //     return courses.filter(c => {
+    //         const matchSearch = c.title.toLowerCase().includes(search.toLowerCase());
+    //         const matchTag = selectedTag === "All" || c.tags.includes(selectedTag);
+    //         return matchSearch && matchTag;
+    //     });
+    // }, [courses, search, selectedTag]);
+
+    const handleActionClick = (course: IClassroom) => {
+        if (enrolledIds.includes(course._id)) {
+            navigate(`/classrooms/${course._id}`);
+        } else {
+            setSelectedCourse(course);
+            setIsDialogOpen(true);
+        }
+    };
+
+    const handleConfirmEnroll = async () => {
+        if (!selectedCourse) return;
+        try {
+            const { data } = await API.post("/classrooms/enroll", { classroomId: selectedCourse._id });
+            toast.success(data.message);
+            setEnrolledIds((prev) => [...prev, selectedCourse._id]);
+            setIsDialogOpen(false);
+            navigate(`/classrooms/${selectedCourse._id}`);
+        } catch (err) {
+            notifyError(err)
+        } finally {
+            setIsDialogOpen(false);
+        }
+    };
 
     return (
         <div className="min-h-screen bg-background text-foreground selection:bg-primary/30 p-6 md:p-12 transition-colors duration-500 relative overflow-hidden font-inter">
@@ -117,7 +130,7 @@ const BrowseClassroom = () => {
 
             <div className="max-w-7xl mx-auto space-y-16">
 
-                <LunchButton/>
+                <LunchButton />
 
                 {/* Terminal Header */}
                 <header className="flex flex-col items-center text-center space-y-6">
@@ -185,7 +198,7 @@ const BrowseClassroom = () => {
                 </header>
 
                 {/* Knowledge Sectors Grid */}
-                <section className="space-y-12">
+                {/* <section className="space-y-12">
                     {isLoading ? (
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                             {[1, 2, 3].map(i => (
@@ -213,7 +226,136 @@ const BrowseClassroom = () => {
                             No sectors found at these coordinates.
                         </div>
                     )}
-                </section>
+                </section> */}
+
+                {/* Main Content Area */}
+                <main className="space-y-20 pb-20">
+                    {isLoading ? (
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                            {[1, 2, 3].map(i => (
+                                <Skeleton key={i} className="h-64 rounded-[2.5rem] " />
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="space-y-20">
+                            {/* ENROLLED SECTORS - Only show if user has enrollments */}
+                            {enrolledList.length > 0 && (
+                                <section className="space-y-8">
+                                    <div className="flex items-center gap-4">
+                                        <div className="h-px flex-1 bg-gradient-to-r from-transparent via-blue-500/20 to-transparent" />
+                                        <h2 className="text-[10px] font-bold uppercase tracking-[0.5em] text-blue-400/60">
+                                            ACTIVE. ENROLLMENTS.
+                                        </h2>
+                                        <div className="h-px flex-1 bg-gradient-to-r from-transparent via-blue-500/20 to-transparent" />
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                                        <AnimatePresence mode="popLayout">
+                                            {enrolledList.map((course, i) => (
+                                                <SectorCard
+                                                    key={course._id}
+                                                    course={course}
+                                                    isEnrolled={true}
+                                                    index={i}
+                                                    onClick={() => handleActionClick(course)}
+                                                />
+                                            ))}
+                                        </AnimatePresence>
+                                    </div>
+                                </section>
+                            )}
+
+                            {/* DISCOVERY SECTORS */}
+                            <section className="space-y-8">
+                                {enrolledList.length > 0 && (
+                                    <div className="flex items-center gap-4">
+                                        <div className="h-px flex-1 bg-gradient-to-r from-transparent via-amber-500/50 to-transparent" />
+                                        <h2 className="text-[10px] font-bold uppercase tracking-[0.5em] text-amber-500/50">
+                                            AVAILABLE. MISSIONS.
+                                        </h2>
+                                        <div className="h-px flex-1 bg-gradient-to-r from-transparent via-amber-500/50 to-transparent" />
+                                    </div>
+                                )}
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                                    <AnimatePresence mode="popLayout">
+                                        {availableList.map((course, i) => (
+                                            <SectorCard
+                                                key={course._id}
+                                                course={course}
+                                                isEnrolled={false}
+                                                index={i}
+                                                onClick={() => handleActionClick(course)}
+                                            />
+                                        ))}
+                                    </AnimatePresence>
+                                </div>
+                            </section>
+                        </div>
+                    )}
+
+                    {!isLoading && filteredResults.length === 0 && (
+                        <div className="text-center py-20 flex flex-col items-center gap-4">
+                            <AlertCircle className="text-blue-500/40" size={32} />
+                            <p className="tracking-widest text-[10px] uppercase text-white/40 italic">No sectors found at these coordinates.</p>
+                        </div>
+                    )}
+                </main>
+
+                {/* Enrollment Confirmation Dialog */}
+                <AnimatePresence>
+                    {isDialogOpen && (
+                        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                onClick={() => setIsDialogOpen(false)}
+                                className="absolute inset-0 bg-black/90 backdrop-blur-md"
+                            />
+                            <motion.div
+                                initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                                animate={{ scale: 1, opacity: 1, y: 0 }}
+                                exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                                className="relative w-full max-w-md bg-[#111] border border-blue-500/20 rounded-[2.5rem] overflow-hidden shadow-2xl"
+                            >
+                                <div className="p-10 space-y-8">
+                                    <div className="flex justify-between items-start">
+                                        <div className="p-4 rounded-2xl bg-blue-500/10 border border-blue-500/20">
+                                            <MonitorPlay className="text-blue-400" size={24} />
+                                        </div>
+                                        <button
+                                            onClick={() => setIsDialogOpen(false)}
+                                            className="p-2 hover:bg-white/5 rounded-full transition-colors"
+                                        >
+                                            <X size={20} />
+                                        </button>
+                                    </div>
+
+                                    <div className="space-y-3">
+                                        <h3 className="text-2xl font-bold tracking-tight">Initiate Sync?</h3>
+                                        <p className="text-sm text-white/40 leading-relaxed">
+                                            Establish link with <span className="text-blue-400 font-bold uppercase tracking-widest">{selectedCourse?.title}</span>? This will grant full database permissions.
+                                        </p>
+                                    </div>
+
+                                    <div className="flex flex-col gap-3 pt-4">
+                                        <button
+                                            onClick={handleConfirmEnroll}
+                                            className="w-full bg-blue-600 text-white font-bold py-5 rounded-2xl flex items-center justify-center gap-3 hover:opacity-90 transition-opacity uppercase tracking-[0.2em] text-[10px] shadow-[0_0_30px_rgba(59,130,246,0.3)]"
+                                        >
+                                            <CheckCircle2 size={16} /> Confirm Access
+                                        </button>
+                                        <button
+                                            onClick={() => setIsDialogOpen(false)}
+                                            className="w-full bg-white/5 border border-white/10 text-white/60 font-bold py-5 rounded-2xl hover:bg-white/10 transition-colors uppercase tracking-[0.2em] text-[10px]"
+                                        >
+                                            Abort
+                                        </button>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        </div>
+                    )}
+                </AnimatePresence>
 
                 {/* Global Footer Decoration */}
                 <footer className="pt-20 border-t border-border/30 flex flex-col md:flex-row justify-between items-center gap-6 opacity-40">
