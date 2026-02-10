@@ -107,18 +107,21 @@ export interface IAttendance extends Document {
 export interface IClassroom extends Document {
   title: string;
   description: string;
+  thumbnail?: {
+    url: string;
+    publicId: string;
+  };
   teacher: Types.ObjectId;
   students: Types.ObjectId[];
+  lectures?: string;
+  assignments: Types.ObjectId[];
+  exams: Types.ObjectId[];
   isPaid: boolean;
   price?: number; // Optional: only if isPaid is true
   currency: string;
-  assignments: Types.ObjectId[];
-  exams: Types.ObjectId[];
-  joinCode: string;
-  joinCodeExpiresAt: Date;
-  lectures?: string;
-  createdAt: Date;
+  tags: string[];
   status: "completed" | "active";
+  createdAt: Date;
 }
 
 export interface ILecture extends Document {

@@ -26,14 +26,13 @@ const isEnrolled = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
         if (!classroom) {
             return res.status(404).json({ message: "Classroom not found" });
         }
+        const isEnrolled = classroom.students.some((_id) => _id.toString() === userId.toString());
         // Allow the creator as well
-        const isOwner = ((_a = classroom.teacher) === null || _a === void 0 ? void 0 : _a.toString()) === userId.toString();
-        const isStudent = classroom.students.some((_id) => _id.toString() === userId.toString());
-        if (!isOwner && !isStudent) {
-            return res
-                .status(403)
-                .json({ message: "You are not enrolled/instructor in this classroom" });
-        }
+        const isClassroomInstructor = ((_a = classroom.teacher) === null || _a === void 0 ? void 0 : _a.toString()) === userId.toString();
+        if (!isEnrolled && !isClassroomInstructor)
+            return res.status(403).json({
+                message: "Access denied. Only enrolled students or instructors can access this classroom.",
+            });
         req.authorizedResource = classroom;
         next();
     }

@@ -15,6 +15,7 @@ import {
 } from "../validators/lecture.validtor";
 import { handleValidation } from "../middlewares/handleValidation";
 import { authorizeOwnerMiddleware } from "../middlewares/authorizeOwner.middleware";
+import { isEnrolled } from "../middlewares/isEnrolled.middleware";
 
 const router = express.Router();
 
@@ -30,6 +31,7 @@ router.get("/my", getAllLecturesForStudent);
 // Get all lectures created for a specific classroom. Route param: classroomId
 router.get(
   "/all/:classroomId",
+  isEnrolled,
   getClassroomLectures,
 );
 

@@ -1,4 +1,3 @@
-// middlewares/isEnrolled.ts
 import { Request, Response, NextFunction } from "express";
 import { Classroom } from "../models/classroom.model";
 import { Types } from "mongoose";
@@ -26,17 +25,21 @@ export const isEnrolled = async (
       return res.status(404).json({ message: "Classroom not found" });
     }
 
-    // Allow the creator as well
-    const isOwner = classroom.teacher?.toString() === userId!.toString();
-    const isStudent = classroom.students.some(
-      (_id: Types.ObjectId) => _id.toString() === userId!.toString(),
-    );
+     const isEnrolled = classroom.students.some(
+       (_id: Types.ObjectId) => _id.toString() === userId!.toString(),
+     );
 
-    if (!isOwner && !isStudent) {
-      return res
-        .status(403)
-        .json({ message: "You are not enrolled/instructor in this classroom" });
-    }
+    // Allow the creator as well
+    const isClassroomInstructor =
+      classroom.teacher?.toString() === userId!.toString();
+
+
+     if (!isEnrolled && !isClassroomInstructor)
+       return res.status(403).json({
+         message:
+           "Access denied. Only enrolled students or instructors can access this classroom.",
+       });
+
     req.authorizedResource = classroom;
     next();
   } catch (error) {

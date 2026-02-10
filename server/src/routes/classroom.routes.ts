@@ -37,6 +37,7 @@ import {
 import { authorizeOwnerMiddleware } from "../middlewares/authorizeOwner.middleware";
 import { getResources, saveResources } from "../controllers/note.controller";
 import { createInvitation, sendInvitationMail, useInvitation } from "../controllers/invitation.controller";
+import { upload } from "../lib/cloudinary";
 
 const router = express.Router();
 
@@ -92,7 +93,13 @@ router.post(
 );
 
 // Create a new classroom
-router.post("/", createClassroomValidator, handleValidation, createClassroom);
+router.post(
+  "/",
+  upload.single("thumbnail"),
+  createClassroomValidator,
+  handleValidation,
+  createClassroom,
+);
 
 // Update classroom
 router.put("/:id", updateClassroomValidator, handleValidation, updateClassroom);

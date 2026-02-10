@@ -8,8 +8,7 @@
     "build": "vite build",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
-    "preview": "vite preview",
-    "deploy":"git push"
+    "preview": "vite preview"
   },
   "dependencies": {
     "@floating-ui/react": "^0.27.16",

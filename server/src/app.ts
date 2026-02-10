@@ -4,7 +4,7 @@ import express, { Application } from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import passport from "passport";
-import "./lib/passportConfig"; 
+import "./lib/passportConfig";
 import connectDB from "./database/db";
 import http, { Server as HTTPServer } from "http";
 import { initSocket } from "./sockets";
@@ -39,7 +39,7 @@ app.use(
     credentials: true,
   }),
 );
-app.use(express.json());
+app.use(express.json({limit:"100kb"}));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
@@ -63,7 +63,11 @@ app.use("/api/quizs", quizRoute);
 app.use("/api/submissions", submissionRoute);
 app.use("/api/tweets", tweetRoute);
 app.use("/api/users", userRoute);
-
+app.get("/spam-test", (_req, res) => {
+  console.log(Date.now());
+  console.log("API is alive");
+  res.json({ message: "API is alive", time: Date.now() });
+});
 
 console.log("Server restarted at", new Date().toISOString());
 

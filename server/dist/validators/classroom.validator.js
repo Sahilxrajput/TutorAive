@@ -15,37 +15,17 @@ exports.createClassroomValidator = [
         .withMessage("Description must be a string"),
     (0, express_validator_1.body)("isPublic")
         .optional()
+        .toBoolean()
         .isBoolean()
         .withMessage("isPublic must be a boolean"),
-    (0, express_validator_1.body)("joinCode")
-        .optional()
-        .isLength({ min: 4 })
-        .withMessage("Join code must be at least 4 characters long"),
     (0, express_validator_1.body)("tags")
         .optional()
-        .isArray()
-        .withMessage("Tags must be an array of strings"),
-    (0, express_validator_1.body)("tags.*").optional().isString().withMessage("Each tag must be a string"),
-    (0, express_validator_1.body)("settings.maxStudents")
-        .optional()
-        .isInt({ min: 1 })
-        .withMessage("Max students must be at least 1"),
-    (0, express_validator_1.body)("settings.allowGuests")
-        .optional()
-        .isBoolean()
-        .withMessage("allowGuests must be a boolean"),
-    (0, express_validator_1.body)("settings.chatEnabled")
-        .optional()
-        .isBoolean()
-        .withMessage("chatEnabled must be a boolean"),
-    (0, express_validator_1.body)("settings.codeEditorEnabled")
-        .optional()
-        .isBoolean()
-        .withMessage("codeEditorEnabled must be a boolean"),
-    (0, express_validator_1.body)("settings.canvasEnabled")
-        .optional()
-        .isBoolean()
-        .withMessage("canvasEnabled must be a boolean"),
+        .isString()
+        .withMessage("Tags must be a string")
+        .customSanitizer((value) => value
+        .split(" ")
+        .map((tag) => tag.trim())
+        .filter(Boolean)),
 ];
 exports.createClassScheduleValidator = [
     (0, express_validator_1.body)("classroomId")

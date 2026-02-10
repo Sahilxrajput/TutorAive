@@ -1,13 +1,13 @@
-import useAuth from "@/hooks/useAuth";
 import { ClassroomContext } from "./classroomContext";
 import { IClassroom } from "@/types/type";
 import { ReactNode } from "react";
+interface Props {
+    classroom: IClassroom,
+    isClassInstructor: boolean,
+    children: ReactNode
+}
 
-export default function ClassroomProvider({ classroom, children }: { classroom: IClassroom, children: ReactNode }) {
-    const { user } = useAuth();
-
-    const isClassInstructor =
-        classroom.teacher._id === user?._id;
+export default function ClassroomProvider({ classroom, children, isClassInstructor }: Props) {
 
     return (
         <ClassroomContext.Provider

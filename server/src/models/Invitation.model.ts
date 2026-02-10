@@ -26,7 +26,6 @@ const invitationSchema = new Schema<IClassInvitation>(
   { timestamps: true }
 );
 
-
 invitationSchema.index(
   { expiresAt: 1 },
   { expireAfterSeconds: 60 * 60 * 24 * 3 } // 3 days

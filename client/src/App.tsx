@@ -5,10 +5,11 @@ import { Analytics } from '@vercel/analytics/react';
 // wrappers / layout / loading (keep eager)
 import Layout from "./components/Layout";
 import ProtectedRoute from "./wrapper/ProtectedRoute";
-import EnrolledRoute from "./wrapper/EnrolledRoute";
 import LoadingPage from "./pages/LandingPages/LoadingPage";
 import { initTheme } from "./lib/theme";
 import JoinSector from "./pages/JoinSector";
+import LaunchClassroom from "./pages/LandingPages/LaunchClassroom";
+import EnrolledRoute from "./wrapper/EnrolledRoute";
 
 // lazy pages
 const LandingPage = lazy(
@@ -26,9 +27,7 @@ const TweetFeed = lazy(() => import("./pages/TweetFeed"));
 const Auth = lazy(() => import("./pages/Auth"));
 const AuthSuccess = lazy(() => import("./pages/AuthSuccess"));
 const PageNotFound = lazy(() => import("./pages/PageNotFound"));
-const ClassroomPage = lazy(() => import("./pages/ClassroomPage"));
-
-
+const ClassroomPage = lazy(() => import("./components/classroom/ClassroomPage"));
 
 const App: React.FC = () => {
     useEffect(() => {
@@ -45,6 +44,7 @@ const App: React.FC = () => {
                     <Route element={<Layout />}>
                         <Route path="/home" element={<Home />} />
                         <Route path="community" element={<TweetFeed />} />
+                        <Route path="launch-classroom" element={<LaunchClassroom />} />
 
                         <Route path="notes">
                             <Route index element={<BrowseNotes />} />
@@ -67,21 +67,18 @@ const App: React.FC = () => {
                         {/* Browse all classrooms */}
                         <Route path="classrooms" element={<BrowseClassroom />} />
 
+                        {/* Individual classroom */}
+                        <Route path="classrooms/:classroomId" element={
+                            <EnrolledRoute>
+                                <ClassroomPage />
+                            </EnrolledRoute>} />
+
                         <Route path="classrooms/:classroomId/join/:inviteCode" element={
                             <ProtectedRoute>
                                 <JoinSector />
                             </ProtectedRoute>
                         } />
 
-                        {/* Individual classroom */}
-                        <Route
-                            path="classrooms/:classroomId"
-                            element={
-                                <EnrolledRoute>
-                                    <ClassroomPage />
-                                </EnrolledRoute>
-                            }
-                        />
                     </Route>
 
                     <Route path="auth" element={<Auth />} />
@@ -95,3 +92,4 @@ const App: React.FC = () => {
 };
 
 export default App;
+

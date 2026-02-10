@@ -8,13 +8,13 @@ const tweet_controller_1 = require("../controllers/tweet.controller");
 const tweet_validator_1 = require("../validators/tweet.validator");
 const auth_middleware_1 = __importDefault(require("../middlewares/auth.middleware"));
 const cloudinary_1 = require("../lib/cloudinary");
+const handleValidation_1 = require("../middlewares/handleValidation");
 const router = express_1.default.Router();
 // All posts
 router.get("/", tweet_controller_1.getAllTweets);
 router.use(auth_middleware_1.default);
 // Create post
-router.post("/", cloudinary_1.upload.single("image"), tweet_controller_1.createTweet);
-// router.post("/", createTweetValidator, handleValidation, upload.single("image"), createTweet);
+router.post("/", cloudinary_1.upload.single("image"), tweet_validator_1.createTweetValidator, handleValidation_1.handleValidation, tweet_controller_1.createTweet);
 // Single post
 router.get("/:id", tweet_validator_1.tweetIdValidator, tweet_controller_1.getTweetById);
 //repost

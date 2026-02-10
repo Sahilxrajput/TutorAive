@@ -7,6 +7,7 @@ const express_1 = __importDefault(require("express"));
 const lecture_controller_1 = require("../controllers/lecture.controller");
 const auth_middleware_1 = __importDefault(require("../middlewares/auth.middleware"));
 const authorizeOwner_middleware_1 = require("../middlewares/authorizeOwner.middleware");
+const isEnrolled_middleware_1 = require("../middlewares/isEnrolled.middleware");
 const router = express_1.default.Router();
 router.use(auth_middleware_1.default);
 // ? @fix does i need to use instructor middleware
@@ -15,7 +16,7 @@ router.get("/created", lecture_controller_1.getAllLecturesForInstructor);
 // Student: get all lectures available to the authenticated student (no classroom filter)
 router.get("/my", lecture_controller_1.getAllLecturesForStudent);
 // Get all lectures created for a specific classroom. Route param: classroomId
-router.get("/all/:classroomId", lecture_controller_1.getClassroomLectures);
+router.get("/all/:classroomId", isEnrolled_middleware_1.isEnrolled, lecture_controller_1.getClassroomLectures);
 // @ok  Instructor: get scheduled (upcoming) lectures visible to the instructor
 router.get("/scheduled/created", lecture_controller_1.getAllScheduleLecturesForInstructor);
 // @ok Student: get scheduled (upcoming) lectures visible to the student

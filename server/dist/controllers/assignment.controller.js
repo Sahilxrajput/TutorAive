@@ -156,7 +156,6 @@ exports.getAssignmentsForInstructor = getAssignmentsForInstructor;
 const getStudentAssignmentProgress = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { classroomId, studentId } = req.params;
-        console.log(req.params);
         const allClassroomAssignments = yield assignment_model_1.default.find({
             classroom: classroomId,
         });

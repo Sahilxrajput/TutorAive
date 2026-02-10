@@ -9,7 +9,7 @@ import {
 } from "../controllers/tweet.controller";
 
 import {
-  createTweetValidator,
+    createTweetValidator,
   tweetIdValidator,
 } from "../validators/tweet.validator";
 import authMiddleware from "../middlewares/auth.middleware";
@@ -24,8 +24,13 @@ router.get("/", getAllTweets);
 router.use(authMiddleware);
 
 // Create post
-router.post("/", upload.single("image"), createTweet);
-// router.post("/", createTweetValidator, handleValidation, upload.single("image"), createTweet);
+router.post(
+  "/",
+  upload.single("image"),
+  createTweetValidator,
+  handleValidation,
+  createTweet,
+);
 
 // Single post
 router.get("/:id", tweetIdValidator, getTweetById);

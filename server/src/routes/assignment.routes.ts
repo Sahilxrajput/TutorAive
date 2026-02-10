@@ -10,17 +10,11 @@ import {
   saveAssignment,
 } from "../controllers/assignment.controller";
 import authMiddleware from "../middlewares/auth.middleware";
-import { isInstructor } from "../middlewares/Instructor.middleware";
-import { upload } from "../lib/cloudinary";
 import { isEnrolled } from "../middlewares/isEnrolled.middleware";
 import {
-  classroomIdParamValidator,
-  idParamValidator,
   saveAssignmentValidator,
 } from "../validators/classroom.validator";
 import { handleValidation } from "../middlewares/handleValidation";
-import { body, param } from "express-validator";
-import { authorizeOwner } from "../utils/authorization/authorizeOwner";
 import { authorizeOwnerMiddleware } from "../middlewares/authorizeOwner.middleware";
 
 const router = express.Router();

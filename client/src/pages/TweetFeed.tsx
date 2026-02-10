@@ -16,41 +16,6 @@ import TweetFilters from "@/components/community/TweetFilters";
 import TweetCreateDialog from "@/components/community/TweetCreate";
 import TweetCard from "@/components/community/TweetCard";
 
-// const TweetCard = forwardRef(({ tweet }, ref) => (
-//     <motion.div
-//         ref={ref}
-//         layout
-//         initial={{ opacity: 0, scale: 0.95 }}
-//         animate={{ opacity: 1, scale: 1 }}
-//         whileHover={{ y: -5 }}
-//         className="bg-card/60 dark:bg-neutral-900/40 backdrop-blur-xl border border-border dark:border-white/5 rounded-[2rem] p-6 shadow-xl transition-all duration-500 hover:border-primary/30"
-//     >
-//         <div className="flex gap-4">
-//             <div className="w-12 h-12 rounded-full bg-primary/10 border border-primary/20 flex-shrink-0 flex items-center justify-center text-primary font-bold font-oswald">
-//                 {tweet.author?.name?.charAt(0) || "U"}
-//             </div>
-//             <div className="flex-1 space-y-2">
-//                 <div className="flex justify-between items-start">
-//                     <div>
-//                         <h4 className="font-bold font-inter text-sm text-foreground">{tweet.author?.name}</h4>
-//                         <p className="text-[10px] text-muted-foreground uppercase font-oswald tracking-widest">@{tweet.author?.username}</p>
-//                     </div>
-//                     <div className="px-2 py-0.5 rounded-full bg-primary/5 border border-primary/10 text-primary text-[8px] font-bold uppercase tracking-tighter">
-//                         {tweet.type || "General"}
-//                     </div>
-//                 </div>
-//                 <p className="text-sm text-muted-foreground leading-relaxed font-inter">
-//                     {tweet.content}
-//                 </p>
-//                 <div className="pt-4 flex items-center gap-6 opacity-50">
-//                     <div className="flex items-center gap-1 text-[10px] font-bold font-oswald uppercase tracking-widest"><MessageSquare size={12} /> 12</div>
-//                     <div className="flex items-center gap-1 text-[10px] font-bold font-oswald uppercase tracking-widest text-primary"><Zap size={12} fill="currentColor" /> 42</div>
-//                 </div>
-//             </div>
-//         </div>
-//     </motion.div>
-// ));
-
 export default function TweetFeed() {
     const [filter, setFilter] = useState("all");
     const [isCreating, setIsCreating] = useState(false);
@@ -94,8 +59,8 @@ export default function TweetFeed() {
         return tweets;
     }, [data, filter, search]);
 
+    
     /* ---------------- SCROLL HANDLER ---------------- */
-
     const handleScroll = () => {
         const el = containerRef.current;
         if (!el) return;

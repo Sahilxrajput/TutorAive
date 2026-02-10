@@ -187,7 +187,7 @@ export const getStudentAssignmentProgress = async (
 ) => {
    try {
      const { classroomId, studentId } = req.params;
-    console.log(req.params)
+
      const allClassroomAssignments = await Assignment.find({
        classroom: classroomId,
      });

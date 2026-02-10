@@ -14,11 +14,11 @@ import TweetAvatar from "./TweetAvatar";
 
 interface Props {
     tweet: ITweet;
-    index: number;
+    index?: number;
     isCreating?: boolean;
 }
 
-const TweetCard = forwardRef<HTMLDivElement, Props>(({ tweet, index }, ref) => {
+const TweetCard = forwardRef<HTMLDivElement, Props>(({ tweet, index=1 }, ref) => {
     const { user } = useAuth();
     const [isRepostOpen, setIsRepostOpen] = useState(false);
     const likeTweet = useLikeTweet();

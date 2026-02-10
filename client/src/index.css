@@ -240,6 +240,9 @@
     outline-width: 50%;
     font-family: Inter;
   }
+  *::selection {
+    @apply bg-primary/20;
+  }
   body {
     background-color: var(--background);
     color: var(--foreground);

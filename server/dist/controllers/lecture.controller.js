@@ -16,7 +16,6 @@ exports.attendanceLock = exports.getAllScheduleLecturesForClassroom = exports.ge
 const classroom_model_1 = require("../models/classroom.model");
 const lecture_model_1 = __importDefault(require("../models/lecture.model"));
 const queue_1 = require("../redis/queue");
-const mongoose_1 = require("mongoose");
 const handleError = (res, error, defaultMessage = "Internal Server Error", statusCode = 500) => {
     console.error(error); // Log the detailed error for debugging
     return res.status(statusCode).json({
@@ -219,23 +218,16 @@ const getAllLecturesForStudent = (req, res) => __awaiter(void 0, void 0, void 0,
 exports.getAllLecturesForStudent = getAllLecturesForStudent;
 const getClassroomLectures = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { classroomId } = req.params;
-        const classroom = yield classroom_model_1.Classroom.findById(classroomId);
-        if (!classroom) {
-            throw new Error("You are not enrolled in this classroom");
-        }
-        const isEnrolled = classroom.students.includes(new mongoose_1.Types.ObjectId(req.userId));
-        if (!isEnrolled)
-            return res.status(403).json({ message: "User is not enrolled" });
+        const classroom = req.authorizedResource;
         const myLectures = yield lecture_model_1.default.find({
-            classroom: classroomId,
+            classroom: classroom._id,
         })
-            .populate("createdBy", "userName firstName")
+            .populate("createdBy", "userName")
             .sort({ startTime: 1 });
         return res.status(200).json({
             success: true,
             message: `Successfully fetched your lectures for classroom ${classroom.title}.`,
-            data: myLectures !== null && myLectures !== void 0 ? myLectures : [],
+            data: myLectures,
         });
     }
     catch (error) {

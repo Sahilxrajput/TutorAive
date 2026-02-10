@@ -16,14 +16,48 @@ exports.getStudents = exports.archiveClassroom = exports.enrollClassroom = expor
 const user_model_1 = __importDefault(require("../models/user.model"));
 const classroom_model_1 = require("../models/classroom.model");
 const mongoose_1 = require("mongoose");
+const cloudinary_1 = require("../lib/cloudinary");
 // Create a new classroom
 const createClassroom = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const classroom = yield classroom_model_1.Classroom.create(Object.assign(Object.assign({}, req.body), { teacher: req.userId }));
-        res.status(201).json(classroom);
+        const { title, tags, description } = req.body;
+        const classroomData = {
+            title,
+            tags,
+            description,
+            teacher: req.userId,
+        };
+        // Validate file type
+        if (req.file &&
+            !["image/png", "image/jpeg", "image/jpg"].includes(req.file.mimetype)) {
+            return res.status(400).json({ error: "Invalid file type" });
+        }
+        // Upload file if exists
+        let uploadResult = null;
+        if (req.file) {
+            uploadResult = yield new Promise((resolve, reject) => {
+                var _a;
+                const stream = cloudinary_1.cloudinary.uploader.upload_stream({ folder: "classroom Thumbnails" }, (error, result) => {
+                    if (error)
+                        reject(error);
+                    else
+                        resolve(result);
+                });
+                stream.end((_a = req === null || req === void 0 ? void 0 : req.file) === null || _a === void 0 ? void 0 : _a.buffer);
+            });
+            classroomData.thumbnail = {
+                url: uploadResult.secure_url,
+                publicId: uploadResult.public_id,
+            };
+        }
+        const classroom = yield classroom_model_1.Classroom.create(classroomData);
+        res
+            .status(201)
+            .json({ classroom, message: "Classroom provisioned successfully!" });
     }
     catch (error) {
-        res.status(400).json({ message: "Failed to create classroom", error });
+        console.log(error);
+        res.status(400).json({ message: "Failed to launch classroom", error });
     }
 });
 exports.createClassroom = createClassroom;
@@ -38,7 +72,6 @@ const getClassrooms = (req, res) => __awaiter(void 0, void 0, void 0, function* 
         if (isPublic !== undefined)
             filter.isPublic = isPublic === "true";
         const classrooms = yield classroom_model_1.Classroom.find(filter)
-            //? @fix think about populated fields
             .populate("teacher", "name email")
             .sort({ createdAt: -1 });
         res

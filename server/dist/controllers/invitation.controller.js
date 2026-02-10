@@ -82,20 +82,17 @@ exports.getInvitationByCode = getInvitationByCode;
 // Use an invitation to join a classroom
 const useInvitation = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const invitation = yield Invitation_model_1.default.findOne({
+        const invitation = yield Invitation_model_1.default.findOneAndUpdate({
             inviteCode: req.params.code,
-        });
-        if (!invitation)
-            return res.status(404).json({ message: "Invalid invite code" });
-        if (invitation.expiresAt && invitation.expiresAt < new Date())
-            return res.status(400).json({ message: "Invite expired" });
-        if (invitation.maxUses > 0 &&
-            invitation.usedBy.length >= invitation.maxUses)
-            return res.status(400).json({ message: "Invite usage limit reached" });
-        if (invitation.usedBy.includes(req.userId))
-            return res.status(400).json({ message: "You already used this invite" });
-        invitation.usedBy.push(req.userId);
-        yield invitation.save();
+            expiresAt: { $gt: new Date() },
+            usedBy: { $ne: req.userId },
+            $expr: { $lt: [{ $size: "$usedBy" }, "$maxUses"] },
+        }, {
+            $addToSet: { usedBy: req.userId },
+        }, { new: true });
+        if (!invitation) {
+            return res.status(400).json({ message: "Invalid or expired invite" });
+        }
         yield classroom_model_1.Classroom.findByIdAndUpdate(invitation.classroom, {
             $addToSet: { students: req.userId },
         });

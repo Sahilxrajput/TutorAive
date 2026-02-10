@@ -2,17 +2,69 @@ import { Request, Response } from "express";
 import User from "../models/user.model";
 import { Classroom } from "../models/classroom.model";
 import { Types } from "mongoose";
+import { cloudinary } from "../lib/cloudinary";
 
 // Create a new classroom
 export const createClassroom = async (req: Request, res: Response) => {
   try {
-    const classroom = await Classroom.create({
-      ...req.body,
-      teacher: req.userId,
-    });
-    res.status(201).json(classroom);
+    const { title, tags, description } = req.body;
+
+    interface Payload {
+      title: String;
+      tags: string[];
+      description: string;
+      teacher: string;
+      thumbnail?: {
+        url: string;
+        publicId: string;
+      };
+    }
+
+    const classroomData: Payload = {
+      title,
+      tags,
+      description,
+      teacher: req.userId!,
+    };
+
+    // Validate file type
+    if (
+      req.file &&
+      !["image/png", "image/jpeg", "image/jpg"].includes(req.file.mimetype)
+    ) {
+      return res.status(400).json({ error: "Invalid file type" });
+    }
+
+    // Upload file if exists
+    let uploadResult: any = null;
+
+    if (req.file) {
+      uploadResult = await new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+          { folder: "classroom Thumbnails" },
+          (error, result) => {
+            if (error) reject(error);
+            else resolve(result);
+          },
+        );
+
+        stream.end(req?.file?.buffer);
+      });
+
+      classroomData.thumbnail = {
+        url: uploadResult.secure_url,
+        publicId: uploadResult.public_id,
+      };
+    }
+
+    const classroom = await Classroom.create(classroomData);
+
+    res
+      .status(201)
+      .json({ classroom, message: "Classroom provisioned successfully!" });
   } catch (error) {
-    res.status(400).json({ message: "Failed to create classroom", error });
+    console.log(error);
+    res.status(400).json({ message: "Failed to launch classroom", error });
   }
 };
 
@@ -21,12 +73,12 @@ export const createClassroom = async (req: Request, res: Response) => {
 export const getClassrooms = async (req: Request, res: Response) => {
   try {
     const { status, isPublic } = req.query;
+
     const filter: Record<string, any> = {};
     if (status) filter.status = status;
     if (isPublic !== undefined) filter.isPublic = isPublic === "true";
 
     const classrooms = await Classroom.find(filter)
-      //? @fix think about populated fields
       .populate("teacher", "name email")
       .sort({ createdAt: -1 });
 
@@ -97,20 +149,18 @@ export const enrollClassroom = async (req: Request, res: Response) => {
 
     const user = await User.findById(req.userId);
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(404).json({ message: "user not found" });
     }
+
+    const isEnrolled = classroom.students.some(
+      (_id: Types.ObjectId) => _id.toString() === userId!.toString(),
+    );
 
     // Enroll user if not already enrolled
-    if (!classroom.students.includes(userId)) {
-      console.log("classroom update");
+    if (!isEnrolled) {
       classroom.students.push(userId);
+      user.enrolledClassrooms.push(classroom._id);
       await classroom.save();
-    }
-
-    // Update user's enrolledCourses
-    if (!user.enrolledClassrooms.includes(classroomId)) {
-      console.log("user update");
-      user.enrolledClassrooms.push(classroomId);
       await user.save();
     }
 

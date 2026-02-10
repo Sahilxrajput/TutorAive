@@ -1,18 +1,21 @@
-import  { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
     Search,
     ShieldCheck,
     Globe,
-    Sparkles
+    Sparkles,
+    MonitorPlay,
+    Plus
 } from "lucide-react";
-import {  useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useSearchShortcut } from "@/hooks/useSearchShortcut";
 import { IClassroom } from "@/types/type";
 import API from "@/lib/api";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import SectorCard from "@/components/classroom/CourseCard";
+import LunchButton from "@/components/classroom/LunchButton";
 
 
 const BrowseClassroom = () => {
@@ -90,8 +93,6 @@ const BrowseClassroom = () => {
         loadFrontierData();
     }, []);
 
-
-
     useEffect(() => {
         if (searchInputRef.current) {
             register(searchInputRef.current);
@@ -115,6 +116,8 @@ const BrowseClassroom = () => {
             <div className="absolute -right-20 bottom-0 w-96 h-96 bg-indigo-500/5 blur-[120px] rounded-full -z-10 pointer-events-none" />
 
             <div className="max-w-7xl mx-auto space-y-16">
+
+                <LunchButton/>
 
                 {/* Terminal Header */}
                 <header className="flex flex-col items-center text-center space-y-6">

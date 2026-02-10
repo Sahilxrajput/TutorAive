@@ -5,12 +5,11 @@ import { useEffect, useState } from "react";
 import API from "@/lib/api";
 import { useParams } from "react-router-dom";
 import { ILecture } from "@/types/type";
-import { toast } from "sonner";
+import { notifyError } from "@/utils/notifyError";
 
 export default function BroadcastSector() {
     const [sessions, setSessions] = useState<ILecture[]>([])
     const { classroomId } = useParams();
-
 
 
     useEffect(() => {
@@ -18,8 +17,8 @@ export default function BroadcastSector() {
             try {
                 const { data } = await API.get(`/lectures/all/${classroomId}`);
                 setSessions(data.data || []);
-            } catch {
-                toast.error("Failed to fetch broadcasts. Please try again.");
+            } catch(e) {
+                notifyError(e)
             }
         };
         fetchBroadCasts();

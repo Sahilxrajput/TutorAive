@@ -1,13 +1,27 @@
+import ClassroomProvider from "@/context/classroomProvider";
 import useAuth from "@/hooks/useAuth";
-import { type ReactNode } from "react";
+import API from "@/lib/api";
+import { IClassroom } from "@/types/type";
+import { useEffect, useState, type ReactNode } from "react";
 import { Navigate, useParams } from "react-router-dom";
+import { toast } from "sonner";
 
 
-const EnrolledRoute = ({ children }: {
-    children: ReactNode;
-}) => {
-    const { classroomId } = useParams<{ classroomId: string }>(); // classroom id from URL
+const EnrolledRoute = ({ children }: { children: ReactNode }) => {
+    const [classroom, setClassroom] = useState<IClassroom | null>(null);
+    const { classroomId } = useParams<{ classroomId: string }>();
     const { user, loading } = useAuth();
+
+    useEffect(() => {
+        const fetchClassroom = async () => {
+            const { data } = await API.get(`/classrooms/${classroomId}`);
+            setClassroom(data);
+        };
+
+        if (user && classroomId) {
+            fetchClassroom();
+        }
+    }, [classroomId, user]);
 
     if (loading) return <div>Loading...</div>;
 
@@ -15,18 +29,28 @@ const EnrolledRoute = ({ children }: {
         return <Navigate to="/auth" replace />;
     }
 
-    // @todo handle public classrooom case
-    const isEnrolled = user?.enrolledClassrooms?.includes(classroomId || "");
-
-    if (!isEnrolled) {
-        return (
-            <div className="flex items-center justify-center h-screen bg-yellow-50 text-red-600 text-lg font-semibold">
-                Unauthorized Access: You are not enrolled in this classroom.
-            </div>
-        );
+    if (!classroom) {
+        return <div>Loading classroom...</div>;
     }
 
-    return <>{children}</>;
+    const isEnrolled = classroom.students?.some(
+        (id: string) => id.toString() === user._id.toString()
+    );
+
+    const teacherId = classroom.teacher._id
+
+    const isClassInstructor = teacherId?.toString() === user._id.toString();
+
+    if (!isEnrolled && !isClassInstructor) {
+        toast.info("you are not enrolled")
+        return <Navigate to="/dashboard" replace />;
+    }
+
+    return (
+        <ClassroomProvider classroom={classroom} isClassInstructor={isClassInstructor}>
+            {children}
+        </ClassroomProvider>
+    );
 };
 
 export default EnrolledRoute;

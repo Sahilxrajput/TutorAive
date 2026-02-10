@@ -36,7 +36,7 @@ app.use((0, cors_1.default)({
     origin: process.env.CLIENT_URL, // your frontend URL
     credentials: true,
 }));
-app.use(express_1.default.json());
+app.use(express_1.default.json({ limit: "100kb" }));
 app.use(express_1.default.urlencoded({ extended: true }));
 app.use((0, cookie_parser_1.default)());
 (0, db_1.default)();
@@ -57,5 +57,10 @@ app.use("/api/quizs", quiz_routes_1.default);
 app.use("/api/submissions", submission_routes_1.default);
 app.use("/api/tweets", tweet_routes_1.default);
 app.use("/api/users", user_routes_1.default);
+app.get("/spam-test", (_req, res) => {
+    console.log(Date.now());
+    console.log("API is alive");
+    res.json({ message: "API is alive", time: Date.now() });
+});
 console.log("Server restarted at", new Date().toISOString());
 server.listen(PORT, () => console.log(` Server running on port http://localhost:${PORT}`));

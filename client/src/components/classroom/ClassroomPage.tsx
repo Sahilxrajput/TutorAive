@@ -12,8 +12,7 @@ import ArchiveSector from "./ArchiveSector";
 import BroadcastSector from "./BroadcastSector";
 import RosterSector from "./RosterSector";
 
-
-export default function Classroom() {
+export default function ClassroomPage() {
     const [activeTab, setActiveTab] = useState("intel");
 
     const renderSector = () => {

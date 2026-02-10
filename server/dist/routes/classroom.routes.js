@@ -17,6 +17,7 @@ const assignment_controller_1 = require("../controllers/assignment.controller");
 const authorizeOwner_middleware_1 = require("../middlewares/authorizeOwner.middleware");
 const note_controller_1 = require("../controllers/note.controller");
 const invitation_controller_1 = require("../controllers/invitation.controller");
+const cloudinary_1 = require("../lib/cloudinary");
 const router = express_1.default.Router();
 // Get all classrooms
 router.get("/", classroom_controller_1.getClassrooms);
@@ -37,7 +38,7 @@ router.use(Instructor_middleware_1.isInstructor);
 router.get("/:classroomId/create-invitation", (0, authorizeOwner_middleware_1.authorizeOwnerMiddleware)("classroom"), invitation_controller_1.createInvitation);
 router.post("/:classroomId/send-invitation", (0, authorizeOwner_middleware_1.authorizeOwnerMiddleware)("classroom"), invitation_controller_1.sendInvitationMail);
 // Create a new classroom
-router.post("/", classroom_validator_1.createClassroomValidator, handleValidation_1.handleValidation, classroom_controller_1.createClassroom);
+router.post("/", cloudinary_1.upload.single("thumbnail"), classroom_validator_1.createClassroomValidator, handleValidation_1.handleValidation, classroom_controller_1.createClassroom);
 // Update classroom
 router.put("/:id", classroom_validator_1.updateClassroomValidator, handleValidation_1.handleValidation, classroom_controller_1.updateClassroom);
 // Archive classroom
