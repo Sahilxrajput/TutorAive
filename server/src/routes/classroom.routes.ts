@@ -64,7 +64,7 @@ router.get(
 
 //@todo enroll classroom by purchase
 router.post(
-  "/enroll",
+  "/:classroomId/enroll",
   joinClassroomValidator,
   handleValidation,
   enrollClassroom,

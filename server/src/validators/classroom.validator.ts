@@ -91,7 +91,7 @@ export const joinClassroomByCodeValidator = [
 ];
 
 export const joinClassroomValidator = [
-  body("classroomId")
+  param("classroomId")
     .isMongoId()
     .notEmpty()
     .withMessage("classroomId is required and must be valid mongoId"),

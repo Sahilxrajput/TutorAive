@@ -32,7 +32,7 @@ const EnrollSector = ({ setIsDialogOpen, selectedCourse, onConfirm }: Props) => 
                         </div>
                         <button
                             onClick={() => setIsDialogOpen(false)}
-                            className="p-2 hover:bg-white/5 rounded-full text-primary transition-colors"
+                            className="p-2 hover:bg-white/5 rounded-full text-primaryclass transition-colors"
                         >
                             <X size={20} />
                         </button>

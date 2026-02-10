@@ -87,14 +87,6 @@ const BrowseClassroom = () => {
         filteredResults.filter((c) => !enrolledIds.includes(c._id)),
         [filteredResults, enrolledIds]);
 
-    // const filtered = useMemo(() => {
-    //     return courses.filter(c => {
-    //         const matchSearch = c.title.toLowerCase().includes(search.toLowerCase());
-    //         const matchTag = selectedTag === "All" || c.tags.includes(selectedTag);
-    //         return matchSearch && matchTag;
-    //     });
-    // }, [courses, search, selectedTag]);
-
     const handleActionClick = (course: IClassroom) => {
         if (enrolledIds.includes(course._id)) {
             navigate(`/classrooms/${course._id}`);
@@ -107,7 +99,7 @@ const BrowseClassroom = () => {
     const handleConfirmEnroll = async () => {
         if (!selectedCourse) return;
         try {
-            const { data } = await API.post("/classrooms/enroll", { classroomId: selectedCourse._id });
+            const { data } = await API.post(`/classrooms/${selectedCourse._id}/enroll` );
             toast.success(data.message);
             setEnrolledIds((prev) => [...prev, selectedCourse._id]);
             setIsDialogOpen(false);
