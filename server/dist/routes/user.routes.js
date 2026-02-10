@@ -10,7 +10,7 @@ const router = (0, express_1.Router)();
 // auth
 router.use(auth_middleware_1.default);
 // get all the enrolled courses of user
-router.get("/enrolled", user_controller_1.getAllEnrolledClassrooms);
+router.get("/enrolled", user_controller_1.getUserClassrooms);
 // get a user by id
 router.get("/:id", user_controller_1.getUserProfile);
 exports.default = router;

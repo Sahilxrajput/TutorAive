@@ -77,7 +77,7 @@ exports.joinClassroomByCodeValidator = [
     (0, express_validator_1.param)("classroomId").isMongoId().withMessage("Invalid Classroom ID"),
 ];
 exports.joinClassroomValidator = [
-    (0, express_validator_1.body)("classroomId")
+    (0, express_validator_1.param)("classroomId")
         .isMongoId()
         .notEmpty()
         .withMessage("classroomId is required and must be valid mongoId"),

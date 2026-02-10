@@ -79,7 +79,10 @@ const getClassrooms = (req, res) => __awaiter(void 0, void 0, void 0, function* 
             .json({ message: "fetch classrooms successfully", data: classrooms });
     }
     catch (error) {
-        res.status(500).json({ message: "Error fetching classrooms", error });
+        console.log(error);
+        res
+            .status(500)
+            .json({ message: "Failed to sync with TutorAive Database.", error });
     }
 });
 exports.getClassrooms = getClassrooms;
@@ -91,6 +94,7 @@ const getClassroomById = (req, res) => __awaiter(void 0, void 0, void 0, functio
             .populate("students", "name email profilePicture");
         if (!classroom)
             return res.status(404).json({ message: "Classroom not found" });
+        console.log(classroom);
         res.json(classroom);
     }
     catch (error) {

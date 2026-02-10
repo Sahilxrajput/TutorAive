@@ -92,6 +92,7 @@ const signup = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         });
         res.status(201).json({
             success: true,
+            message: "signup successfully",
             user: userData,
             accessToken,
         });

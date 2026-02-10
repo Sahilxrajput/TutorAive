@@ -21,15 +21,15 @@ const cloudinary_1 = require("../lib/cloudinary");
 const router = express_1.default.Router();
 // Get all classrooms
 router.get("/", classroom_controller_1.getClassrooms);
-// Get all enrolledclassrooms
-router.use(auth_middleware_1.default); // all routes require auth
-router.get("/enrolled", user_controller_1.getAllEnrolledClassrooms);
 // Get classroom by ID
 router.get("/:id", classroom_validator_1.idParamValidator, handleValidation_1.handleValidation, classroom_controller_1.getClassroomById);
+router.use(auth_middleware_1.default); // all routes require auth
+// Get all enrolledclassrooms
+router.get("/enrolled", user_controller_1.getUserClassrooms);
 // Join classroom by code
 router.get("/:classroomId/join/:code", classroom_validator_1.joinClassroomByCodeValidator, handleValidation_1.handleValidation, invitation_controller_1.useInvitation);
 //@todo enroll classroom by purchase
-router.post("/enroll", classroom_validator_1.joinClassroomValidator, handleValidation_1.handleValidation, classroom_controller_1.enrollClassroom);
+router.post("/:classroomId/enroll", classroom_validator_1.joinClassroomValidator, handleValidation_1.handleValidation, classroom_controller_1.enrollClassroom);
 router.get("/:classroomId/students/:studentId/assignment-progress", isEnrolled_middleware_1.isEnrolled, assignment_controller_1.getStudentAssignmentProgress);
 //!@check create a --------------------lecture / assignmnet/ students------------------------ in classroom
 router.get("/:classroomId/resources", isEnrolled_middleware_1.isEnrolled, note_controller_1.getResources);

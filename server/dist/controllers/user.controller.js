@@ -13,7 +13,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getUserProfile = void 0;
-exports.getAllEnrolledClassrooms = getAllEnrolledClassrooms;
+exports.getUserClassrooms = getUserClassrooms;
+const mongoose_1 = require("mongoose");
+const classroom_model_1 = require("../models/classroom.model");
 const user_model_1 = __importDefault(require("../models/user.model"));
 const getUserProfile = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -30,13 +32,14 @@ const getUserProfile = (req, res) => __awaiter(void 0, void 0, void 0, function*
     }
 });
 exports.getUserProfile = getUserProfile;
-function getAllEnrolledClassrooms(req, res) {
+function getUserClassrooms(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const user = yield user_model_1.default.findById(req.userId).populate("enrolledClassrooms");
-            if (!user)
-                return res.status(404).json({ message: "User not found" });
-            res.status(200).json(user.enrolledClassrooms);
+            const userId = new mongoose_1.Types.ObjectId(req.userId);
+            const classrooms = yield classroom_model_1.Classroom.find({
+                $or: [{ teacher: userId }, { students: userId }],
+            });
+            res.status(200).json(classrooms);
         }
         catch (error) {
             console.error("Error fetching enrolled classrooms:", error);
