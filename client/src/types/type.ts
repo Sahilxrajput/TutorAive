@@ -52,23 +52,11 @@ export interface IClassroom {
   tags: string[];
   modules?: number;
   hours?: number;
-  // curriculum: Object[];
   syllabus: string[];
-  students: string[];
-  // memberships?: Types.ObjectId[];
+//   students: string[];
+  students: IUser[];
   // assignments?: Types.ObjectId[];
-  // schedules?: Types.ObjectId[];
-  // invitations?: Types.ObjectId[];
-  // attendance?: Types.ObjectId[];
-  overview?: {};
   status: "active" | "archived" | "deleted";
-  settings?: {
-    maxStudents: number;
-    allowGuests: boolean;
-    chatEnabled: boolean;
-    codeEditorEnabled: boolean;
-    canvasEnabled: boolean;
-  };
   paid: boolean;
 }
 
@@ -84,6 +72,15 @@ export interface IClassroom {
 //   createdAt: Date;
 //   updatedAt: Date;
 // }
+
+export interface ISignupPayload {
+  name: string;
+  userName: string;
+  email: string;
+  password: string;
+  role: string;
+}
+
 export interface AuthContextValue {
   user: IUser | null;
   setUser: Dispatch<SetStateAction<IUser | null>>;
@@ -92,6 +89,7 @@ export interface AuthContextValue {
   refreshUser: () => Promise<void>;
   signout: () => Promise<void>;
   signin: (credentials: { email: string; password: string }) => Promise<void>;
+  signup: (credentials: ISignupPayload) => Promise<void>;
 }
 
 export interface ISaveNote {

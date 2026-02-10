@@ -14,7 +14,6 @@ import {
     Home
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import API from '@/lib/api';
 import useAuth from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { notifyError } from '@/utils/notifyError';
@@ -31,22 +30,19 @@ const initialFormState = {
 const App = () => {
     const [authMode, setAuthMode] = useState<string>('signin');
     const [formData, setFormData] = useState(initialFormState)
-    const [isLoading, setIsLoading] = useState(false);
-    const { signin, refreshUser } = useAuth()
+    const { signin, refreshUser, signup, loading } = useAuth()
     const navigate = useNavigate();
 
     const handleAuth = async (e: React.FormEvent) => {
         e.preventDefault();
-        setIsLoading(true);
-
         try {
             if (authMode === "signup") {
                 if (!formData.role.trim()) {
-                    toast.info(formData.role)
+                    toast.info("select user role")
                     return;
                 }
 
-                await API.post("/auth/signup", formData);
+                await signup(formData);
                 setFormData(initialFormState);
                 await refreshUser();
             } else {
@@ -55,9 +51,8 @@ const App = () => {
 
             navigate("/dashboard");
         } catch (error) {
+            console.log(error)
             notifyError(error);
-        } finally {
-            setIsLoading(false);
         }
     };
 
@@ -101,10 +96,12 @@ const App = () => {
                                 className="w-14 h-14 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center mb-10 border border-white/20 shadow-xl"
                             >
                                 <ShieldCheck className="w-8 h-8 text-white" />
-
                             </motion.div>
+
+
+
                             <motion.div
-                            onClick={()=>navigate("/home")}
+                                onClick={() => navigate("/home")}
                                 whileHover={{ rotate: -10 }}
                                 className="w-14 h-14 cursor-pointer bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center mb-10 border border-white/20 shadow-xl"
                             >
@@ -286,13 +283,13 @@ const App = () => {
                             whileHover={{ scale: 1.01 }}
                             whileTap={{ scale: 0.99 }}
                             type="submit"
-                            disabled={isLoading}
+                            disabled={loading}
                             className={cn("w-full py-5 rounded-[1.5rem] bg-primary text-primary-foreground font-black text-xs tracking-[0.3em] shadow-2xl shadow-primary/20 transition-all flex items-center justify-center gap-4 group uppercase",
-                                isLoading ?
+                                loading ?
                                     "opacity-70 cursor-not-allowed" :
                                     "hover:brightness-110")}
                         >
-                            {isLoading ? (
+                            {loading ? (
                                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                             ) : (
                                 <>

@@ -1,11 +1,11 @@
+import SectorLoading from "@/components/Loading";
 import ClassroomProvider from "@/context/classroomProvider";
 import useAuth from "@/hooks/useAuth";
 import API from "@/lib/api";
-import { IClassroom } from "@/types/type";
+import { IClassroom, IUser } from "@/types/type";
 import { useEffect, useState, type ReactNode } from "react";
 import { Navigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
-
 
 const EnrolledRoute = ({ children }: { children: ReactNode }) => {
     const [classroom, setClassroom] = useState<IClassroom | null>(null);
@@ -23,19 +23,23 @@ const EnrolledRoute = ({ children }: { children: ReactNode }) => {
         }
     }, [classroomId, user]);
 
-    if (loading) return <div>Loading...</div>;
+    if (loading)
+        return <SectorLoading />;
+
 
     if (!user) {
         return <Navigate to="/auth" replace />;
     }
 
-    if (!classroom) {
-        return <div>Loading classroom...</div>;
-    }
+    if (!classroom)
+        return <SectorLoading />;
 
     const isEnrolled = classroom.students?.some(
-        (id: string) => id.toString() === user._id.toString()
+        (student: IUser) => student._id.toString() === user._id.toString()
     );
+
+    console.log("classroom")
+    console.log(classroom)
 
     const teacherId = classroom.teacher._id
 
@@ -43,7 +47,8 @@ const EnrolledRoute = ({ children }: { children: ReactNode }) => {
 
     if (!isEnrolled && !isClassInstructor) {
         toast.info("you are not enrolled")
-        return <Navigate to="/dashboard" replace />;
+        // <Navigate to="/dashboard" replace />;
+        return <div>hii</div>
     }
 
     return (

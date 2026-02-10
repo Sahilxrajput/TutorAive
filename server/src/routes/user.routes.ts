@@ -1,7 +1,7 @@
 import { Router } from "express";
 import authMiddleware from "../middlewares/auth.middleware";
 import {
-  getAllEnrolledClassrooms,
+  getUserClassrooms,
   getUserProfile,
 } from "../controllers/user.controller";
 
@@ -11,7 +11,7 @@ const router = Router();
 router.use(authMiddleware);
 
 // get all the enrolled courses of user
-router.get("/enrolled", getAllEnrolledClassrooms);
+router.get("/enrolled", getUserClassrooms);
 
 // get a user by id
 router.get("/:id", getUserProfile);

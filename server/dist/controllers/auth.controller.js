@@ -30,6 +30,7 @@ const user_model_1 = __importDefault(require("../models/user.model"));
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const generateAuthToken_1 = require("../utils/generateAuthToken");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
+const isProduction = process.env.NODE_ENV === "production";
 const googleCallback = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const user = req.user;
     const refreshToken = (0, generateAuthToken_1.generateRefreshToken)(user);
@@ -39,9 +40,9 @@ const googleCallback = (req, res) => __awaiter(void 0, void 0, void 0, function*
     yield user.save();
     res.cookie("refreshToken", refreshToken, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        maxAge: 7 * 24 * 60 * 60 * 1000,
+        secure: isProduction,
+        sameSite: isProduction ? "none" : "lax",
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
     // redirect with no tokens in URL
     res.redirect(`${process.env.CLIENT_URL}/auth/success?accessToken=${accessToken}`);
@@ -49,7 +50,7 @@ const googleCallback = (req, res) => __awaiter(void 0, void 0, void 0, function*
 exports.googleCallback = googleCallback;
 const signup = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        let { email, name, userName, password, role, } = req.body;
+        let { email, name, userName, password, role } = req.body;
         // Check email
         const emailExists = yield user_model_1.default.findOne({ email });
         if (emailExists) {
@@ -85,8 +86,8 @@ const signup = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const _a = savedUser.toObject(), { password: _, refreshToken: __ } = _a, userData = __rest(_a, ["password", "refreshToken"]);
         res.cookie("refreshToken", refreshToken, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "lax",
+            secure: isProduction,
+            sameSite: isProduction ? "none" : "lax",
             maxAge: 7 * 24 * 60 * 60 * 1000,
         });
         res.status(201).json({
@@ -171,13 +172,13 @@ const signout = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
     res.clearCookie("refreshToken", {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
+        secure: isProduction,
+        sameSite: isProduction ? "none" : "lax",
     });
     res.clearCookie("accessToken", {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
+        secure: isProduction,
+        sameSite: isProduction ? "none" : "lax",
     });
     return res.status(200).json({
         message: "Logged out successfully",
@@ -200,9 +201,8 @@ const deleteAccount = (req, res) => __awaiter(void 0, void 0, void 0, function* 
         yield user_model_1.default.findByIdAndDelete(user._id);
         res.clearCookie("refreshToken", {
             httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "lax",
-            maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+            secure: isProduction,
+            sameSite: isProduction ? "none" : "lax",
         });
         res.status(200).json({ message: "Logged out successfully" });
         return res.status(200).json({ message: "User deleted successfully" });

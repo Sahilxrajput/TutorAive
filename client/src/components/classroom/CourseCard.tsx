@@ -27,7 +27,6 @@ const SectorCard = ({ course, isEnrolled, index, onClick }: Props) => {
                 isEnrolled && "border-primary/30 bg-primary/[0.02]"
             )}
         >
-            {/* Adaptive Glow Layer */}
             <div className="absolute -right-20 -top-20 w-64 h-64 bg-primary/5 blur-[80px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
 
             <div>

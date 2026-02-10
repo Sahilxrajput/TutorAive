@@ -13,7 +13,6 @@ import { HydratedDocument } from "mongoose";
 
 const isProduction = process.env.NODE_ENV === "production";
 
-
 const googleCallback = async (req: Request, res: Response) => {
   const user = req.user as HydratedDocument<IUser>;
 
@@ -93,6 +92,7 @@ const signup = async (req: Request, res: Response) => {
 
     res.status(201).json({
       success: true,
+      message: "signup successfully",
       user: userData,
       accessToken,
     });

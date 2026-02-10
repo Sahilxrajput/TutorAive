@@ -18,7 +18,6 @@ import { toast } from "sonner";
 import { notifyError } from "@/utils/notifyError";
 
 const JoinSector = () => {
-    // Defined explicit status types for better type safety
     const [status, setStatus] = useState<"decrypting" | "ready" | "syncing" | "complete">("decrypting");
     const [classroom, setClassroom] = useState<IClassroom | null>(null);
     const { classroomId, inviteCode } = useParams();

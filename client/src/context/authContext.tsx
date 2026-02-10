@@ -1,9 +1,10 @@
 import React, { createContext, useCallback, useEffect, useState } from "react";
 import API from "../lib/api";
-import type { AuthContextValue, IUser } from "../types/type";
+import type { AuthContextValue, ISignupPayload, IUser } from "../types/type";
 import defaultAvatar from "@/assets/image/avatar.png";
 import { toast } from "sonner";
 import axios from "axios";
+import { notifyError } from "@/utils/notifyError";
 
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -75,13 +76,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             };
 
             setUser(updatedUser ?? null);
-            
+
         } catch (err) {
-            if (axios.isAxiosError(err)) {
-                toast.error(err.response?.data?.message ?? "Login failed");
-            } else {
-                toast.error("Unexpected error");
-            }
+            notifyError(err)
             setUser(null);
         }
         finally {
@@ -89,12 +86,42 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
     }, []);
 
+    const signup = useCallback(
+        async (credentials: ISignupPayload) => {
+            try {
+                setLoading(true);
+
+                const { data } = await API.post("/auth/signup", credentials);
+
+                localStorage.setItem("accessToken", data.accessToken);
+                toast.success(data.message);
+
+                setIsInstructor(data.user.role === "instructor");
+
+                const updatedUser = {
+                    ...data.user,
+                    profilePicture: data?.user?.profilePicture || defaultAvatar,
+                    lastName: data?.user?.lastName ?? "TutorAive",
+                    userName: data?.user?.userName ?? "TutorAive User",
+                };
+
+                setUser(updatedUser ?? null);
+            } catch (err) {
+                notifyError(err)
+                setUser(null);
+            } finally {
+                setLoading(false);
+            }
+        },
+        []
+    );
+
     useEffect(() => {
         refreshUser();
     }, [refreshUser]);
 
     return (
-        <AuthContext.Provider value={{ user, isInstructor, loading, refreshUser, setUser, signout, signin }}>
+        <AuthContext.Provider value={{ user, isInstructor, loading, refreshUser, setUser, signout, signin, signup }}>
             {children}
         </AuthContext.Provider>
     );

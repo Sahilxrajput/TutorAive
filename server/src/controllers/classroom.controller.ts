@@ -86,7 +86,10 @@ export const getClassrooms = async (req: Request, res: Response) => {
       .status(200)
       .json({ message: "fetch classrooms successfully", data: classrooms });
   } catch (error) {
-    res.status(500).json({ message: "Error fetching classrooms", error });
+    console.log(error)
+    res
+      .status(500)
+      .json({ message: "Failed to sync with TutorAive Database.", error });
   }
 };
 
@@ -99,7 +102,7 @@ export const getClassroomById = async (req: Request, res: Response) => {
 
     if (!classroom)
       return res.status(404).json({ message: "Classroom not found" });
-
+    console.log(classroom)
     res.json(classroom);
   } catch (error) {
     res.status(500).json({ message: "Error fetching classroom", error });

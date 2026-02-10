@@ -1,6 +1,9 @@
+import { Types } from "mongoose";
+import { Classroom } from "../models/classroom.model";
 import User from "../models/user.model";
+import { Request, Response } from "express";
 
-export const getUserProfile = async (req: any, res: any) => {
+export const getUserProfile = async (req: Request, res: Response) => {
   try {
     const userId = req.params.id;
 
@@ -16,15 +19,18 @@ export const getUserProfile = async (req: any, res: any) => {
   }
 };
 
-export async function getAllEnrolledClassrooms(req:any, res:any) {
+export async function getUserClassrooms(req: Request, res: Response) {
   try {
-    const user = await User.findById(req.userId).populate("enrolledClassrooms");
+    const userId = new Types.ObjectId(req.userId);
 
-    if (!user) return res.status(404).json({ message: "User not found" });
+    const classrooms = await Classroom.find({
+      $or: [{ teacher: userId }, { students: userId }],
+    });
 
-    res.status(200).json(user.enrolledClassrooms);
+    res.status(200).json(classrooms);
   } catch (error) {
     console.error("Error fetching enrolled classrooms:", error);
     res.status(500).json({ message: "Server error" });
   }
 }
+

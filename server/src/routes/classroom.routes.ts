@@ -24,7 +24,9 @@ import {
   createLecture,
   updateLecture,
 } from "../controllers/lecture.controller";
-import { getAllEnrolledClassrooms } from "../controllers/user.controller";
+import {
+  getUserClassrooms,
+} from "../controllers/user.controller";
 import {
   createLectureValidator,
   updateLectureValidator,
@@ -44,13 +46,13 @@ const router = express.Router();
 // Get all classrooms
 router.get("/", getClassrooms);
 
-// Get all enrolledclassrooms
-
-router.use(authMiddleware); // all routes require auth
-router.get("/enrolled", getAllEnrolledClassrooms);
-
 // Get classroom by ID
 router.get("/:id", idParamValidator, handleValidation, getClassroomById);
+
+
+router.use(authMiddleware); // all routes require auth
+// Get all enrolledclassrooms
+router.get("/enrolled", getUserClassrooms);
 
 // Join classroom by code
 router.get(
