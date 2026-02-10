@@ -11,6 +11,9 @@ import jwt, { JwtPayload } from "jsonwebtoken";
 import { IUser, MyJwtPayload } from "../types/type";
 import { HydratedDocument } from "mongoose";
 
+const isProduction = process.env.NODE_ENV === "production";
+
+
 const googleCallback = async (req: Request, res: Response) => {
   const user = req.user as HydratedDocument<IUser>;
 
@@ -23,9 +26,9 @@ const googleCallback = async (req: Request, res: Response) => {
 
   res.cookie("refreshToken", refreshToken, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    maxAge: 7 * 24 * 60 * 60 * 1000,
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax",
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
   });
 
   // redirect with no tokens in URL
@@ -36,13 +39,7 @@ const googleCallback = async (req: Request, res: Response) => {
 
 const signup = async (req: Request, res: Response) => {
   try {
-    let {
-      email,
-      name,
-      userName,
-      password,
-      role,
-    } = req.body;
+    let { email, name, userName, password, role } = req.body;
 
     // Check email
     const emailExists = await User.findOne({ email });
@@ -54,10 +51,10 @@ const signup = async (req: Request, res: Response) => {
       });
     }
 
- const parts = name.trim().split(" ");
+    const parts = name.trim().split(" ");
 
- const firstName = parts[0] || "";
- const lastName = parts.slice(1).join(" ") || "";
+    const firstName = parts[0] || "";
+    const lastName = parts.slice(1).join(" ") || "";
 
     // Check username
     const usernameExists = await User.findOne({ userName });
@@ -89,8 +86,8 @@ const signup = async (req: Request, res: Response) => {
 
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      secure: isProduction,
+      sameSite: isProduction ? "none" : "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
@@ -185,14 +182,14 @@ const signout = async (req: Request, res: Response) => {
 
   res.clearCookie("refreshToken", {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax",
   });
 
   res.clearCookie("accessToken", {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax",
   });
 
   return res.status(200).json({
@@ -227,9 +224,8 @@ const deleteAccount = async (req: Request, res: Response) => {
 
     res.clearCookie("refreshToken", {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      secure: isProduction,
+      sameSite: isProduction ? "none" : "lax",
     });
 
     res.status(200).json({ message: "Logged out successfully" });

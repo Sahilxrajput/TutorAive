@@ -49,7 +49,7 @@ const googleCallback = (req, res) => __awaiter(void 0, void 0, void 0, function*
 exports.googleCallback = googleCallback;
 const signup = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        let { email, firstName, lastName = "TutorAive user", userName, password, role, } = req.body;
+        let { email, name, userName, password, role, } = req.body;
         // Check email
         const emailExists = yield user_model_1.default.findOne({ email });
         if (emailExists) {
@@ -58,6 +58,9 @@ const signup = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 message: "Email is already registered",
             });
         }
+        const parts = name.trim().split(" ");
+        const firstName = parts[0] || "";
+        const lastName = parts.slice(1).join(" ") || "";
         // Check username
         const usernameExists = yield user_model_1.default.findOne({ userName });
         if (usernameExists) {

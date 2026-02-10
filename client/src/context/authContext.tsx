@@ -12,7 +12,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [user, setUser] = useState<IUser | null>(null);
     const [isInstructor, setIsInstructor] = useState(false);
     const [loading, setLoading] = useState(true);
-    // const [authResolved, setAuthResolved] = useState(false);
 
 
     const refreshUser = useCallback(async () => {

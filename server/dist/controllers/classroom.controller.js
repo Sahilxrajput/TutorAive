@@ -137,18 +137,14 @@ const enrollClassroom = (req, res) => __awaiter(void 0, void 0, void 0, function
         }
         const user = yield user_model_1.default.findById(req.userId);
         if (!user) {
-            return res.status(404).json({ message: "User not found" });
+            return res.status(404).json({ message: "user not found" });
         }
+        const isEnrolled = classroom.students.some((_id) => _id.toString() === userId.toString());
         // Enroll user if not already enrolled
-        if (!classroom.students.includes(userId)) {
-            console.log("classroom update");
+        if (!isEnrolled) {
             classroom.students.push(userId);
+            user.enrolledClassrooms.push(classroom._id);
             yield classroom.save();
-        }
-        // Update user's enrolledCourses
-        if (!user.enrolledClassrooms.includes(classroomId)) {
-            console.log("user update");
-            user.enrolledClassrooms.push(classroomId);
             yield user.save();
         }
         res.status(200).json({

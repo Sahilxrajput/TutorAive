@@ -2,7 +2,7 @@ import axios from "axios";
 
 const API = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
-  timeout: 10000, // e.g., 10 seconds'
+  timeout: 15000, // e.g., 15 seconds'
   withCredentials: true,
 });
 
