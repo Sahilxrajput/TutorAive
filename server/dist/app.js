@@ -28,6 +28,7 @@ const lecture_route_1 = __importDefault(require("./routes/lecture.route"));
 const tweet_routes_1 = __importDefault(require("./routes/tweet.routes"));
 const attendence_routes_1 = __importDefault(require("./routes/attendence.routes"));
 const health_route_1 = __importDefault(require("./routes/health.route"));
+const rateLimit_1 = require("./middlewares/rateLimit");
 const PORT = process.env.PORT || 3000;
 const app = (0, express_1.default)();
 const server = http_1.default.createServer(app);
@@ -44,23 +45,18 @@ app.use(passport_1.default.initialize());
 (0, worker_1.createRedisWorker)();
 app.get("/", (_, res) => res.send("Server is  Running"));
 app.use("/health", health_route_1.default);
-app.use("/api/assignments", assignment_routes_1.default);
-app.use("/api/attendance", attendence_routes_1.default);
-app.use("/api/auth", auth_routes_1.default);
-app.use("/api/contact", contact_routes_1.default);
-app.use("/api/classrooms", classroom_routes_1.default);
-app.use("/api/lectures", lecture_route_1.default); // all required auth
-app.use("/api/notes", note_routes_1.default); // all required auth
-app.use("/api/notifications", notification_routes_1.default);
-app.use("/api/payment", payment_routes_1.default);
-app.use("/api/quizs", quiz_routes_1.default);
-app.use("/api/submissions", submission_routes_1.default);
-app.use("/api/tweets", tweet_routes_1.default);
-app.use("/api/users", user_routes_1.default);
-app.get("/spam-test", (_req, res) => {
-    console.log(Date.now());
-    console.log("API is alive");
-    res.json({ message: "API is alive", time: Date.now() });
-});
+app.use("/api/assignments", rateLimit_1.globalLimiter, assignment_routes_1.default);
+app.use("/api/attendance", rateLimit_1.globalLimiter, attendence_routes_1.default);
+app.use("/api/auth", rateLimit_1.authLimiter, auth_routes_1.default);
+app.use("/api/contact", rateLimit_1.globalLimiter, contact_routes_1.default);
+app.use("/api/classrooms", rateLimit_1.globalLimiter, classroom_routes_1.default);
+app.use("/api/lectures", rateLimit_1.globalLimiter, lecture_route_1.default); // all required auth
+app.use("/api/notes", rateLimit_1.globalLimiter, note_routes_1.default); // all required auth
+app.use("/api/notifications", rateLimit_1.globalLimiter, notification_routes_1.default);
+app.use("/api/payment", rateLimit_1.paymentLimiter, payment_routes_1.default);
+app.use("/api/quizs", rateLimit_1.globalLimiter, quiz_routes_1.default);
+app.use("/api/submissions", rateLimit_1.globalLimiter, submission_routes_1.default);
+app.use("/api/tweets", rateLimit_1.globalLimiter, tweet_routes_1.default);
+app.use("/api/users", rateLimit_1.globalLimiter, user_routes_1.default);
 console.log("Server restarted at", new Date().toISOString());
 server.listen(PORT, () => console.log(` Server running on port http://localhost:${PORT}`));

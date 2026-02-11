@@ -15,9 +15,6 @@ const bullmq_1 = require("bullmq");
 const classroom_model_1 = require("../models/classroom.model");
 const notification_model_1 = require("../models/notification.model");
 const notification_emitter_1 = require("../sockets/emitters/notification.emitter");
-// const connection = new IORedis(process.env.REDIS_URL!, {
-//   maxRetriesPerRequest: null,
-// });
 function createRedisWorker() {
     const worker = new bullmq_1.Worker("notifications", (job) => __awaiter(this, void 0, void 0, function* () {
         var _a;

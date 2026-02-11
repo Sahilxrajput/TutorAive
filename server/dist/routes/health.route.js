@@ -11,23 +11,31 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
+var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const mongoose_1 = __importDefault(require("mongoose"));
 const ioredis_1 = __importDefault(require("ioredis"));
+const redisClient = new ioredis_1.default((_a = process.env.REDIS_URL) !== null && _a !== void 0 ? _a : "redis://localhost:6379");
 const router = (0, express_1.Router)();
-const redis = new ioredis_1.default(process.env.REDIS_URL);
 router.get("/", (_req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const mongoState = mongoose_1.default.connection.readyState === 1;
-    const redisState = redis.status === "ready";
-    const isHealthy = mongoState && redisState;
-    res.status(isHealthy ? 200 : 503).json({
-        status: isHealthy ? "ok" : "degraded",
-        services: {
-            mongo: mongoState ? "connected" : "down",
-            redis: redisState ? "connected" : "down",
-        },
+    const healthStatus = {
+        server: "UP",
+        database: "DOWN",
+        redis: "DOWN",
         timestamp: new Date().toISOString(),
-    });
+        uptime: process.uptime(),
+    };
+    try {
+        const dbStatus = mongoose_1.default.connection.readyState;
+        healthStatus.database = dbStatus === 1 ? "UP" : "DOWN";
+        const redisStatus = yield redisClient.ping();
+        healthStatus.redis = redisStatus === "PONG" ? "UP" : "DOWN";
+        const isHealthy = healthStatus.database === "UP" && healthStatus.redis === "UP";
+        return res.status(isHealthy ? 200 : 503).json(healthStatus);
+    }
+    catch (error) {
+        return res.status(503).json(Object.assign(Object.assign({}, healthStatus), { error: error instanceof Error ? error.message : "Unknown Error" }));
+    }
 }));
 exports.default = router;

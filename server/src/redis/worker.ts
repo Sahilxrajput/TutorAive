@@ -9,11 +9,7 @@ import {
   emitTweetNotification,
 } from "../sockets/emitters/notification.emitter";
 import { ILecture } from "../types/type";
-import IORedis from "ioredis";
 
-// const connection = new IORedis(process.env.REDIS_URL!, {
-//   maxRetriesPerRequest: null,
-// });
 
 export function createRedisWorker() {
   const worker = new Worker(

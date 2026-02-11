@@ -1,43 +1,24 @@
 # services:
-#   backend:
-#     build: .
-#     container_name: TutorAive-backend
-#     ports:
-#       - "3000:3000"
-#     env_file:
-#       - .env
-#     depends_on:
-#       - mongo
-#       - redis
-#     restart: unless-stopped
-#     healthcheck:
-#       test: ["CMD", "wget", "-qO-", "http://localhost:3000/api/health"]
-#       interval: 30s
-#       timeout: 5s
-#       retries: 3
-
 #   mongo:
 #     image: mongo:7
 #     container_name: TutorAive-mongo
+#     restart: always
+#     environment:
+#       MONGO_INITDB_ROOT_USERNAME: sahil
+#       MONGO_INITDB_ROOT_PASSWORD: 980980
+#       MONGO_INITDB_DATABASE: TutorAive-mongo
 #     ports:
 #       - "27017:27017"
 #     volumes:
-#       - mongo_data:/data/db
-#     restart: unless-stopped
-
-#   redis:
-#     image: redis:7-alpine
-#     container_name: TutorAive-redis
-#     ports:
-#       - "6379:6379"
-#     command: redis-server --save "" --appendonly no
-#     restart: unless-stopped
+#       - backend_mongo_data:/data/db
 
 # volumes:
-#   mongo_data:
+#   backend_mongo_data:
+#     external: true
 
 
 services:
+  # MongoDB Service
   mongo:
     image: mongo:7
     container_name: TutorAive-mongo
@@ -50,7 +31,45 @@ services:
       - "27017:27017"
     volumes:
       - backend_mongo_data:/data/db
+    # Added Healthcheck with Authentication
+    healthcheck:
+      test: ["CMD", "mongosh", "--username", "sahil", "--password", "980980", "--authenticationDatabase", "admin", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Service for Rate Limiting
+  redis:
+    image: redis:alpine
+    container_name: TutorAive-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Your Backend API
+  backend:
+    build: .
+    container_name: TutorAive-backend
+    depends_on:
+      mongo:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      - MONGO_URI=mongodb://sahil:980980@mongo:27017/TutorAive-mongo?authSource=admin
+      - REDIS_URL=redis://redis:6379
+    ports:
+      - "5000:5000"
 
 volumes:
-  backend_mongo_data:
-    external: true
+    backend_mongo_data:
+        external: true
+    redis_data:

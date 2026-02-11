@@ -25,6 +25,11 @@ import lectureRoute from "./routes/lecture.route";
 import tweetRoute from "./routes/tweet.routes";
 import attendanceRoute from "./routes/attendence.routes";
 import healthRoute from "./routes/health.route";
+import {
+  authLimiter,
+  globalLimiter,
+  paymentLimiter,
+} from "./middlewares/rateLimit";
 
 const PORT = process.env.PORT || 3000;
 
@@ -39,7 +44,7 @@ app.use(
     credentials: true,
   }),
 );
-app.use(express.json({limit:"100kb"}));
+app.use(express.json({ limit: "100kb" }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
@@ -50,24 +55,19 @@ createRedisWorker();
 
 app.get("/", (_, res) => res.send("Server is  Running"));
 app.use("/health", healthRoute);
-app.use("/api/assignments", assignmentRoute);
-app.use("/api/attendance", attendanceRoute);
-app.use("/api/auth", authRoute);
-app.use("/api/contact", contactRouter);
-app.use("/api/classrooms", classRoute);
-app.use("/api/lectures", lectureRoute); // all required auth
-app.use("/api/notes", notesRoute); // all required auth
-app.use("/api/notifications", notificationsRoute);
-app.use("/api/payment", paymentRoute);
-app.use("/api/quizs", quizRoute);
-app.use("/api/submissions", submissionRoute);
-app.use("/api/tweets", tweetRoute);
-app.use("/api/users", userRoute);
-app.get("/spam-test", (_req, res) => {
-  console.log(Date.now());
-  console.log("API is alive");
-  res.json({ message: "API is alive", time: Date.now() });
-});
+app.use("/api/assignments", globalLimiter, assignmentRoute);
+app.use("/api/attendance", globalLimiter, attendanceRoute);
+app.use("/api/auth", authLimiter, authRoute);
+app.use("/api/contact", globalLimiter, contactRouter);
+app.use("/api/classrooms", globalLimiter, classRoute);
+app.use("/api/lectures", globalLimiter, lectureRoute); // all required auth
+app.use("/api/notes", globalLimiter, notesRoute); // all required auth
+app.use("/api/notifications", globalLimiter, notificationsRoute);
+app.use("/api/payment", paymentLimiter, paymentRoute);
+app.use("/api/quizs", globalLimiter, quizRoute);
+app.use("/api/submissions", globalLimiter, submissionRoute);
+app.use("/api/tweets", globalLimiter, tweetRoute);
+app.use("/api/users", globalLimiter, userRoute);
 
 console.log("Server restarted at", new Date().toISOString());
 
