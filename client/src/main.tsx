@@ -38,7 +38,6 @@ createRoot(document.getElementById('root')!).render(
                                 richColors
                                 closeButton
                             />
-                            <ReactQueryDevtools />
                         </SocketProvider>
                     </SearchProvider>
                 </BrowserRouter>

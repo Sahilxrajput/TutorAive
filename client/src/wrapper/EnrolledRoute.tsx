@@ -1,60 +1,66 @@
 import SectorLoading from "@/components/Loading";
-import ClassroomProvider from "@/context/classroomProvider";
 import useAuth from "@/hooks/useAuth";
 import API from "@/lib/api";
 import { IClassroom, IUser } from "@/types/type";
-import { useEffect, useState, type ReactNode } from "react";
-import { Navigate, useParams } from "react-router-dom";
+import { notifyError } from "@/utils/notifyError";
+import { useEffect, useState } from "react";
+import { Navigate, Outlet, useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
-const EnrolledRoute = ({ children }: { children: ReactNode }) => {
+const EnrolledRoute = () => {
     const [classroom, setClassroom] = useState<IClassroom | null>(null);
+    const [classroomLoading, setClassroomLoading] = useState(true);
+
     const { classroomId } = useParams<{ classroomId: string }>();
     const { user, loading } = useAuth();
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchClassroom = async () => {
-            const { data } = await API.get(`/classrooms/${classroomId}`);
-            setClassroom(data);
+            try {
+                const { data } = await API.get(`/classrooms/${classroomId}`);
+                setClassroom(data);
+            } catch (e) {
+                notifyError(e);
+                navigate("/classrooms");
+            } finally {
+                setClassroomLoading(false);
+            }
         };
 
         if (user && classroomId) {
             fetchClassroom();
         }
-    }, [classroomId, user]);
+    }, [classroomId, user, navigate]);
 
-    if (loading)
+    // Wait for auth or classroom fetch
+    if (loading || classroomLoading) {
         return <SectorLoading />;
-
+    }
 
     if (!user) {
         return <Navigate to="/auth" replace />;
     }
 
-    if (!classroom)
+    if (!classroom || !classroom.teacher) {
         return <SectorLoading />;
+    }
 
     const isEnrolled = classroom.students?.some(
-        (student: IUser) => student._id.toString() === user._id.toString()
+        (student: IUser) =>
+            student._id.toString() === user._id.toString()
     );
 
-    console.log("classroom")
-    console.log(classroom)
-
-    const teacherId = classroom.teacher._id
-
-    const isClassInstructor = teacherId?.toString() === user._id.toString();
+    const isClassInstructor =
+        classroom.teacher._id.toString() === user._id.toString();
 
     if (!isEnrolled && !isClassInstructor) {
-        toast.info("you are not enrolled")
-        // <Navigate to="/dashboard" replace />;
-        return <div>hii</div>
+        toast.info("You are not enrolled");
+        return <Navigate to="/home" replace />;
     }
 
     return (
-        <ClassroomProvider classroom={classroom} isClassInstructor={isClassInstructor}>
-            {children}
-        </ClassroomProvider>
+        <Outlet context={{ classroom, isClassInstructor }} />
     );
 };
 

@@ -1,103 +1,151 @@
-# automatiaclly remove token if user try to relogin from other account
+# TutorAive
 
-# complete
+A full-stack online tutoring platform with live classrooms, real-time video/audio, assignments, notes, and payments.
 
-signin page
-signup page
+---
 
-<!-- shortcut -->
+## Project overview
 
-selecet a word => ctrl + d (automatically selct next occuring)
-selecet a word => ctrl + shift + l (automatically selct all occuring)
+**TutorAive** is a monorepo containing:
 
-<!-- component -->
-empty component -> shadcn
+| Package   | Description                                      | Deployed on |
+|----------|---------------------------------------------------|-------------|
+| **client** | React SPA — classrooms, live sessions, notes, Q&A, payments | [Vercel](https://vercel.com) |
+| **server** | Node.js API — auth, classrooms, mediasoup, Socket.IO, payments | [Render](https://render.com) |
 
-<!-- note model -->
-trashedAt, ArchievedAt doesn't work as expected --> trashedBy, ArcheivedBy
+---
 
+### Core Features
+- Live video/audio classrooms using mediasoup
+- Real-time chat and Q&A via Socket.IO
+- Assignments and submissions
+- Rich text notes with Tiptap
+- Google OAuth authentication
+- Razorpay payment integration
 
-<!-- mediasoup -->
-transport.updateIceServers({ iceServers })
-https://mediasoup.org/documentation/v3/mediasoup-client/api/#transport-updateIceServers
-
-<!-- Features -->
-exclidraw intregration
-
-
-
-<!-- Bonus: Fix slow restarts -->
-{
-  "compilerOptions": {
-    "skipLibCheck": true,
-    "incremental": true
-  }
-}
-
- <-------------------------aggregate---------------------------------->
-
-const classroomId = req.params.classroomId;
-const studentId = req.userId;
-
-const stats = await Assignment.aggregate([
-  {
-    $match: {
-      classroom: new mongoose.Types.ObjectId(classroomId),
-    },
-  },
-  {
-    $lookup: {
-      from: "submissions",
-      let: { assignmentId: "$_id" },
-      pipeline: [
-        {
-          $match: {
-            $expr: {
-              $and: [
-                { $eq: ["$assignmentId", "$$assignmentId"] },
-                { $eq: ["$studentId", new mongoose.Types.ObjectId(studentId)] },
-              ],
-            },
-          },
-        },
-      ],
-      as: "mySubmission",
-    },
-  },
-  {
-    $addFields: {
-      isSubmitted: { $gt: [{ $size: "$mySubmission" }, 0] },
-    },
-  },
-  {
-    $group: {
-      _id: null,
-      totalAssignments: { $sum: 1 },
-      submitted: {
-        $sum: {
-          $cond: ["$isSubmitted", 1, 0],
-        },
-      },
-    },
-  },
-  {
-    $addFields: {
-      pending: { $subtract: ["$totalAssignments", "$submitted"] },
-    },
-  },
-]);
+---
 
 
-<!-- color -->
-#26D9D9
-#0E1422
-#0B0F1C
+## Tech stack
 
-<!-- :dark -->
-#1F1F1F
-#003049
+### Client
 
-<!-- --light- -->
-  --p: #e36ee5;
-  --s: #7e31e1;
-  --t: #c793ff;
+| Category      | Technologies |
+|---------------|--------------|
+| Framework     | React 19, Vite 7 |
+| UI            | Tailwind CSS 4, Radix UI, Framer Motion, Lucide |
+| Data & state  | TanStack Query, React Context |
+| Real-time     | Socket.IO Client, mediasoup-client |
+| Editor        | Tiptap |
+| Routing       | React Router 7 |
+
+### Server
+
+| Category      | Technologies |
+|---------------|--------------|
+| Runtime       | Node.js |
+| Framework     | Express 5 |
+| Database      | MongoDB (Mongoose) |
+| Auth          | Passport (Google OAuth), JWT, cookie-session |
+| Real-time     | Socket.IO, mediasoup |
+| Jobs          | BullMQ, Redis |
+| Payments      | Razorpay |
+| Storage       | Cloudinary |
+| AI / search   | LangChain, Pinecone, Google GenAI |
+
+---
+
+## Folder structure
+
+```
+TutorAive/
+├── client/                 # React app (Vercel)
+├── server/                 # Node.js API (Render)
+└── readme.md
+```
+
+---
+
+## Local setup
+
+### Prerequisites
+
+- **Node.js** 18+
+- **MongoDB** (local or Atlas)
+- **Redis** (for BullMQ)
+
+### 1. Clone and install
+
+```bash
+git clone https://github.com/Sahilxrajput/TutorAive
+cd TutorAive
+```
+
+```bash
+# Install client dependencies
+cd client && npm install 
+
+# Install server dependencies
+cd server && npm install 
+```
+
+### 2. Environment variables
+
+**Client** (`client/.env`):
+
+- `VITE_API_URL` — base URL of the server (e.g. `http://localhost:3000`)
+
+**Server** (`server/.env`):
+
+- `PORT` — server port (default `3000`)
+- `MONGODB_URI` — MongoDB connection string
+- `CLIENT_URL` — frontend origin for CORS (e.g. `http://localhost:5173`)
+- `SESSION_SECRET` — cookie/session secret
+- Google OAuth: `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_CALLBACK_URL`
+<!-- - Razorpay: `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET` -->
+- Cloudinary (if used): `CLOUDINARY_*`
+- Redis (for BullMQ): `REDIS_URL` or equivalent
+- Optional: Pinecone / Google GenAI keys if using AI features
+
+### 3. Run locally
+
+**Terminal 1 — server**
+
+```bash
+cd server
+npm run dev
+```
+
+**Terminal 2 — client**
+
+```bash
+cd client
+npm run dev
+```
+
+- Client: usually **http://localhost:5173**
+- Server: **http://localhost:3000** (or your `PORT`)
+
+---
+
+## Deployment
+
+| App    | Platform | Link |
+|--------|----------|------|
+| **Client** | Vercel   | https://tutoraive.vercel.app |
+| **Server** | Render   | https://tutoraive.onrender.com |
+
+---
+
+## Scripts
+
+| Location | Command        | Description        |
+|----------|----------------|--------------------|
+| client   | `npm run dev`  | Start Vite dev server |
+| client   | `npm run build`| Production build   |
+| client   | `npm run preview` | Preview production build |
+| server   | `npm run dev`  | Run with tsx watch |
+| server   | `npm run build`| Compile TypeScript |
+| server   | `npm start`    | Run compiled `dist/app.js` |
+
+---

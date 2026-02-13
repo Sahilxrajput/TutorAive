@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { BookOpen, Twitch, Compass, Bell, Home } from "lucide-react";
 import { motion } from "framer-motion";
 import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
-import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import defaultAvatar from '@/assets/image/avatar.png'
 import useAuth from "@/hooks/useAuth";
@@ -119,7 +119,7 @@ export default function GlobalSideBar() {
                 </nav>
 
                 <div className="flex flex-col items-center gap-8">
-                    <button
+                    {user && <button
                         className={cn(
                             "p-3 rounded-2xl transition-all relative group",
                             NotificationOpen ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted"
@@ -128,7 +128,7 @@ export default function GlobalSideBar() {
                     >
                         <Bell size={20} strokeWidth={2} />
                         <span className="absolute top-3 right-3 w-2 h-2 bg-primary rounded-full border-2 border-background animate-pulse" />
-                    </button>
+                    </button>}
 
                     <NavLink
                         to={"dashboard"}

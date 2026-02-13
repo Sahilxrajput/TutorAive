@@ -15,7 +15,7 @@ const createRateLimiter = (windowMs: number, max: number, message: string) => {
 
 export const globalLimiter = createRateLimiter(
   15 * 60 * 1000,
-  300,
+  150,
   "Too many requests. Please try again later.",
 );
 

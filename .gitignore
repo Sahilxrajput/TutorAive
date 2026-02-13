@@ -36,9 +36,7 @@ server/src/services
 # Environment / Secrets
 # =========================
 .env
-.env.*
-server/.env.*
-client/.env.*
+server/.env
 readme.md
 # =========================
 # Logs & Cache

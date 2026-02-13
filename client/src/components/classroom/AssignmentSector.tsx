@@ -7,7 +7,7 @@ import {
     Sparkles,
 } from "lucide-react";
 import API from "@/lib/api";
-import { useParams } from "react-router-dom";
+import { useOutletContext, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { IAssignment, ISubmission } from "@/types/type";
 import AssignmentCard from "./AssignmentCard";
@@ -15,7 +15,6 @@ import SubmissionCard from "./SubmissionCard";
 import useAuth from "@/hooks/useAuth";
 import { PdfUploadDialog } from "./PdfUploadDialog";
 import SectorHeader from "./SectorHeader";
-import { useClassroom } from "@/hooks/useClassroom";
 
 
 function AssignmentSector() {
@@ -23,9 +22,10 @@ function AssignmentSector() {
     const [pending, setPending] = useState<IAssignment[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const { classroomId } = useParams();
-    const { user  } = useAuth();
-    const { isClassInstructor } = useClassroom();
-
+    const { user } = useAuth();
+    const { isClassInstructor } = useOutletContext<{
+        isClassInstructor: boolean;
+    }>();
 
     useEffect(() => {
         async function fetchAssignments() {

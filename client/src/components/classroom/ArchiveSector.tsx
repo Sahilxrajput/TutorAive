@@ -3,12 +3,11 @@ import SectorHeader from "./SectorHeader";
 import { BookOpen, Download, FileText, Plus, Upload, X } from "lucide-react";
 import { FormEvent, useEffect, useState } from "react";
 import API from "@/lib/api";
-import { useParams } from "react-router-dom";
+import { useOutletContext, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import axios from "axios";
 import { Progress } from "../ui/progress";
 import { IResource } from "@/types/type";
-import { useClassroom } from "@/hooks/useClassroom";
 
 
 const ArchiveSector = () => {
@@ -19,8 +18,10 @@ const ArchiveSector = () => {
     const [file, setFile] = useState<File | null>(null)
     const [files, setFiles] = useState<IResource[]>([]);
 
-    const { isClassInstructor } = useClassroom();
     const { classroomId } = useParams();
+    const { isClassInstructor } = useOutletContext<{
+        isClassInstructor: boolean;
+    }>();
 
     useEffect(() => {
 

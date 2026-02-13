@@ -20,7 +20,7 @@ const Dashboard = lazy(() => import("./pages/Dashboard"));
 const BrowseNotes = lazy(() => import("./pages/BrowseNotes"));
 const BrowseClassroom = lazy(() => import("./pages/BrowseClassroom"));
 const Quiz = lazy(() => import("./pages/Quiz"));
-// const LiveSession = lazy(() => import("./pages/LiveSession"));
+const LiveSession = lazy(() => import("./pages/LiveSession"));
 const SaveNotes = lazy(() => import("./pages/SaveNotes"));
 const Note = lazy(() => import("./pages/Note"));
 const TweetFeed = lazy(() => import("./pages/TweetFeed"));
@@ -64,20 +64,33 @@ const App: React.FC = () => {
 
                         <Route path="quiz" element={<Quiz />} />
 
-                        {/* Browse all classrooms */}
-                        <Route path="classrooms" element={<BrowseClassroom />} />
+                        {/* classroom routes */}
+                        <Route path="classrooms">
+                            <Route index element={<BrowseClassroom />} />
 
-                        {/* Individual classroom */}
-                        <Route path="classrooms/:classroomId" element={
-                            <EnrolledRoute>
-                                <ClassroomPage />
-                            </EnrolledRoute>} />
+                            <Route
+                                path=":classroomId/join/:inviteCode"
+                                element={
+                                    <ProtectedRoute>
+                                        <JoinSector />
+                                    </ProtectedRoute>
+                                }
+                            />
 
-                        <Route path="classrooms/:classroomId/join/:inviteCode" element={
-                            <ProtectedRoute>
-                                <JoinSector />
-                            </ProtectedRoute>
-                        } />
+                            {/* Enrolled protected routes */}
+                            <Route element={<EnrolledRoute />}>
+                                <Route
+                                    path=":classroomId"
+                                    element={<ClassroomPage />}
+                                />
+                                <Route
+                                    path=":classroomId/lecture/live/:lectureId"
+                                    element={<LiveSession />}
+                                />
+                            </Route>
+                        </Route>
+
+
 
                     </Route>
 

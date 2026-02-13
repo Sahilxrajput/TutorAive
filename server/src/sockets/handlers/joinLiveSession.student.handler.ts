@@ -43,6 +43,12 @@ export const handleStudentJoinLiveSession =
     room.addPeer(peer);
     peerManager.add(peer);
 
+    if (!roomId || !userId) {
+      console.error("Invalid attendance data", { roomId, userId });
+      return;
+    }
+
+
     //@todo isenrolled gaurd
     await Attendance.findOneAndUpdate(
       { lecture: roomId, student: userId },

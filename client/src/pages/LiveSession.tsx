@@ -1,31 +1,23 @@
-import useAuth from "@/hooks/useAuth";
 import LiveStudentPage from "@/pages/LiveStudentPage";
 import LiveTeacherPage from "@/pages/LiveTeacherPage";
-import { useParams, Navigate } from "react-router-dom";
+import { useParams, Navigate, useOutletContext } from "react-router-dom";
 
 const LiveSession = () => {
-    const { classroomId, lectureId } = useParams<{ classroomId: string, lectureId: string }>();
-    const { user } = useAuth();
+    const { lectureId } = useParams<{ lectureId: string }>();
+    const { isClassInstructor } = useOutletContext<{
+        isClassInstructor: boolean;
+    }>();
 
-    if (!user) {
-        return <Navigate to="/login" replace />;
-    }
-
-    if (!classroomId || !lectureId) {
+    
+    if (!lectureId) {
         return <Navigate to="/404" replace />;
     }
 
-    // ROLE-BASED CHECK
-    if (user.role === "instructor") {
-        return <LiveTeacherPage />; // LiveTeacherPage
-    }
-
-    if (user.role === "student") {
+    if (isClassInstructor) {
+        return <LiveTeacherPage />;
+    } else {
         return <LiveStudentPage />;
     }
-
-    // fallback for weird roles which I forgot to handle
-    return <Navigate to="/403" replace />;
 };
 
 export default LiveSession;
