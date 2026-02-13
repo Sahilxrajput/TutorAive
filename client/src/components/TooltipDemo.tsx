@@ -3,10 +3,10 @@ import {
     TooltipContent,
     TooltipTrigger,
 } from "@/components/ui/tooltip"
-import type { ComponentType } from "react"
+import { LucideIcon } from "lucide-react"
 
 interface Props {
-    Icon?: ComponentType<any>,
+    Icon?: LucideIcon,
     content: string,
     cn?: string
 }

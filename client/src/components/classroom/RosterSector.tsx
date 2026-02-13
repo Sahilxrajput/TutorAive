@@ -19,7 +19,7 @@ import { IUser } from "@/types/type";
 import API from "@/lib/api";
 import { cn } from "@/lib/utils";
 import TweetAvatar from "../community/TweetAvatar";
-import { useParams } from "react-router-dom";
+import { Outlet, useOutletContext, useParams } from "react-router-dom";
 import SectorHeader from "./SectorHeader";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "../ui/input-group";
 import InvitationDialog from "./InvitationDialog";
@@ -91,7 +91,7 @@ const RosterSector = () => {
         );
     }, [students, searchTerm]);
 
-    return (
+    return (<>
         <div className="min-h-screen p-4 md:p-8 lg:p-12 font-inter relative overflow-hidden ">
             <InvitationDialog isOpen={openAddStudent} onClose={() => setOpenAddStudent(false)} />
             {/* Structural Depth Glows */}
@@ -277,7 +277,9 @@ const RosterSector = () => {
                 </div>
             </div>
         </div>
-    );
+        <Outlet />
+</>
+        );
 };
 
-export default RosterSector
+        export default RosterSector

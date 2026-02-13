@@ -127,7 +127,7 @@ const StudentPage = () => {
                                 ease: [0.19, 1, 0.22, 1],
                                 delay: 0.2
                             }}
-                            src="/hero.png"
+                            src="/boy.png"
                             alt="Student"
                             className="absolute inset-0 w-full h-full object-contain z-30 drop-shadow-[0_40px_80px_rgba(99,102,241,0.3)]"
                         />

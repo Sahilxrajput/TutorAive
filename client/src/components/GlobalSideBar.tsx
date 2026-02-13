@@ -19,7 +19,6 @@ interface Indicator {
 const navItems = [
     { id: "/home", icon: Home, label: "Home" },
     { id: "/classrooms", icon: Compass, label: "Explore" },
-    { id: "/notes", icon: BookOpen, label: "Notes" },
     { id: "/community", icon: Twitch, label: "Feed" },
 ];
 

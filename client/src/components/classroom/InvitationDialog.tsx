@@ -3,10 +3,10 @@ import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
 import { AtSign, Bell, Check, Copy, Download, Mail, QrCode, X, ShieldCheck, UserPlus, Send, Zap, Loader2 } from "lucide-react";
 import { FormEvent, useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useOutletContext, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { notifyError } from "@/utils/notifyError";
-import { useClassroom } from "@/hooks/useClassroom";
+import { IClassroom } from "@/types/type";
 
 const InvitationDialog = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => {
     const [activeMethod, setActiveMethod] = useState("link");
@@ -16,7 +16,7 @@ const InvitationDialog = ({ isOpen, onClose }: { isOpen: boolean, onClose: () =>
     const [invitationLink, setInvitationLink] = useState("");
     const [email, setEmail] = useState("");
     const { classroomId } = useParams();
-    const { classroom } = useClassroom()
+    const { classroom } = useOutletContext<{ classroom: IClassroom }>();
 
     const methods = [
         { id: "link", label: "Link", icon: Copy },

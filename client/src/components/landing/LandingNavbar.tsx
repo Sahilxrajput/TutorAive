@@ -5,8 +5,8 @@ import gsap from "gsap"
 import { ScrollToPlugin } from "gsap/ScrollToPlugin"
 import { useGSAP } from "@gsap/react"
 import GradientHeading from "../GradientHeading"
-import { ThemeToggle } from "../tiptap-templates/simple/theme-toggle"
 import Logo from "../Logo"
+import { ThemeToggle } from "../ThemeToggle"
 
 
 gsap.registerPlugin(ScrollToPlugin)

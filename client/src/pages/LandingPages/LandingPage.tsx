@@ -1,12 +1,14 @@
-import HowItWorks from './HowItWorks';
-import Testimonials from './TestimonialsPage';
-import ContactSection from './ContactPage';
-import Footer from './Footer';
-import { useState } from 'react';
+import { useState, lazy, Suspense } from 'react';
+
 import HeroPage from './HeroPage';
 import LandingNavbar from '@/components/landing/LandingNavbar';
-import Mission from '@/components/landing/Mission';
 
+// lazy sections
+const HowItWorks = lazy(() => import('./HowItWorks'));
+const Mission = lazy(() => import('./Mission'));
+const Testimonials = lazy(() => import('./TestimonialsPage'));
+const ContactSection = lazy(() => import('./ContactPage'));
+const Footer = lazy(() => import('./Footer'));
 
 const LandingPage = () => {
     const [activeTab, setActiveTab] = useState<string>('teacher');
@@ -15,13 +17,16 @@ const LandingPage = () => {
         <div className="min-h-screen bg-background text-neutral-200 selection:bg-indigo-500/30 overflow-x-hidden">
             <LandingNavbar />
             <HeroPage activeTab={activeTab} setActiveTab={setActiveTab} />
-            <HowItWorks  activeTab={activeTab} />
-            <Mission/>
-            <Testimonials />
-            <ContactSection />
-            <Footer />
+
+            <Suspense fallback={null}>
+                <HowItWorks activeTab={activeTab} />
+                <Mission />
+                <Testimonials />
+                <ContactSection />
+                <Footer />
+            </Suspense>
         </div>
     )
 }
 
-export default LandingPage
+export default LandingPage;

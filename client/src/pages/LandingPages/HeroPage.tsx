@@ -1,4 +1,4 @@
-import { type Dispatch, type SetStateAction } from 'react';
+import { lazy, type Dispatch, type SetStateAction } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -16,11 +16,11 @@ import {
     MessagesSquare,
     Sparkles
 } from 'lucide-react';
-import FeatureCard from '@/components/landing/FeatureCard';
-import RevealText from '@/components/animation/revealText';
-import SectionHeading from '@/components/landing/SectionHeading';
-import FloatingBadge from '@/components/animation/FloatingBadge';
-import GradientHeading  from '@/components/GradientHeading';
+const FeatureCard = lazy(() => import('@/components/landing/FeatureCard'));
+const RevealText = lazy(() => import('@/components/animation/revealText'));
+const SectionHeading = lazy(() => import('@/components/landing/SectionHeading'));
+const FloatingBadge = lazy(() => import('@/components/animation/FloatingBadge'));
+const GradientHeading = lazy(() => import('@/components/GradientHeading'));
 
 interface Props {
     setActiveTab: Dispatch<SetStateAction<string>>
@@ -121,7 +121,7 @@ export default function HeroPage({ activeTab, setActiveTab }: Props) {
     ];
 
     return (
-        <div id='hero-scetion'  className="min-h-screen text-foreground bg-background overflow-x-hidden selection:bg-primary/30 pt-12">
+        <div id='hero-scetion' className="min-h-screen text-foreground bg-background overflow-x-hidden selection:bg-primary/30 pt-12">
 
             <section className="relative min-h-screen flex flex-col items-center justify-center px-6 overflow-hidden">
 
@@ -131,7 +131,7 @@ export default function HeroPage({ activeTab, setActiveTab }: Props) {
                         opacity: [0.15, 0.25, 0.15]
                     }}
                     transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[900px] bg-primary blur-[160px] rounded-full -z-10"
+                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-225 h-225 bg-primary blur-[160px] rounded-full z-10"
                 />
 
                 <div className="text-center z-10 space-y-12 max-w-7xl mx-auto">
@@ -158,14 +158,20 @@ export default function HeroPage({ activeTab, setActiveTab }: Props) {
                         </div>
                     </div>
 
-                    <motion.p
+                    {/* <motion.p
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 1, delay: 0.8 }}
+                        className="max-w-3xl mx-auto text-lg md:text-2xl text-muted-foreground font-inter font-light leading-relaxed px-4"  
+                    >
+                        Ditch the static lectures. <GradientHeading className="font-medium font-cinzel italic">TutorAive</GradientHeading> transforms silent digital rooms into vibrant, interactive classrooms that move at the speed of thought.
+                    </motion.p> */}
+
+                    <p
                         className="max-w-3xl mx-auto text-lg md:text-2xl text-muted-foreground font-inter font-light leading-relaxed px-4"
                     >
                         Ditch the static lectures. <GradientHeading className="font-medium font-cinzel italic">TutorAive</GradientHeading> transforms silent digital rooms into vibrant, interactive classrooms that move at the speed of thought.
-                    </motion.p>
+                    </p>
 
                     <motion.div
                         initial={{ opacity: 0, scale: 0.9 }}
@@ -198,7 +204,7 @@ export default function HeroPage({ activeTab, setActiveTab }: Props) {
                         <motion.span
                             initial={{ opacity: 0, letterSpacing: "0.2em" }}
                             whileInView={{ opacity: 1, letterSpacing: "0.4em" }}
-                            className="text-primary font-bold text-[10px] uppercase font-oswald"    
+                            className="text-primary font-bold text-[10px] uppercase font-oswald"
                         >
                             Explore Capabilities
                         </motion.span>
@@ -227,7 +233,7 @@ export default function HeroPage({ activeTab, setActiveTab }: Props) {
                     </div>
                 </div>
 
-                <AnimatePresence mode="wait">
+                {/* <AnimatePresence mode="wait">
                     <motion.div
                         key={activeTab}
                         initial={{ opacity: 0, y: 30 }}
@@ -235,7 +241,10 @@ export default function HeroPage({ activeTab, setActiveTab }: Props) {
                         exit={{ opacity: 0, y: -30 }}
                         transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
                         className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10"
-                    >
+                    > */}
+                        <div
+                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10"
+                >
                         <div className="lg:col-span-2">
                             <SectionHeading
                                 subtitle={activeTab === 'teacher' ? "Educator Suite" : "Learner Experience"}
@@ -248,8 +257,9 @@ export default function HeroPage({ activeTab, setActiveTab }: Props) {
                         {(activeTab === 'teacher' ? teacherFeatures : studentFeatures).map((feature, index) => (
                             <FeatureCard key={`${activeTab}-${index}`} {...feature} />
                         ))}
-                    </motion.div>
-                </AnimatePresence>
+                        </div>
+                    {/* </motion.div> */}
+                {/* </AnimatePresence> */}
             </section>
         </div>
     );

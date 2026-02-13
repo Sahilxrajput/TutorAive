@@ -3,12 +3,11 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App'
 import { BrowserRouter } from 'react-router-dom'
-import { AuthProvider } from './context/authContext'
 import { Toaster } from 'sonner'
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query"
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
-import { SocketProvider } from './context/socketProvider'
-import { SearchProvider } from './context/SearchProvider'
+import { SocketProvider } from './providers/socketProvider'
+import { SearchProvider } from './providers/SearchProvider'
+import { AuthProvider } from './providers/authProvider'
 
 
 const queryClient = new QueryClient()

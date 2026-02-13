@@ -1,33 +1,28 @@
 import { Routes, Route } from "react-router-dom";
 import { lazy, Suspense, useEffect } from "react";
-import { Analytics } from '@vercel/analytics/react';
+import { Analytics } from "@vercel/analytics/react";
 
-// wrappers / layout / loading (keep eager)
-import Layout from "./components/Layout";
 import ProtectedRoute from "./wrapper/ProtectedRoute";
+import EnrolledRoute from "./wrapper/EnrolledRoute";
 import LoadingPage from "./pages/LandingPages/LoadingPage";
 import { initTheme } from "./lib/theme";
-import JoinSector from "./pages/JoinSector";
-import LaunchClassroom from "./pages/LandingPages/LaunchClassroom";
-import EnrolledRoute from "./wrapper/EnrolledRoute";
 
-// lazy pages
-const LandingPage = lazy(
-    () => import("./pages/LandingPages/LandingPage")
-);
+import NotificationProvider from "./providers/NotificationProvider";
+
+// lazy components
+const Layout = lazy(() => import("./components/Layout"));
+const LandingPage = lazy(() => import("./pages/LandingPages/LandingPage"));
 const Home = lazy(() => import("./pages/Home"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
-const BrowseNotes = lazy(() => import("./pages/BrowseNotes"));
 const BrowseClassroom = lazy(() => import("./pages/BrowseClassroom"));
-const Quiz = lazy(() => import("./pages/Quiz"));
 const LiveSession = lazy(() => import("./pages/LiveSession"));
-const SaveNotes = lazy(() => import("./pages/SaveNotes"));
-const Note = lazy(() => import("./pages/Note"));
 const TweetFeed = lazy(() => import("./pages/TweetFeed"));
 const Auth = lazy(() => import("./pages/Auth"));
 const AuthSuccess = lazy(() => import("./pages/AuthSuccess"));
 const PageNotFound = lazy(() => import("./pages/PageNotFound"));
 const ClassroomPage = lazy(() => import("./components/classroom/ClassroomPage"));
+const JoinSector = lazy(() => import("./pages/JoinSector"));
+const LaunchClassroom = lazy(() => import("./pages/LandingPages/LaunchClassroom"));
 
 const App: React.FC = () => {
     useEffect(() => {
@@ -37,47 +32,36 @@ const App: React.FC = () => {
     return (
         <>
             <Analytics />
+
             <Suspense fallback={<LoadingPage />}>
                 <Routes>
+                    {/* Public routes */}
                     <Route path="/" element={<LandingPage />} />
+                    <Route path="auth" element={<Auth />} />
+                    <Route path="auth/success" element={<AuthSuccess />} />
 
-                    <Route element={<Layout />}>
+                    {/* Protected area */}
+                    <Route
+                        element={
+                            <ProtectedRoute>
+                                <NotificationProvider>
+                                    <Layout />
+                                </NotificationProvider>
+                            </ProtectedRoute>
+                        }
+                    >
                         <Route path="/home" element={<Home />} />
-                        <Route path="community" element={<TweetFeed />} />
+                        <Route path="feed" element={<TweetFeed />} />
+                        <Route path="dashboard" element={<Dashboard />} />
                         <Route path="launch-classroom" element={<LaunchClassroom />} />
 
-                        <Route path="notes">
-                            <Route index element={<BrowseNotes />} />
-                            <Route path="new" element={<SaveNotes />} />
-                            <Route path=":noteId" element={<Note />} />
-                        </Route>
-
-                        {/* Protected dashboard */}
-                        <Route
-                            path="dashboard"
-                            element={
-                                <ProtectedRoute>
-                                    <Dashboard />
-                                </ProtectedRoute>
-                            }
-                        />
-
-                        <Route path="quiz" element={<Quiz />} />
-
-                        {/* classroom routes */}
                         <Route path="classrooms">
                             <Route index element={<BrowseClassroom />} />
-
                             <Route
                                 path=":classroomId/join/:inviteCode"
-                                element={
-                                    <ProtectedRoute>
-                                        <JoinSector />
-                                    </ProtectedRoute>
-                                }
+                                element={<JoinSector />}
                             />
 
-                            {/* Enrolled protected routes */}
                             <Route element={<EnrolledRoute />}>
                                 <Route
                                     path=":classroomId"
@@ -89,20 +73,13 @@ const App: React.FC = () => {
                                 />
                             </Route>
                         </Route>
-
-
-
                     </Route>
 
-                    <Route path="auth" element={<Auth />} />
-                    <Route path="auth/success" element={<AuthSuccess />} />
                     <Route path="*" element={<PageNotFound />} />
                 </Routes>
-            </Suspense >
+            </Suspense>
         </>
-
     );
 };
 
 export default App;
-

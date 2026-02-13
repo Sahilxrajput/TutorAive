@@ -15,7 +15,7 @@ const StudentRow = ({ student }: { student: StudentProps }) => (
         <td className="py-2 px-4 flex items-center gap-2">
             <img
                 src={student.student.avatar}
-                alt={student.student.name}
+                alt={student.student.name || "User"}
                 className="w-8 h-8 rounded-full"
             />
             {student.student.name}

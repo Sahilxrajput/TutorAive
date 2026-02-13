@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import {
-    BookOpen,
     House,
     Twitch,
     UserRound,
@@ -12,7 +11,6 @@ import { useNavigate } from "react-router-dom";
 const items = [
     { id: "/home", icon: House },
     { id: "/classrooms", icon: Compass },
-    { id: "/notes", icon: BookOpen },
     { id: "/community", icon: Twitch },
     { id: "/dashboard", icon: UserRound },
 ];

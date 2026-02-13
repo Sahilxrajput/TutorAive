@@ -1,10 +1,11 @@
 import { motion } from 'framer-motion';
 import { Zap, BarChart3, Play, Monitor, UserCheck, MessageCircleQuestion, FileText, Sparkles } from 'lucide-react';
-import RevealText from '@/components/animation/revealText';
-import CTACard from '@/components/landing/CTACard';
-import StepCard from '@/components/landing/StepCard';
-import StudentPage from './StudentPage';
-import TeacherPage from './TeacherPage';
+import { lazy } from 'react';
+const RevealText = lazy(() => import('@/components/animation/revealText'));
+const CTACard = lazy(() => import('@/components/landing/CTACard'));
+const StepCard = lazy(() => import('@/components/landing/StepCard'));
+const StudentPage = lazy(() => import('./StudentPage'));
+const TeacherPage = lazy(() => import('./TeacherPage'));
 
 const teacherSteps = [
     {
