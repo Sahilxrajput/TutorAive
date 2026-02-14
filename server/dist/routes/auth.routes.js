@@ -8,13 +8,24 @@ const passport_1 = __importDefault(require("passport"));
 const auth_middleware_1 = __importDefault(require("../middlewares/auth.middleware"));
 const auth_controller_1 = require("../controllers/auth.controller");
 const router = (0, express_1.Router)();
-// google route
-router.get("/google", passport_1.default.authenticate("google", {
-    scope: ["profile", "email"],
-    session: false,
-}));
+router.get("/google", (req, res, next) => {
+    let role = req.query.role;
+    if (Array.isArray(role))
+        role = role[0];
+    if (typeof role !== "string")
+        role = "student";
+    passport_1.default.authenticate("google", {
+        scope: ["profile", "email"],
+        session: false,
+        state: role, // send role through OAuth
+    })(req, res, next);
+});
 // google callback route
-router.get("/callback/google", passport_1.default.authenticate("google", {
+router.get("/callback/google", (req, _res, next) => {
+    // extract role from state
+    req.role = req.query.state || "student";
+    next();
+}, passport_1.default.authenticate("google", {
     session: false,
     failureRedirect: "/login/failed",
 }), auth_controller_1.googleCallback);

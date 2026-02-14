@@ -14,13 +14,13 @@ const createRateLimiter = (windowMs: number, max: number, message: string) => {
 };
 
 export const globalLimiter = createRateLimiter(
-  15 * 60 * 1000,
+  10 * 60 * 1000,
   150,
   "Too many requests. Please try again later.",
 );
 
 export const authLimiter = createRateLimiter(
-  15 * 60 * 1000,
+  10 * 60 * 1000,
   20,
   "Too many auth attempts. Try again later.",
 );

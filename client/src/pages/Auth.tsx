@@ -31,10 +31,12 @@ const App = () => {
     const [authMode, setAuthMode] = useState<string>('signin');
     const [formData, setFormData] = useState(initialFormState)
     const { signin, refreshUser, signup, loading } = useAuth()
+    const [localLoading, setLocalLoading] = useState(false)
     const navigate = useNavigate();
 
     const handleAuth = async (e: React.FormEvent) => {
         e.preventDefault();
+        setLocalLoading(true);
         try {
             if (authMode === "signup") {
                 if (!formData.role.trim()) {
@@ -53,6 +55,8 @@ const App = () => {
         } catch (error) {
             console.log(error)
             notifyError(error);
+        } finally {
+            setLocalLoading(false);
         }
     };
 
@@ -67,15 +71,26 @@ const App = () => {
     };
 
     const GoogleAuth = () => {
-        window.location.href = `${import.meta.env.VITE_API_URL}/auth/google`;
+        try {
+            if (!formData.role.trim()) {
+                toast.info("select user role")
+                return;
+            }
+            setLocalLoading(true)
+            window.location.href = `${import.meta.env.VITE_API_URL}/auth/google?role=${formData.role}`;
+        } catch (error) {
+            notifyError(error)
+        } finally {
+            setLocalLoading(false);
+        }
     };
 
     return (
         <div className="min-h-screen bg-background text-foreground flex items-center justify-center p-4 md:p-8 font-sans selection:bg-primary/20">
             {/* Background Decorative Elements */}
             <div className="fixed inset-0 overflow-hidden pointer-events-none">
-                <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-primary/5 rounded-full blur-[120px]" />
-                <div className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] bg-primary/10 rounded-full blur-[120px]" />
+                <div className="absolute top-[-10%] right-[-10%] w-125 h-125 bg-primary/5 rounded-full blur-[120px]" />
+                <div className="absolute bottom-[-10%] left-[-10%] w-125 h-125 bg-primary/10 rounded-full blur-[120px]" />
             </div>
 
             <motion.div
@@ -184,8 +199,10 @@ const App = () => {
 
                     {/* Social Gateway */}
                     <button
+                        className="w-full flex items-center justify-center gap-4 py-4 rounded-3xl border border-border hover:bg-muted/50 transition-all group mb-8"
+                        disabled={loading || localLoading}
                         onClick={GoogleAuth}
-                        className="w-full flex items-center justify-center gap-4 py-4 rounded-3xl border border-border hover:bg-muted/50 transition-all group mb-8">
+                    >
                         <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-md border border-slate-100 transition-transform group-hover:scale-110">
                             <Chrome className="w-4 h-4 text-slate-700" />
                         </div>
@@ -283,13 +300,13 @@ const App = () => {
                             whileHover={{ scale: 1.01 }}
                             whileTap={{ scale: 0.99 }}
                             type="submit"
-                            disabled={loading}
-                            className={cn("w-full py-5 rounded-[1.5rem] bg-primary text-primary-foreground font-black text-xs tracking-[0.3em] shadow-2xl shadow-primary/20 transition-all flex items-center justify-center gap-4 group uppercase",
+                            disabled={loading || localLoading}
+                            className={cn("w-full py-5 rounded-3xl bg-primary text-primary-foreground font-black text-xs tracking-[0.3em] shadow-2xl shadow-primary/20 transition-all flex items-center justify-center gap-4 group uppercase",
                                 loading ?
                                     "opacity-70 cursor-not-allowed" :
                                     "hover:brightness-110")}
                         >
-                            {loading ? (
+                            {loading || localLoading ? (
                                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                             ) : (
                                 <>

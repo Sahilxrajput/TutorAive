@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { lazy, useEffect, useState } from "react";
 import { AnimatePresence } from "framer-motion";
 import {
     CheckCircle2,
@@ -10,11 +10,11 @@ import API from "@/lib/api";
 import { useOutletContext, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { IAssignment, ISubmission } from "@/types/type";
-import AssignmentCard from "./AssignmentCard";
-import SubmissionCard from "./SubmissionCard";
 import useAuth from "@/hooks/useAuth";
-import { PdfUploadDialog } from "./PdfUploadDialog";
-import SectorHeader from "./SectorHeader";
+const AssignmentCard = lazy(() => import("./AssignmentCard"));
+const SubmissionCard = lazy(() => import("./SubmissionCard"));
+const PdfUploadDialog  = lazy(() => import("./PdfUploadDialog"));
+const SectorHeader = lazy(() => import("./SectorHeader"));
 
 
 function AssignmentSector() {

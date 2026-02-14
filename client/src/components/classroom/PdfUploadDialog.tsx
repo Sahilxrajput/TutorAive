@@ -25,7 +25,7 @@ interface Props {
     onComplete?: (id: string) => void
 }
 
-export function PdfUploadDialog({ buttonText, title, cn, id, type, Icon, onComplete }: Props) {
+export default function PdfUploadDialog({ buttonText, title, cn, id, type, Icon, onComplete }: Props) {
     const [open, setOpen] = useState(false)
     const [file, setFile] = useState<File | null>(null)
     const [description, setDescription] = useState("")

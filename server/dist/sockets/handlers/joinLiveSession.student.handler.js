@@ -41,6 +41,10 @@ const handleStudentJoinLiveSession = (socket) => (_a, cb_1) => __awaiter(void 0,
     });
     room.addPeer(peer);
     PeerManager_1.peerManager.add(peer);
+    if (!roomId || !userId) {
+        console.error("Invalid attendance data", { roomId, userId });
+        return;
+    }
     //@todo isenrolled gaurd
     yield attendence_model_1.default.findOneAndUpdate({ lecture: roomId, student: userId }, {
         $setOnInsert: {

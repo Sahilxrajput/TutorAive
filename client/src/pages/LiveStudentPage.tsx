@@ -1,15 +1,13 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { lazy, useCallback, useEffect, useRef, useState } from "react";
 import useAuth from "@/hooks/useAuth";
 import useSocketContext from "@/hooks/useSocketContext";
 import { Device } from "mediasoup-client";
+import { toast } from "sonner";
 import type { AppData, Consumer, DtlsParameters, RtpCapabilities, RtpParameters, Transport } from "mediasoup-client/types";
 import { useNavigate, useParams } from "react-router-dom";
-import SidebarTabs from "@/components/classroom/SidebarTabs";
-import VideoStage from "@/components/classroom/VideoStage";
-import ControlBarForStudent from "./ControlBarForStudent";
-import { toast } from "sonner";
-
-
+const SidebarTabs = lazy(() => import("@/components/classroom/SidebarTabs"));
+const VideoStage = lazy(() => import("@/components/classroom/VideoStage"));
+const ControlBarForStudent = lazy(() => import("./ControlBarForStudent"));
 interface IJoinRoom {
     rtpCapabilities: RtpCapabilities,
     error?: string
@@ -105,7 +103,7 @@ const LiveStudentPage = () => {
     }
 
     const createRecvTransport = async () => {
-        if (!socket || !deviceRef.current) return 
+        if (!socket || !deviceRef.current) return
 
         const downTransport = await socket.emitWithAck('createWebRtcTransport', { isSender: false, roomId: lectureId })
         if (downTransport.error) {
@@ -130,7 +128,7 @@ const LiveStudentPage = () => {
 
                 // Tell the transport that parameters were transmitted.
                 cb()
-            } catch  {
+            } catch {
                 // console.log(error)
             }
         })

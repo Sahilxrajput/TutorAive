@@ -33,10 +33,15 @@ const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const isProduction = process.env.NODE_ENV === "production";
 const googleCallback = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const user = req.user;
+    const role = req.role || "student";
     const refreshToken = (0, generateAuthToken_1.generateRefreshToken)(user);
     const accessToken = (0, generateAuthToken_1.generateAccessToken)(user);
     // store hashed refresh token
     user.refreshToken = yield bcrypt_1.default.hash(refreshToken, 12);
+    // if new user, set role
+    if (!user.role) {
+        user.role = role;
+    }
     yield user.save();
     res.cookie("refreshToken", refreshToken, {
         httpOnly: true,
@@ -152,7 +157,7 @@ const signin = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.signin = signin;
-const loginfailed = (req, res) => {
+const loginfailed = (_req, res) => {
     return res.status(401).json({ success: false, message: "Login failed" });
 };
 exports.loginfailed = loginfailed;
@@ -273,6 +278,7 @@ const forgotPassword = (req, res) => __awaiter(void 0, void 0, void 0, function*
 exports.forgotPassword = forgotPassword;
 const refreshAccessToken = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const token = req.cookies.refreshToken;
+    console.log("Incoming cookies:", req.cookies);
     if (!token) {
         return res.status(401).json({ message: "No refresh token" });
     }

@@ -15,13 +15,20 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const passport_1 = __importDefault(require("passport"));
 const passport_google_oauth20_1 = require("passport-google-oauth20");
 const user_model_1 = __importDefault(require("../models/user.model"));
+const ALLOWED_ROLES = ["student", "instructor"];
 passport_1.default.use(new passport_google_oauth20_1.Strategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     callbackURL: `${process.env.SERVER_URL}/auth/callback/google`,
-}, (_authToken, _refreshToken, profile, done) => __awaiter(void 0, void 0, void 0, function* () {
+    passReqToCallback: true, // Required to access the state
+}, (req, _authToken, _refreshToken, profile, done) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b, _c, _d;
     try {
+        const state = req.query.state;
+        const roleFromState = typeof state === "string" ? state : Array.isArray(state) ? state[0] : undefined;
+        const assignedRole = roleFromState && ALLOWED_ROLES.includes(roleFromState)
+            ? roleFromState
+            : "student";
         let user = yield user_model_1.default.findOne({ oauthId: profile.id });
         if (!user) {
             user = yield user_model_1.default.create({
@@ -31,6 +38,7 @@ passport_1.default.use(new passport_google_oauth20_1.Strategy({
                 oauthId: profile.id,
                 profilePicture: (_c = profile.photos) === null || _c === void 0 ? void 0 : _c[0].value,
                 email: (_d = profile.emails) === null || _d === void 0 ? void 0 : _d[0].value,
+                role: assignedRole,
             });
         }
         done(null, user);

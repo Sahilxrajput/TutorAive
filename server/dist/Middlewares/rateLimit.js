@@ -17,6 +17,6 @@ const createRateLimiter = (windowMs, max, message) => {
         },
     });
 };
-exports.globalLimiter = createRateLimiter(15 * 60 * 1000, 150, "Too many requests. Please try again later.");
-exports.authLimiter = createRateLimiter(15 * 60 * 1000, 20, "Too many auth attempts. Try again later.");
+exports.globalLimiter = createRateLimiter(10 * 60 * 1000, 150, "Too many requests. Please try again later.");
+exports.authLimiter = createRateLimiter(10 * 60 * 1000, 20, "Too many auth attempts. Try again later.");
 exports.paymentLimiter = createRateLimiter(10 * 60 * 1000, 10, "Too many payment requests. Try again later.");

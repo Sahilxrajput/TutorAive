@@ -51,7 +51,7 @@ const App: React.FC = () => {
                         }
                     >
                         <Route path="/home" element={<Home />} />
-                        <Route path="feed" element={<TweetFeed />} />
+                        <Route path="community" element={<TweetFeed />} />
                         <Route path="dashboard" element={<Dashboard />} />
                         <Route path="launch-classroom" element={<LaunchClassroom />} />
 

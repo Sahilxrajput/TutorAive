@@ -19,7 +19,6 @@ const refreshAccessToken = async () => {
     `${import.meta.env.VITE_API_URL}/auth/refresh`,
     { withCredentials: true },
   );
-  console.log("refersh", data);
   localStorage.setItem("accessToken", data.accessToken);
   return data.accessToken;
 };

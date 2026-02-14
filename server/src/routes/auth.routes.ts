@@ -15,18 +15,26 @@ import {
 
 const router = Router();
 
-// google route
-router.get(
-  "/google",
+router.get("/google", (req, res, next) => {
+  let role = req.query.role;
+  if (Array.isArray(role)) role = role[0];
+  if (typeof role !== "string") role = "student";
+
   passport.authenticate("google", {
     scope: ["profile", "email"],
     session: false,
-  }),
-);
+    state: role, // send role through OAuth
+  })(req, res, next);
+});
 
 // google callback route
 router.get(
   "/callback/google",
+  (req, _res, next) => {
+    // extract role from state
+    (req as any).role = req.query.state || "student";
+    next();
+  },
   passport.authenticate("google", {
     session: false,
     failureRedirect: "/login/failed",

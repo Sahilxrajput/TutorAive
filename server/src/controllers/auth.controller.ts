@@ -15,12 +15,17 @@ const isProduction = process.env.NODE_ENV === "production";
 
 const googleCallback = async (req: Request, res: Response) => {
   const user = req.user as HydratedDocument<IUser>;
+  const role = (req as any).role || "student";
 
   const refreshToken = generateRefreshToken(user);
   const accessToken = generateAccessToken(user);
 
   // store hashed refresh token
   user.refreshToken = await bcrypt.hash(refreshToken, 12);
+  // if new user, set role
+  if (!user.role) {
+    user.role = role;
+  }
   await user.save();
 
   res.cookie("refreshToken", refreshToken, {
@@ -159,7 +164,7 @@ const signin = async (req: Request, res: Response) => {
   }
 };
 
-const loginfailed = (req: Request, res: Response) => {
+const loginfailed = (_req: Request, res: Response) => {
   return res.status(401).json({ success: false, message: "Login failed" });
 };
 
@@ -305,6 +310,7 @@ const forgotPassword = async (req: Request, res: Response) => {
 
 const refreshAccessToken = async (req: Request, res: Response) => {
   const token = req.cookies.refreshToken;
+  console.log("Incoming cookies:", req.cookies);
 
   if (!token) {
     return res.status(401).json({ message: "No refresh token" });

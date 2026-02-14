@@ -1,9 +1,9 @@
-import { forwardRef } from "react";
+import { forwardRef, lazy } from "react";
 import { motion } from 'framer-motion'
 import { cn } from "@/lib/utils";
 import { Calendar, CheckCircle2, ExternalLink, Orbit, ShieldCheck } from "lucide-react";
 import { IAssignment } from "@/types/type";
-import { PdfUploadDialog } from "./PdfUploadDialog";
+const PdfUploadDialog = lazy(() => import("./PdfUploadDialog"));
 
 type AssignmentCardProps = {
     item: IAssignment;

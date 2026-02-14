@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { lazy, useEffect, useRef, useState } from 'react'
 import { Device } from 'mediasoup-client'
 import type {
     AppData,
@@ -13,9 +13,9 @@ import useSocketContext from '@/hooks/useSocketContext';
 import useAuth from '@/hooks/useAuth';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
-import VideoStage from '@/components/classroom/VideoStage';
-import ControlsBar from '@/components/classroom/ControlsBar';
-import SidebarTabs from '@/components/classroom/SidebarTabs';
+const ControlsBar = lazy(() => import('@/components/classroom/ControlsBar'));
+const SidebarTabs = lazy(() => import("@/components/classroom/SidebarTabs"));
+const VideoStage = lazy(() => import("@/components/classroom/VideoStage"));
 
 
 interface IRoomCreate {
@@ -245,7 +245,7 @@ const LiveTeacherPage = () => {
         }
 
 
-        if (!deviceRef.current) return 
+        if (!deviceRef.current) return
         const producerTransport = deviceRef.current.createSendTransport(upTransport); //@remind ? think should i pass a new object with param properties
 
 
@@ -258,7 +258,7 @@ const LiveTeacherPage = () => {
                 })
 
                 if (res?.error) {
-                    return 
+                    return
                 }
                 //@todo Tell the transport that parameters were transmitted.
                 cb()
