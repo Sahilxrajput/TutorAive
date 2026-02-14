@@ -46,7 +46,7 @@ const googleCallback = (req, res) => __awaiter(void 0, void 0, void 0, function*
     res.cookie("refreshToken", refreshToken, {
         httpOnly: true,
         secure: isProduction,
-        sameSite: isProduction ? "none" : "lax",
+        sameSite: "lax",
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
     // redirect with no tokens in URL
@@ -92,7 +92,7 @@ const signup = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         res.cookie("refreshToken", refreshToken, {
             httpOnly: true,
             secure: isProduction,
-            sameSite: isProduction ? "none" : "lax",
+            sameSite: "lax",
             maxAge: 7 * 24 * 60 * 60 * 1000,
         });
         res.status(201).json({
@@ -138,9 +138,9 @@ const signin = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         // 3️. Send refresh token as httpOnly cookie
         res.cookie("refreshToken", refreshToken, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "strict",
-            maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+            secure: isProduction,
+            sameSite: "lax",
+            maxAge: 7 * 24 * 60 * 60 * 1000,
         });
         // 4️. Remove sensitive fields
         const _a = user.toObject(), { password: _, refreshToken: __ } = _a, userData = __rest(_a, ["password", "refreshToken"]);
@@ -179,12 +179,12 @@ const signout = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     res.clearCookie("refreshToken", {
         httpOnly: true,
         secure: isProduction,
-        sameSite: isProduction ? "none" : "lax",
+        sameSite: "lax",
     });
     res.clearCookie("accessToken", {
         httpOnly: true,
         secure: isProduction,
-        sameSite: isProduction ? "none" : "lax",
+        sameSite: "lax",
     });
     return res.status(200).json({
         message: "Logged out successfully",
@@ -208,7 +208,7 @@ const deleteAccount = (req, res) => __awaiter(void 0, void 0, void 0, function* 
         res.clearCookie("refreshToken", {
             httpOnly: true,
             secure: isProduction,
-            sameSite: isProduction ? "none" : "lax",
+            sameSite: "lax",
         });
         res.status(200).json({ message: "Logged out successfully" });
         return res.status(200).json({ message: "User deleted successfully" });
