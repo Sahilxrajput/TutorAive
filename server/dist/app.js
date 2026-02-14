@@ -33,6 +33,8 @@ const PORT = process.env.PORT || 3000;
 const app = (0, express_1.default)();
 const server = http_1.default.createServer(app);
 (0, sockets_1.initSocket)(server);
+// app is running behind a proxy. Trust the headers the proxy sends.
+app.set("trust proxy", 1);
 app.use((0, cors_1.default)({
     origin: process.env.CLIENT_URL, // your frontend URL
     credentials: true,

@@ -19,7 +19,7 @@ const googleCallback = async (req: Request, res: Response) => {
 
   // set role only if new user or role not assigned
   if (!user.role) {
-    user.role = role;
+    user.role = role;   
   }
 
   // generate tokens

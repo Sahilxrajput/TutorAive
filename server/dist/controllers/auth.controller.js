@@ -34,22 +34,25 @@ const isProduction = process.env.NODE_ENV === "production";
 const googleCallback = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const user = req.user;
     const role = req.role || "student";
+    // set role only if new user or role not assigned
+    if (!user.role) {
+        user.role = role;
+    }
+    // generate tokens
     const refreshToken = (0, generateAuthToken_1.generateRefreshToken)(user);
     const accessToken = (0, generateAuthToken_1.generateAccessToken)(user);
     // store hashed refresh token
     user.refreshToken = yield bcrypt_1.default.hash(refreshToken, 12);
-    // if new user, set role
-    if (!user.role) {
-        user.role = role;
-    }
     yield user.save();
+    // set refresh cookie
     res.cookie("refreshToken", refreshToken, {
         httpOnly: true,
-        secure: isProduction,
-        sameSite: "none",
-        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+        secure: isProduction, // force true in production
+        sameSite: "none", // required for cross-site OAuth
+        path: "/",
+        maxAge: 7 * 24 * 60 * 60 * 1000,
     });
-    // redirect with no tokens in URL
+    // redirect to frontend
     res.redirect(`${process.env.CLIENT_URL}/auth/success?accessToken=${accessToken}`);
 });
 exports.googleCallback = googleCallback;
