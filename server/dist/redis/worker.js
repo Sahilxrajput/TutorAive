@@ -176,20 +176,25 @@ function createRedisWorker() {
                 throw new Error("jobname mismatch");
         }
     }), {
-        connection: {
-            host: process.env.REDIS_HOST,
-            port: Number(process.env.REDIS_PORT),
-            password: process.env.REDIS_PASSWORD,
-        },
+        connection: { url: process.env.REDIS_URL },
+        //   connection: {
+        //     host: process.env.REDIS_HOST,
+        //     port: Number(process.env.REDIS_PORT),
+        //     password: process.env.REDIS_PASSWORD,
+        //   },
         concurrency: 2,
     });
-    worker.on("completed", (job) => __awaiter(this, void 0, void 0, function* () {
-        console.log(`Job ${job.id} completed`);
-    }));
-    worker.on("active", (job) => {
-        var _a, _b;
-        return console.log("[redis worker] active job : ", (_b = (_a = job.data.tweetId) !== null && _a !== void 0 ? _a : job.data.lectureId) !== null && _b !== void 0 ? _b : job.data.classroomId);
-    });
-    worker.on("failed", (job, err) => console.error(`Job ${job === null || job === void 0 ? void 0 : job.id} failed:`, err));
-    worker.on("error", (err) => console.error("Worker error:", err));
+    //   worker.on("completed", async (job) => {
+    //     console.log(`Job ${job.id} completed`);
+    //   });
+    //   worker.on("active", (job) =>
+    //     console.log(
+    //       "[redis worker] active job : ",
+    //       job.data.tweetId ?? job.data.lectureId ?? job.data.classroomId,
+    //     ),
+    //   );
+    //   worker.on("failed", (job, err) =>
+    //     console.error(`Job ${job?.id} failed:`, err),
+    //   );
+    //   worker.on("error", (err) => console.error("Worker error:", err));
 }

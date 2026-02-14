@@ -13,9 +13,10 @@ exports.addTweetNotificationJob = exports.addClassNotificationJob = exports.addA
 const bullmq_1 = require("bullmq");
 exports.notificationQueue = new bullmq_1.Queue("notifications", {
     connection: {
-        host: process.env.REDIS_HOST,
-        port: Number(process.env.REDIS_PORT),
-        password: process.env.REDIS_PASSWORD,
+        url: process.env.REDIS_URL,
+        // host: process.env.REDIS_HOST,
+        // port: Number(process.env.REDIS_PORT),
+        // password: process.env.REDIS_PASSWORD,
     },
 });
 // connection
@@ -95,4 +96,6 @@ const addTweetNotificationJob = (_a) => __awaiter(void 0, [_a], void 0, function
     console.log("added in tweet notification queue");
 });
 exports.addTweetNotificationJob = addTweetNotificationJob;
-exports.notificationQueue.on("waiting", (jobId) => console.log(`class Job ${jobId} is waiting`));
+// notificationQueue.on("waiting", (jobId) =>
+//   console.log(`class Job ${jobId} is waiting`),
+// );

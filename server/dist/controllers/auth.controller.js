@@ -46,7 +46,7 @@ const googleCallback = (req, res) => __awaiter(void 0, void 0, void 0, function*
     res.cookie("refreshToken", refreshToken, {
         httpOnly: true,
         secure: isProduction,
-        sameSite: "lax",
+        sameSite: "none",
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
     // redirect with no tokens in URL
@@ -92,7 +92,7 @@ const signup = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         res.cookie("refreshToken", refreshToken, {
             httpOnly: true,
             secure: isProduction,
-            sameSite: "lax",
+            sameSite: "none",
             maxAge: 7 * 24 * 60 * 60 * 1000,
         });
         res.status(201).json({
@@ -139,7 +139,7 @@ const signin = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         res.cookie("refreshToken", refreshToken, {
             httpOnly: true,
             secure: isProduction,
-            sameSite: "lax",
+            sameSite: "none",
             maxAge: 7 * 24 * 60 * 60 * 1000,
         });
         // 4️. Remove sensitive fields
@@ -179,12 +179,12 @@ const signout = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     res.clearCookie("refreshToken", {
         httpOnly: true,
         secure: isProduction,
-        sameSite: "lax",
+        sameSite: "none",
     });
     res.clearCookie("accessToken", {
         httpOnly: true,
         secure: isProduction,
-        sameSite: "lax",
+        sameSite: "none",
     });
     return res.status(200).json({
         message: "Logged out successfully",
@@ -208,7 +208,7 @@ const deleteAccount = (req, res) => __awaiter(void 0, void 0, void 0, function* 
         res.clearCookie("refreshToken", {
             httpOnly: true,
             secure: isProduction,
-            sameSite: "lax",
+            sameSite: "none",
         });
         res.status(200).json({ message: "Logged out successfully" });
         return res.status(200).json({ message: "User deleted successfully" });

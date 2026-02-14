@@ -8,9 +8,10 @@ import {
 
 export const notificationQueue = new Queue("notifications", {
   connection: {
-    host: process.env.REDIS_HOST,
-    port: Number(process.env.REDIS_PORT),
-    password: process.env.REDIS_PASSWORD,
+      url: process.env.REDIS_URL!,
+      // host: process.env.REDIS_HOST,
+    // port: Number(process.env.REDIS_PORT),
+    // password: process.env.REDIS_PASSWORD,
   },
 });
 // connection
@@ -116,6 +117,6 @@ export const addTweetNotificationJob = async ({
   console.log("added in tweet notification queue");
 };
 
-notificationQueue.on("waiting", (jobId) =>
-  console.log(`class Job ${jobId} is waiting`),
-);
+// notificationQueue.on("waiting", (jobId) =>
+//   console.log(`class Job ${jobId} is waiting`),
+// );

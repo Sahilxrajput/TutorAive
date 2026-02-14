@@ -10,7 +10,6 @@ import {
 } from "../sockets/emitters/notification.emitter";
 import { ILecture } from "../types/type";
 
-
 export function createRedisWorker() {
   const worker = new Worker(
     "notifications",
@@ -203,27 +202,28 @@ export function createRedisWorker() {
       }
     },
     {
-      connection: {
-        host: process.env.REDIS_HOST,
-        port: Number(process.env.REDIS_PORT),
-        password: process.env.REDIS_PASSWORD,
-      },
+      connection: { url: process.env.REDIS_URL! },
+      //   connection: {
+      //     host: process.env.REDIS_HOST,
+      //     port: Number(process.env.REDIS_PORT),
+      //     password: process.env.REDIS_PASSWORD,
+      //   },
       concurrency: 2,
     },
   );
 
-  worker.on("completed", async (job) => {
-    console.log(`Job ${job.id} completed`);
-  });
+  //   worker.on("completed", async (job) => {
+  //     console.log(`Job ${job.id} completed`);
+  //   });
 
-  worker.on("active", (job) =>
-    console.log(
-      "[redis worker] active job : ",
-      job.data.tweetId ?? job.data.lectureId ?? job.data.classroomId,
-    ),
-  );
-  worker.on("failed", (job, err) =>
-    console.error(`Job ${job?.id} failed:`, err),
-  );
-  worker.on("error", (err) => console.error("Worker error:", err));
+  //   worker.on("active", (job) =>
+  //     console.log(
+  //       "[redis worker] active job : ",
+  //       job.data.tweetId ?? job.data.lectureId ?? job.data.classroomId,
+  //     ),
+  //   );
+  //   worker.on("failed", (job, err) =>
+  //     console.error(`Job ${job?.id} failed:`, err),
+  //   );
+  //   worker.on("error", (err) => console.error("Worker error:", err));
 }
