@@ -38,6 +38,8 @@ const server: HTTPServer = http.createServer(app);
 
 initSocket(server);
 
+// app is running behind a proxy. Trust the headers the proxy sends.
+app.set("trust proxy", 1);
 app.use(
   cors({
     origin: process.env.CLIENT_URL, // your frontend URL

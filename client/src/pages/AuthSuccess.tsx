@@ -13,8 +13,11 @@ const AuthSuccess: React.FC = () => {
             const accessToken = searchParams.get("accessToken")
             if (!accessToken) return;
             localStorage.setItem("accessToken", accessToken)
-            await refreshUser();
+            
+            // small delay ensures cookie is stored
+            await new Promise((r) => setTimeout(r, 100));
 
+            await refreshUser();
             navigate("/dashboard");
         })();
     }, [refreshUser, searchParams, navigate]);

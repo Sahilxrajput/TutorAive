@@ -17,29 +17,34 @@ const googleCallback = async (req: Request, res: Response) => {
   const user = req.user as HydratedDocument<IUser>;
   const role = (req as any).role || "student";
 
+  // set role only if new user or role not assigned
+  if (!user.role) {
+    user.role = role;
+  }
+
+  // generate tokens
   const refreshToken = generateRefreshToken(user);
   const accessToken = generateAccessToken(user);
 
   // store hashed refresh token
   user.refreshToken = await bcrypt.hash(refreshToken, 12);
-  // if new user, set role
-  if (!user.role) {
-    user.role = role;
-  }
   await user.save();
 
+  // set refresh cookie
   res.cookie("refreshToken", refreshToken, {
     httpOnly: true,
-    secure: isProduction,
-    sameSite: "none",
-    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    secure: isProduction, // force true in production
+    sameSite: "none", // required for cross-site OAuth
+    path: "/",
+    maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 
-  // redirect with no tokens in URL
+  // redirect to frontend
   res.redirect(
     `${process.env.CLIENT_URL}/auth/success?accessToken=${accessToken}`,
   );
 };
+
 
 const signup = async (req: Request, res: Response) => {
   try {
