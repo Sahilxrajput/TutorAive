@@ -73,17 +73,19 @@ const App = () => {
     const GoogleAuth = () => {
         try {
             if (!formData.role.trim()) {
-                toast.info("select user role")
+                toast.info("select user role");
                 return;
             }
-            setLocalLoading(true)
-            window.location.href = `${import.meta.env.VITE_API_URL}/auth/google?role=${formData.role}`;
+            setLocalLoading(true);
+
+            window.location.href = `/api/auth/google?role=${formData.role}`;
         } catch (error) {
-            notifyError(error)
+            notifyError(error);
         } finally {
             setLocalLoading(false);
         }
     };
+
 
     return (
         <div className="min-h-screen bg-background text-foreground flex items-center justify-center p-4 md:p-8 font-sans selection:bg-primary/20">
