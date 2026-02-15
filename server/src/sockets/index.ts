@@ -2,7 +2,7 @@ import { Server as HttpServer } from "http";
 import { Server, Socket } from "socket.io";
 import { socketAuthMiddleware } from "../middlewares/socketAuth";
 import { Consumer, Transport } from "mediasoup/node/lib/types";
-import Attendance from "../models/attendence.model.";
+import Attendance from "../models/attendence.model";
 import { roomManager } from "../managers/RoomManager";
 import { handleCreateWebRtcTransport } from "./handlers/webrtcTransport.handler";
 import { handleTransportConnect } from "./handlers/transportConnect.handler";

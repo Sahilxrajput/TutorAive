@@ -1,6 +1,6 @@
 import PDFDocument from "pdfkit";
 import { Parser } from "json2csv";
-import Attendance from "../models/attendence.model.";
+import Attendance from "../models/attendence.model";
 import { Request, Response } from "express";
 import Lecture from "../models/lecture.model";
 import { Types } from "mongoose";
@@ -113,7 +113,7 @@ export const startLecture = async (req: Request, res: Response) => {
   res.json({ success: true });
 };
 
-export const markAttendance = async (req:Request, res:Response) => {
+export const markAttendance = async (req: Request, res: Response) => {
   try {
     const { lecture, student, status } = req.body;
 
@@ -132,7 +132,7 @@ export const markAttendance = async (req:Request, res:Response) => {
     );
 
     res.status(200).json(attendance);
-  } catch (err:any) {
+  } catch (err: any) {
     if (err.code === 11000) {
       return res.status(409).json({ message: "Attendance already exists" });
     }
@@ -140,7 +140,7 @@ export const markAttendance = async (req:Request, res:Response) => {
   }
 };
 
-export const getLectureAttendance = async (req:Request, res:Response) => {
+export const getLectureAttendance = async (req: Request, res: Response) => {
   try {
     const { lectureId } = req.params;
 
@@ -150,7 +150,7 @@ export const getLectureAttendance = async (req:Request, res:Response) => {
     );
 
     res.status(200).json(attendance);
-  } catch (err:any) {
+  } catch (err: any) {
     res.status(500).json({ message: err.message });
   }
 };
@@ -165,7 +165,7 @@ export const getStudentAttendance = async (req: Request, res: Response) => {
     );
 
     res.status(200).json(attendance);
-  } catch (err:any) {
+  } catch (err: any) {
     res.status(500).json({ message: err.message });
   }
 };

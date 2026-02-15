@@ -1,5 +1,4 @@
-import { Request, Response } from "express";
-import Attendance from "../models/attendence.model.";
+import { CookieOptions, Request, Response } from "express";
 import { Classroom } from "../models/classroom.model";
 import User from "../models/user.model";
 import bcrypt from "bcrypt";
@@ -10,8 +9,14 @@ import {
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { IUser, MyJwtPayload } from "../types/type";
 import { HydratedDocument } from "mongoose";
+import Attendance from "../models/attendence.model";
 
-const isProduction = process.env.NODE_ENV === "production";
+const cookieOptions: CookieOptions = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+  path: "/",
+};
 
 const googleCallback = async (req: Request, res: Response) => {
   const user = req.user as HydratedDocument<IUser>;
@@ -19,7 +24,7 @@ const googleCallback = async (req: Request, res: Response) => {
 
   // set role only if new user or role not assigned
   if (!user.role) {
-    user.role = role;   
+    user.role = role;
   }
 
   // generate tokens
@@ -32,10 +37,7 @@ const googleCallback = async (req: Request, res: Response) => {
 
   // set refresh cookie
   res.cookie("refreshToken", refreshToken, {
-    httpOnly: true,
-    secure: isProduction, // force true in production
-    sameSite: "none", // required for cross-site OAuth
-    path: "/",
+    ...cookieOptions,
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 
@@ -44,7 +46,6 @@ const googleCallback = async (req: Request, res: Response) => {
     `${process.env.CLIENT_URL}/auth/success?accessToken=${accessToken}`,
   );
 };
-
 
 const signup = async (req: Request, res: Response) => {
   try {
@@ -94,9 +95,7 @@ const signup = async (req: Request, res: Response) => {
     const { password: _, refreshToken: __, ...userData } = savedUser.toObject();
 
     res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      secure: isProduction,
-      sameSite: "none",
+      ...cookieOptions,
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
@@ -148,9 +147,7 @@ const signin = async (req: Request, res: Response) => {
 
     // 3️. Send refresh token as httpOnly cookie
     res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      secure: isProduction,
-      sameSite: "none",  
+      ...cookieOptions,
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
@@ -178,7 +175,10 @@ const signout = async (req: Request, res: Response) => {
     const refreshToken = req.cookies.refreshToken;
 
     if (refreshToken) {
-      const decoded = jwt.decode(refreshToken) as JwtPayload;
+      const decoded = jwt.verify(
+        refreshToken,
+        process.env.REFRESH_TOKEN_SECRET!,
+      ) as JwtPayload;
 
       if (decoded?._id) {
         await User.findByIdAndUpdate(decoded._id, {
@@ -186,21 +186,9 @@ const signout = async (req: Request, res: Response) => {
         });
       }
     }
-  } catch {
-    // intentionally ignored
-  }
+  } catch {}
 
-  res.clearCookie("refreshToken", {
-    httpOnly: true,
-    secure: isProduction,
-    sameSite: "none",
-  });
-
-  res.clearCookie("accessToken", {
-    httpOnly: true,
-    secure: isProduction,
-    sameSite: "none",
-  });
+  res.clearCookie("refreshToken", cookieOptions);
 
   return res.status(200).json({
     message: "Logged out successfully",
@@ -232,13 +220,7 @@ const deleteAccount = async (req: Request, res: Response) => {
     // 2. delete account
     await User.findByIdAndDelete(user._id);
 
-    res.clearCookie("refreshToken", {
-      httpOnly: true,
-      secure: isProduction,
-      sameSite: "none",
-    });
-
-    res.status(200).json({ message: "Logged out successfully" });
+    res.clearCookie("refreshToken", cookieOptions);
 
     return res.status(200).json({ message: "User deleted successfully" });
   } catch (err) {
@@ -333,12 +315,25 @@ const refreshAccessToken = async (req: Request, res: Response) => {
     }
 
     const isValid = await bcrypt.compare(token, user.refreshToken);
+
     if (!isValid) {
       return res.sendStatus(401);
     }
 
+    res.clearCookie("refreshToken", cookieOptions);
+
     const newAccessToken = generateAccessToken(user);
-    console.log("new access token: ", newAccessToken);
+    const newRefreshToken = generateRefreshToken(user);
+
+    // Update the DB with the NEW hashed refresh token
+    user.refreshToken = await bcrypt.hash(newRefreshToken, 12);
+    await user.save();
+
+    res.cookie("refreshToken", newRefreshToken, {
+      ...cookieOptions,
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
     return res.json({ accessToken: newAccessToken, user });
   } catch {
     return res.status(401).json({

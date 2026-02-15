@@ -53,8 +53,8 @@ router.post("/signin", signin);
 router.get("/refresh", refreshAccessToken);
 
 router.get("/signout", authMiddleware, signout);
-router.put("/reset-password", authMiddleware, resetPassword);
-router.put("/forget-password", authMiddleware, forgotPassword);
-router.delete("/delete", authMiddleware, deleteAccount);
+// router.put("/reset-password", authMiddleware, resetPassword);
+// router.put("/forget-password", authMiddleware, forgotPassword);
+// router.delete("/delete", authMiddleware, deleteAccount);
 
 export default router;

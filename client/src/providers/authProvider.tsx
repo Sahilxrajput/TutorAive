@@ -20,7 +20,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             const { data: { user, accessToken } } = await API.get("/auth/refresh");
             localStorage.setItem("accessToken", accessToken)
 
-            setIsInstructor(user.role === "instructor")
+            setIsInstructor(user?.role === "instructor")
 
             const updatedUser = {
                 ...user,

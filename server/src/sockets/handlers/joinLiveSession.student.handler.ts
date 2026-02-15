@@ -1,4 +1,4 @@
-import Attendance from "../../models/attendence.model.";
+import Attendance from "../../models/attendence.model";
 import { Socket } from "socket.io";
 import Peer from "../../classes/peer";
 import { peerManager } from "../../managers/PeerManager";
@@ -48,7 +48,6 @@ export const handleStudentJoinLiveSession =
       return;
     }
 
-
     //@todo isenrolled gaurd
     await Attendance.findOneAndUpdate(
       { lecture: roomId, student: userId },
@@ -78,4 +77,3 @@ export const handleStudentJoinLiveSession =
       rtpCapabilities: room.router.rtpCapabilities,
     });
   };
-

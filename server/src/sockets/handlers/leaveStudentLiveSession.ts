@@ -2,7 +2,7 @@ import Lecture from "../../models/lecture.model";
 import { Socket } from "socket.io";
 import { peerManager } from "../../managers/PeerManager";
 import { roomManager } from "../../managers/RoomManager";
-import Attendance from "../../models/attendence.model.";
+import Attendance from "../../models/attendence.model";
 
 export const leaveStudentLiveSession = (socket: Socket) => async () => {
   const peer = peerManager.get(socket.id);
