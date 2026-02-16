@@ -306,15 +306,3 @@
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
-
-.gradient-primary {
-  background: radial-gradient(circle at center, #fafbfd 0%, #cfe0f3 80%);
-}
-
-.gradient-secondary {
-  background: radial-gradient(circle at center, #fffefb 0%, #f2e8dc 80%);
-}
-
-.gradient-tercery {
-  background: radial-gradient(circle at center, #f7fefc 0%, #d8f3ec 80%);
-}

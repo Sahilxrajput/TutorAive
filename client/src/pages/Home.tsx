@@ -100,10 +100,10 @@ const Home = () => {
 
                     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6">
                         <LearningCard title="Pending Tasks" Icon={BookHeartIcon} number={pendingAssignments} iconColor="green" delay={0.1} />
-                        <LearningCard title="Certificates" Icon={Bookmark} number={2} iconColor="indigo" delay={0.2} />
-                        <LearningCard title="Scheduled" Icon={Rocket} number={3} iconColor="green" delay={0.3} />
-                        <LearningCard title="Streak Days" Icon={Zap} number={12} iconColor="indigo" delay={0.4} />
-                        <LearningCard title="Hours Learned" Icon={Clock} number={18.5} iconColor="green" delay={0.5} />
+                        <LearningCard title="Certificates" Icon={Bookmark} number={0} iconColor="indigo" delay={0.2} />
+                        <LearningCard title="Scheduled" Icon={Rocket} number={0} iconColor="green" delay={0.3} />
+                        <LearningCard title="Streak Days" Icon={Zap} number={0} iconColor="indigo" delay={0.4} />
+                        <LearningCard title="Hours Learned" Icon={Clock} number={0} iconColor="green" delay={0.5} />
                     </div >
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

@@ -35,10 +35,13 @@ const server = http_1.default.createServer(app);
 (0, sockets_1.initSocket)(server);
 // app is running behind a proxy. Trust the headers the proxy sends.
 app.set("trust proxy", 1);
-app.use((0, cors_1.default)({
-    origin: process.env.CLIENT_URL, // your frontend URL
+const corsOptions = {
+    origin: process.env.CLIENT_URL,
     credentials: true,
-}));
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+};
+app.use((0, cors_1.default)(corsOptions));
 app.use(express_1.default.json({ limit: "100kb" }));
 app.use(express_1.default.urlencoded({ extended: true }));
 app.use((0, cookie_parser_1.default)());

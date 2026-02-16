@@ -15,7 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.getIO = exports.initSocket = exports.io = void 0;
 const socket_io_1 = require("socket.io");
 const socketAuth_1 = require("../middlewares/socketAuth");
-const attendence_model_1 = __importDefault(require("../models/attendence.model."));
+const attendence_model_1 = __importDefault(require("../models/attendence.model"));
 const webrtcTransport_handler_1 = require("./handlers/webrtcTransport.handler");
 const transportConnect_handler_1 = require("./handlers/transportConnect.handler");
 const transportProduce_handler_1 = require("./handlers/transportProduce.handler");

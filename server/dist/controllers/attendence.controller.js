@@ -15,7 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.getStudentAttendance = exports.getLectureAttendance = exports.markAttendance = exports.startLecture = exports.attendenceAggregation = exports.attendenceLock = exports.exportAttendanceCSV = exports.exportAttendancePDF = exports.initializeAttendance = void 0;
 const pdfkit_1 = __importDefault(require("pdfkit"));
 const json2csv_1 = require("json2csv");
-const attendence_model_1 = __importDefault(require("../models/attendence.model."));
+const attendence_model_1 = __importDefault(require("../models/attendence.model"));
 const lecture_model_1 = __importDefault(require("../models/lecture.model"));
 const mongoose_1 = require("mongoose");
 const initializeAttendance = (classroomId, lectureId, students) => __awaiter(void 0, void 0, void 0, function* () {

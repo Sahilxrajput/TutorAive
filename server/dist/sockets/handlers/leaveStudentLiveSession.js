@@ -16,7 +16,7 @@ exports.leaveStudentLiveSession = void 0;
 const lecture_model_1 = __importDefault(require("../../models/lecture.model"));
 const PeerManager_1 = require("../../managers/PeerManager");
 const RoomManager_1 = require("../../managers/RoomManager");
-const attendence_model_1 = __importDefault(require("../../models/attendence.model."));
+const attendence_model_1 = __importDefault(require("../../models/attendence.model"));
 const leaveStudentLiveSession = (socket) => () => __awaiter(void 0, void 0, void 0, function* () {
     const peer = PeerManager_1.peerManager.get(socket.id);
     if (!peer || !peer.roomId) {

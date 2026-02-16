@@ -24,13 +24,18 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.refreshAccessToken = exports.forgotPassword = exports.resetPassword = exports.deleteAccount = exports.signout = exports.loginfailed = exports.signin = exports.signup = exports.googleCallback = void 0;
-const attendence_model_1 = __importDefault(require("../models/attendence.model."));
 const classroom_model_1 = require("../models/classroom.model");
 const user_model_1 = __importDefault(require("../models/user.model"));
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const generateAuthToken_1 = require("../utils/generateAuthToken");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
-const isProduction = process.env.NODE_ENV === "production";
+const attendence_model_1 = __importDefault(require("../models/attendence.model"));
+const cookieOptions = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    path: "/",
+};
 const googleCallback = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const user = req.user;
     const role = req.role || "student";
@@ -45,13 +50,7 @@ const googleCallback = (req, res) => __awaiter(void 0, void 0, void 0, function*
     user.refreshToken = yield bcrypt_1.default.hash(refreshToken, 12);
     yield user.save();
     // set refresh cookie
-    res.cookie("refreshToken", refreshToken, {
-        httpOnly: true,
-        secure: isProduction, // force true in production
-        sameSite: "none", // required for cross-site OAuth
-        path: "/",
-        maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
+    res.cookie("refreshToken", refreshToken, Object.assign(Object.assign({}, cookieOptions), { maxAge: 7 * 24 * 60 * 60 * 1000 }));
     // redirect to frontend
     res.redirect(`${process.env.CLIENT_URL}/auth/success?accessToken=${accessToken}`);
 });
@@ -92,12 +91,7 @@ const signup = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         savedUser.refreshToken = yield bcrypt_1.default.hash(refreshToken, 12);
         yield savedUser.save();
         const _a = savedUser.toObject(), { password: _, refreshToken: __ } = _a, userData = __rest(_a, ["password", "refreshToken"]);
-        res.cookie("refreshToken", refreshToken, {
-            httpOnly: true,
-            secure: isProduction,
-            sameSite: "none",
-            maxAge: 7 * 24 * 60 * 60 * 1000,
-        });
+        res.cookie("refreshToken", refreshToken, Object.assign(Object.assign({}, cookieOptions), { maxAge: 7 * 24 * 60 * 60 * 1000 }));
         res.status(201).json({
             success: true,
             message: "signup successfully",
@@ -139,12 +133,7 @@ const signin = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         user.refreshToken = yield bcrypt_1.default.hash(refreshToken, 12);
         yield user.save();
         // 3️. Send refresh token as httpOnly cookie
-        res.cookie("refreshToken", refreshToken, {
-            httpOnly: true,
-            secure: isProduction,
-            sameSite: "none",
-            maxAge: 7 * 24 * 60 * 60 * 1000,
-        });
+        res.cookie("refreshToken", refreshToken, Object.assign(Object.assign({}, cookieOptions), { maxAge: 7 * 24 * 60 * 60 * 1000 }));
         // 4️. Remove sensitive fields
         const _a = user.toObject(), { password: _, refreshToken: __ } = _a, userData = __rest(_a, ["password", "refreshToken"]);
         // 5️. Send access token in response body
@@ -168,7 +157,7 @@ const signout = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const refreshToken = req.cookies.refreshToken;
         if (refreshToken) {
-            const decoded = jsonwebtoken_1.default.decode(refreshToken);
+            const decoded = jsonwebtoken_1.default.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
             if (decoded === null || decoded === void 0 ? void 0 : decoded._id) {
                 yield user_model_1.default.findByIdAndUpdate(decoded._id, {
                     refreshToken: null,
@@ -176,19 +165,8 @@ const signout = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             }
         }
     }
-    catch (_a) {
-        // intentionally ignored
-    }
-    res.clearCookie("refreshToken", {
-        httpOnly: true,
-        secure: isProduction,
-        sameSite: "none",
-    });
-    res.clearCookie("accessToken", {
-        httpOnly: true,
-        secure: isProduction,
-        sameSite: "none",
-    });
+    catch (_a) { }
+    res.clearCookie("refreshToken", cookieOptions);
     return res.status(200).json({
         message: "Logged out successfully",
     });
@@ -208,12 +186,7 @@ const deleteAccount = (req, res) => __awaiter(void 0, void 0, void 0, function* 
         yield attendence_model_1.default.updateMany({ students: req.userId }, { $pull: { students: req.userId } });
         // 2. delete account
         yield user_model_1.default.findByIdAndDelete(user._id);
-        res.clearCookie("refreshToken", {
-            httpOnly: true,
-            secure: isProduction,
-            sameSite: "none",
-        });
-        res.status(200).json({ message: "Logged out successfully" });
+        res.clearCookie("refreshToken", cookieOptions);
         return res.status(200).json({ message: "User deleted successfully" });
     }
     catch (err) {
@@ -295,8 +268,13 @@ const refreshAccessToken = (req, res) => __awaiter(void 0, void 0, void 0, funct
         if (!isValid) {
             return res.sendStatus(401);
         }
+        res.clearCookie("refreshToken", cookieOptions);
         const newAccessToken = (0, generateAuthToken_1.generateAccessToken)(user);
-        console.log("new access token: ", newAccessToken);
+        const newRefreshToken = (0, generateAuthToken_1.generateRefreshToken)(user);
+        // Update the DB with the NEW hashed refresh token
+        user.refreshToken = yield bcrypt_1.default.hash(newRefreshToken, 12);
+        yield user.save();
+        res.cookie("refreshToken", newRefreshToken, Object.assign(Object.assign({}, cookieOptions), { maxAge: 7 * 24 * 60 * 60 * 1000 }));
         return res.json({ accessToken: newAccessToken, user });
     }
     catch (_a) {

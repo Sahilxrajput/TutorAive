@@ -40,26 +40,36 @@ const App: React.FC = () => {
                     <Route path="auth" element={<Auth />} />
                     <Route path="auth/success" element={<AuthSuccess />} />
 
-                    {/* Protected area */}
                     <Route
                         element={
-                            <ProtectedRoute>
-                                <NotificationProvider>
-                                    <Layout />
-                                </NotificationProvider>
-                            </ProtectedRoute>
+                            <NotificationProvider>
+                                <Layout />
+                            </NotificationProvider>
                         }
                     >
                         <Route path="/home" element={<Home />} />
                         <Route path="community" element={<TweetFeed />} />
-                        <Route path="dashboard" element={<Dashboard />} />
-                        <Route path="launch-classroom" element={<LaunchClassroom />} />
+                        <Route path="dashboard" element={
+                            <ProtectedRoute>
+                                <Dashboard />
+                            </ProtectedRoute>
+                        } />
+                        <Route path="launch-classroom" element=
+                            {
+                                <ProtectedRoute>
+                                    <LaunchClassroom />
+                                </ProtectedRoute>
+                            } />
 
                         <Route path="classrooms">
                             <Route index element={<BrowseClassroom />} />
                             <Route
                                 path=":classroomId/join/:inviteCode"
-                                element={<JoinSector />}
+                                element={
+                                    <ProtectedRoute>
+                                        <JoinSector />
+                                    </ProtectedRoute>
+                                }
                             />
 
                             <Route element={<EnrolledRoute />}>

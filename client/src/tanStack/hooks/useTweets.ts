@@ -5,7 +5,7 @@ import {
   fetchTweets,
   toggleLike,
 } from "@/api/tweets.api";
-import type { IAddTweetContext, ITweet } from "@/types/type";
+import type { ITweet } from "@/types/type";
 import {
   useInfiniteQuery,
   useMutation,
@@ -15,8 +15,31 @@ import { CACHE_KEY_TWEETS } from "../constants";
 import useAuth from "@/hooks/useAuth";
 import { notifyError } from "@/utils/notifyError";
 
-// <----------------- bug------------------->
-//@fix ui behaviour on creating a new post and repost
+
+interface ITweetsPage {
+  data: ITweet[];
+  nextCursor?: string | null;
+}
+
+interface IInfiniteTweets {
+  pages: ITweetsPage[];
+  pageParams: unknown[];
+}
+
+function updateTweetInCache(
+  old: IInfiniteTweets | undefined,
+  updater: (tweet: ITweet) => ITweet,
+): IInfiniteTweets | undefined {
+  if (!old?.pages?.length) return old;
+
+  return {
+    ...old,
+    pages: old.pages.map((page) => ({
+      ...page,
+      data: page.data.map(updater),
+    })),
+  };
+}
 
 export function useTweets() {
   return useInfiniteQuery({
@@ -32,20 +55,21 @@ export const useCreateTweet = () => {
   const qc = useQueryClient();
   const { user } = useAuth();
 
-  return useMutation<ITweet, Error, FormData, IAddTweetContext>({
-    mutationFn: (formData) => createTweet(formData),
+  return useMutation<
+    ITweet,
+    Error,
+    FormData,
+    { previousTweets?: IInfiniteTweets }
+  >({
+    mutationFn: createTweet,
 
     onMutate: async (formData) => {
-      await qc.cancelQueries({ queryKey: CACHE_KEY_TWEETS }); //@remind
+      await qc.cancelQueries({ queryKey: CACHE_KEY_TWEETS });
 
-      const previousTweets = qc.getQueryData<ITweet[]>(CACHE_KEY_TWEETS) ?? [];
+      const previousTweets = qc.getQueryData<IInfiniteTweets>(CACHE_KEY_TWEETS);
 
       const content = formData.get("content") as string;
-      const type = formData.get("type") as
-        | "general"
-        | "mentorship"
-        | "news"
-        | "problem";
+      const type = formData.get("type") as ITweet["type"];
 
       const optimisticTweet: ITweet = {
         _id: "temp-" + Date.now(),
@@ -56,7 +80,7 @@ export const useCreateTweet = () => {
         likes: [],
       };
 
-      qc.setQueryData(CACHE_KEY_TWEETS, (old: any) => {
+      qc.setQueryData<IInfiniteTweets>(CACHE_KEY_TWEETS, (old) => {
         if (!old?.pages?.length) return old;
 
         return {
@@ -75,26 +99,18 @@ export const useCreateTweet = () => {
     },
 
     onSuccess: (fullTweet) => {
-      qc.setQueryData(CACHE_KEY_TWEETS, (old: any) => {
-        if (!old?.pages?.length) return old;
-
-        return {
-          ...old,
-          pages: old.pages.map((page: any) => ({
-            ...page,
-            data: page.data.map((tweet: ITweet) =>
-              tweet._id.startsWith("temp") ? fullTweet : tweet
-            ),
-          })),
-        };
-      });
+      qc.setQueryData<IInfiniteTweets>(CACHE_KEY_TWEETS, (old) =>
+        updateTweetInCache(old, (tweet) =>
+          tweet._id.startsWith("temp") ? fullTweet : tweet,
+        ),
+      );
     },
 
     onError: (err, _vars, context) => {
       notifyError(err);
-      console.log(err);
-      if (context?.previousTweets)
+      if (context?.previousTweets) {
         qc.setQueryData(CACHE_KEY_TWEETS, context.previousTweets);
+      }
     },
   });
 };
@@ -104,20 +120,21 @@ export const useDeleteTweet = (tweetId: string) => {
 
   return useMutation<void, Error>({
     mutationFn: () => deleteTweet(tweetId),
-    // onMutate
+
     onSuccess: () => {
-      qc.setQueryData(CACHE_KEY_TWEETS, (prev: any) => {
-        if (!prev?.pages) return prev;
+      qc.setQueryData<IInfiniteTweets>(CACHE_KEY_TWEETS, (old) => {
+        if (!old?.pages) return old;
 
         return {
-          ...prev,
-          pages: prev.pages.map((page: any) => ({
+          ...old,
+          pages: old.pages.map((page) => ({
             ...page,
-            data: page.data.filter((t: ITweet) => t._id !== tweetId),
+            data: page.data.filter((t) => t._id !== tweetId),
           })),
         };
       });
     },
+
     onError: (err) => {
       notifyError(err);
     },
@@ -128,15 +145,16 @@ export const useLikeTweet = () => {
   const qc = useQueryClient();
 
   return useMutation<ITweet, Error, string>({
-    mutationFn: (tweetId) => toggleLike(tweetId),
+    mutationFn: toggleLike,
 
     onSuccess: (updatedTweet) => {
-      qc.setQueryData(CACHE_KEY_TWEETS, (prev: ITweet[] = []) =>
-        prev.map((tweet) =>
-          tweet._id === updatedTweet._id ? updatedTweet : tweet
-        )
+      qc.setQueryData<IInfiniteTweets>(CACHE_KEY_TWEETS, (old) =>
+        updateTweetInCache(old, (tweet) =>
+          tweet._id === updatedTweet._id ? updatedTweet : tweet,
+        ),
       );
     },
+
     onError: (err) => {
       notifyError(err);
     },
@@ -147,47 +165,61 @@ export const useRepostTweet = () => {
   const qc = useQueryClient();
   const { user } = useAuth();
 
-  return useMutation<ITweet, Error, FormData, IAddTweetContext>({
-    mutationFn: (formData) => createRepost(formData),
+  return useMutation<
+    ITweet,
+    Error,
+    FormData,
+    { previousTweets?: IInfiniteTweets }
+  >({
+    mutationFn: createRepost,
 
     onMutate: async (formData) => {
       await qc.cancelQueries({ queryKey: CACHE_KEY_TWEETS });
 
-      const previousTweets = qc.getQueryData<ITweet[]>(CACHE_KEY_TWEETS) ?? [];
+      const previousTweets = qc.getQueryData<IInfiniteTweets>(CACHE_KEY_TWEETS);
 
       const content = formData.get("content") as string;
-      const type = formData.get("type") as
-        | "general"
-        | "mentorship"
-        | "news"
-        | "problem"
-        | "repost";
 
       const optimisticRepost: ITweet = {
         _id: "temp-" + Date.now(),
         content,
-        type,
+        type: "repost",
         author: user!,
         createdAt: new Date().toISOString(),
+        likes: [],
       };
 
-      qc.setQueryData<ITweet[]>(CACHE_KEY_TWEETS, (prev = []) => [
-        optimisticRepost,
-        ...prev,
-      ]);
+      qc.setQueryData<IInfiniteTweets>(CACHE_KEY_TWEETS, (old) => {
+        if (!old?.pages?.length) return old;
+
+        return {
+          ...old,
+          pages: [
+            {
+              ...old.pages[0],
+              data: [optimisticRepost, ...old.pages[0].data],
+            },
+            ...old.pages.slice(1),
+          ],
+        };
+      });
 
       return { previousTweets };
     },
 
     onSuccess: (fullRepost) => {
-      qc.setQueryData<ITweet[]>(CACHE_KEY_TWEETS, (prev = []) => {
-        return prev.map((t) => (t._id.startsWith("temp") ? fullRepost : t));
-      });
+      qc.setQueryData<IInfiniteTweets>(CACHE_KEY_TWEETS, (old) =>
+        updateTweetInCache(old, (t) =>
+          t._id.startsWith("temp") ? fullRepost : t,
+        ),
+      );
     },
 
     onError: (err, _vars, context) => {
-      qc.setQueryData(CACHE_KEY_TWEETS, context?.previousTweets ?? []);
       notifyError(err);
+      if (context?.previousTweets) {
+        qc.setQueryData(CACHE_KEY_TWEETS, context.previousTweets);
+      }
     },
   });
 };

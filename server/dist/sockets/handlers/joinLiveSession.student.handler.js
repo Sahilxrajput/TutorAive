@@ -13,7 +13,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.handleStudentJoinLiveSession = void 0;
-const attendence_model_1 = __importDefault(require("../../models/attendence.model."));
+const attendence_model_1 = __importDefault(require("../../models/attendence.model"));
 const peer_1 = __importDefault(require("../../classes/peer"));
 const PeerManager_1 = require("../../managers/PeerManager");
 const RoomManager_1 = require("../../managers/RoomManager");

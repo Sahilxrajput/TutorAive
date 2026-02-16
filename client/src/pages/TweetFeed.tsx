@@ -103,7 +103,7 @@ export default function TweetFeed() {
         <div className="min-h-screen transition-colors duration-500 relative overflow-hidden p-6 md:p-10 lg:p-12">
 
             {/* Background Energy Glows */}
-            <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-primary/5 blur-[140px] rounded-full z-10 pointer-events-none" />
+            <div className="absolute top-0 right-0 w-150 h-150 bg-primary/5 blur-[140px] rounded-full z-10 pointer-events-none" />
             <div className="absolute bottom-0 left-0 w-96 h-96 bg-primary/5 blur-[120px] rounded-full z-10 pointer-events-none" />
 
             <div className="max-w-6xl mx-auto flex flex-col gap-12 h-full" >
@@ -210,7 +210,7 @@ export default function TweetFeed() {
                 whileHover={{ scale: 1.1, rotate: 5 }}
                 whileTap={{ scale: 0.9 }}
                 onClick={() => setIsCreating(true)}
-                className="fixed bottom-10 right-10 w-16 h-16 rounded-[2rem] bg-primary text-white shadow-2xl shadow-primary/40 flex items-center justify-center group z-50 overflow-hidden"
+                className="fixed bottom-10 right-10 w-16 h-16 rounded-4xl bg-primary text-white shadow-2xl shadow-primary/40 flex items-center justify-center group z-50 overflow-hidden"
             >
                 <div className="absolute inset-0 bg-gradient-to-tr from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                 <SquarePen size={28} />
