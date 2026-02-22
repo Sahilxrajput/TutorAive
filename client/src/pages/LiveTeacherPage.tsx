@@ -1,4 +1,4 @@
-import { lazy, useEffect, useRef, useState } from 'react'
+import { lazy, useRef, useState } from 'react'
 import { Device } from 'mediasoup-client'
 import type {
     AppData,
@@ -13,6 +13,7 @@ import useSocketContext from '@/hooks/useSocketContext';
 import useAuth from '@/hooks/useAuth';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
+import { ClassStartPermissionAlert } from '@/components/classroom/ClassStartPermissionAlert';
 const ControlsBar = lazy(() => import('@/components/classroom/ControlsBar'));
 const SidebarTabs = lazy(() => import("@/components/classroom/SidebarTabs"));
 const VideoStage = lazy(() => import("@/components/classroom/VideoStage"));
@@ -25,6 +26,7 @@ interface IRoomCreate {
 
 const LiveTeacherPage = () => {
 
+    const [isModalOpen, setIsModalOpen] = useState(true);
     const [isMuted, setIsMuted] = useState(false);
     const [isCamOff, setIsCamOff] = useState(false);
     const [isScreenSharing, setIsScreenSharing] = useState(false);
@@ -50,10 +52,6 @@ const LiveTeacherPage = () => {
     const saudioProducerRef = useRef<Producer>(null);
     const deviceRef = useRef<Device>(null);
     const navigate = useNavigate();
-
-    useEffect(() => {
-        start()
-    }, [])
 
 
     async function start() {
@@ -192,7 +190,6 @@ const LiveTeacherPage = () => {
         // 7. Stop client-side consumers / listeners
         stop();
     };
-
 
     const joinRoom = async () => {
         try {
@@ -481,7 +478,7 @@ const LiveTeacherPage = () => {
                     onToggleShare={() => isScreenSharing ? stopScreenShare() : startScreenShare()} //@todo
                 />
             </main>
-
+            <ClassStartPermissionAlert isOpen={isModalOpen} setIsOpen={setIsModalOpen} onConfirm={start} />
             {openChat && <SidebarTabs isTeacher={!!user && user.role === "instructor"} />}
         </div>
     );

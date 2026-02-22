@@ -99,7 +99,7 @@ const BrowseClassroom = () => {
     const handleConfirmEnroll = async () => {
         if (!selectedCourse) return;
         try {
-            const { data } = await API.post(`/classrooms/${selectedCourse._id}/enroll` );
+            const { data } = await API.post(`/classrooms/${selectedCourse._id}/enroll`);
             toast.success(data.message);
             setEnrolledIds((prev) => [...prev, selectedCourse._id]);
             setIsDialogOpen(false);
@@ -114,12 +114,7 @@ const BrowseClassroom = () => {
     return (
         <div className="min-h-screen bg-background text-foreground selection:bg-primary/30 p-6 md:p-12 transition-colors duration-500 relative overflow-hidden font-inter">
 
-            {/* Dynamic Background Energy */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[800px] bg-primary/5 blur-[160px] rounded-full -z-10 pointer-events-none" />
-            <div className="absolute -right-20 bottom-0 w-96 h-96 bg-indigo-500/5 blur-[120px] rounded-full -z-10 pointer-events-none" />
-
             <div className="max-w-7xl mx-auto space-y-16">
-
                 <LunchButton />
 
                 {/* Terminal Header */}
@@ -187,43 +182,12 @@ const BrowseClassroom = () => {
                     </div>
                 </header>
 
-                {/* Knowledge Sectors Grid */}
-                {/* <section className="space-y-12">
-                    {isLoading ? (
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                            {[1, 2, 3].map(i => (
-                                <div key={i} className="h-80 rounded-[2.5rem] bg-muted animate-pulse" />
-                            ))}
-                        </div>
-                    ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                            <AnimatePresence mode="popLayout">
-                                {filtered.map((course, i) => (
-                                    <SectorCard
-                                        key={course._id}
-                                        course={course}
-                                        isEnrolled={(enrolledIds as string[]).includes(course._id)}
-                                        index={i}
-                                        onClick={() => navigate(`/classrooms/${course._id}`)}
-                                    />
-                                ))}
-                            </AnimatePresence>
-                        </div>
-                    )}
-
-                    {!isLoading && filtered.length === 0 && (
-                        <div className="text-center py-20 opacity-50 italic">
-                            No sectors found at these coordinates.
-                        </div>
-                    )}
-                </section> */}
-
                 {/* Main Content Area */}
                 <main className="space-y-20 pb-20">
                     {isLoading ? (
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                             {[1, 2, 3].map(i => (
-                                <Skeleton key={i} className="h-64 rounded-[2.5rem] " />
+                                <Skeleton key={i} className="h-72 rounded-[2.5rem] " />
                             ))}
                         </div>
                     ) : (
@@ -255,8 +219,8 @@ const BrowseClassroom = () => {
                             )}
 
                             {/* DISCOVERY SECTORS */}
-                            <section className="space-y-8">
-                                {enrolledList.length > 0 && (
+                            {availableList.length > 0 && (
+                                <section className="space-y-8">
                                     <div className="flex items-center gap-4">
                                         <div className="h-px flex-1 bg-gradient-to-r from-transparent via-amber-500/50 to-transparent" />
                                         <h2 className="text-[10px] font-bold uppercase tracking-[0.5em] text-amber-500/50">
@@ -264,21 +228,21 @@ const BrowseClassroom = () => {
                                         </h2>
                                         <div className="h-px flex-1 bg-gradient-to-r from-transparent via-amber-500/50 to-transparent" />
                                     </div>
-                                )}
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                                    <AnimatePresence mode="popLayout">
-                                        {availableList.map((course, i) => (
-                                            <SectorCard
-                                                key={course._id}
-                                                course={course}
-                                                isEnrolled={false}
-                                                index={i}
-                                                onClick={() => handleActionClick(course)}
-                                            />
-                                        ))}
-                                    </AnimatePresence>
-                                </div>
-                            </section>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                                        <AnimatePresence mode="popLayout">
+                                            {availableList.map((course, i) => (
+                                                <SectorCard
+                                                    key={course._id}
+                                                    course={course}
+                                                    isEnrolled={false}
+                                                    index={i}
+                                                    onClick={() => handleActionClick(course)}
+                                                />
+                                            ))}
+                                        </AnimatePresence>
+                                    </div>
+                                </section>
+                            )}
                         </div>
                     )}
 
@@ -314,6 +278,7 @@ const BrowseClassroom = () => {
                     <p className="text-[10px] font-bold font-oswald uppercase tracking-[0.4em]">TUTORAIVE v2.0</p>
                 </footer>
             </div>
+            
         </div>
     );
 };

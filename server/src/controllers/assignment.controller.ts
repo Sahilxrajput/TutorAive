@@ -62,7 +62,7 @@ export const saveAssignment = async (req: Request, res: Response) => {
 
     // 1. Authorization Check
     const classroomDoc = req.authorizedResource;
-    if (!classroomDoc) return;
+    if (!classroomDoc) return res.status(404).json({message: "classroom not found"});
 
     // 2. Create Assignment
     const assignment = await Assignment.create({
@@ -93,7 +93,8 @@ export const saveAssignment = async (req: Request, res: Response) => {
       message: "Assignment created successfully",
       data: assignment,
     });
-  } catch {
+  } catch (err) {
+    console.log(err);
     return res.status(500).json({
       success: false,
       message: "Failed to create assignment",
@@ -185,42 +186,42 @@ export const getStudentAssignmentProgress = async (
   req: Request,
   res: Response,
 ) => {
-   try {
-     const { classroomId, studentId } = req.params;
+  try {
+    const { classroomId, studentId } = req.params;
 
-     const allClassroomAssignments = await Assignment.find({
-       classroom: classroomId,
-     });
+    const allClassroomAssignments = await Assignment.find({
+      classroom: classroomId,
+    });
 
-     const studentSubmissions = await Submission.find({
-       student: studentId,
-     }).populate("assignment");
+    const studentSubmissions = await Submission.find({
+      student: studentId,
+    }).populate("assignment");
 
-     // Filter submissions to only include those belonging to the current classroom
-     const classroomSubmissions = studentSubmissions.filter(
-       (sub: any) =>
-         sub.assignment && sub.assignment.classroom.toString() === classroomId,
-     );
+    // Filter submissions to only include those belonging to the current classroom
+    const classroomSubmissions = studentSubmissions.filter(
+      (sub: any) =>
+        sub.assignment && sub.assignment.classroom.toString() === classroomId,
+    );
 
-     // 3. Identify IDs of assignments that HAVE been submitted
-     const submittedAssignmentIds = new Set(
-       classroomSubmissions.map((s: any) => s.assignment._id.toString()),
-     );
+    // 3. Identify IDs of assignments that HAVE been submitted
+    const submittedAssignmentIds = new Set(
+      classroomSubmissions.map((s: any) => s.assignment._id.toString()),
+    );
 
-     // 4. Pending: Assignments in this classroom that ARE NOT in the submitted IDs
-     const pending = allClassroomAssignments.filter(
-       (a) => !submittedAssignmentIds.has(a._id.toString()),
-     );
+    // 4. Pending: Assignments in this classroom that ARE NOT in the submitted IDs
+    const pending = allClassroomAssignments.filter(
+      (a) => !submittedAssignmentIds.has(a._id.toString()),
+    );
 
-     res.status(200).json({
-       success: true,
-       submitted: classroomSubmissions, // This now sends the Submission objects
-       pending: pending, // This sends the Assignment objects
-     });
-   } catch (error) {
-     console.error(error);
-     res.status(500).json({ success: false, message: "Server error" });
-   }
+    res.status(200).json({
+      success: true,
+      submitted: classroomSubmissions, // This now sends the Submission objects
+      pending: pending, // This sends the Assignment objects
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
 };
 
 // Get single assignment
@@ -246,7 +247,7 @@ export const getAssignmentsByClassroomId = async (
 
     const assignments = await Assignment.find({
       classroom: req.params.classroomId,
-    });
+    }).sort({createdBy : -1}); //* @check filter is true or not
 
     if (!assignments)
       return res.status(404).json({ message: "Assignment not found" });

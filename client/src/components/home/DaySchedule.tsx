@@ -1,11 +1,10 @@
 import { useCallback, useEffect, useState } from "react"
 import LectureList from "./LectureList"
+import LectureCardSkeleton from "./LectureCardSkelton";
 import useSocketContext from '@/hooks/useSocketContext';
 import type { ILecture } from "@/types/type"
 import useAuth from "@/hooks/useAuth";
-import { Skeleton } from "../ui/skeleton";
 import API from "@/lib/api";
-
 
 const DaySchedule = () => {
     const [lectures, setLectures] = useState<ILecture[]>([])
@@ -70,27 +69,14 @@ const DaySchedule = () => {
 
     if (loading)
         return (
-            Array.from({ length: 4 }).map((_, i) => (
-                <div
-                    key={i}
-                    className="p-3 border rounded-md shadow-sm space-y-2"
-                >
-                    <Skeleton className="h-4 w-1/2" />
-                    <Skeleton className="h-4 w-4/5" />
-                    <Skeleton className="h-4 w-3/4" />
-                </div>
+            Array.from({ length: 2 }).map((_, i) => (
+                <LectureCardSkeleton key={i} />
             )))
 
     return (
-        lectures.length > 0 ? (
-            <LectureList
-                lectures={lectures}
-            />
-        ) : (
-            <p className="text-gray-500 text-center">
-                No lecture Update
-            </p>
-        )
+        <LectureList
+            lectures={lectures}
+        />
     )
 
 }

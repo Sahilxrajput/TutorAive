@@ -24,9 +24,7 @@ import {
   createLecture,
   updateLecture,
 } from "../controllers/lecture.controller";
-import {
-  getUserClassrooms,
-} from "../controllers/user.controller";
+import { getUserClassrooms } from "../controllers/user.controller";
 import {
   createLectureValidator,
   updateLectureValidator,
@@ -38,7 +36,11 @@ import {
 } from "../controllers/assignment.controller";
 import { authorizeOwnerMiddleware } from "../middlewares/authorizeOwner.middleware";
 import { getResources, saveResources } from "../controllers/note.controller";
-import { createInvitation, sendInvitationMail, useInvitation } from "../controllers/invitation.controller";
+import {
+  createInvitation,
+  sendInvitationMail,
+  useInvitation,
+} from "../controllers/invitation.controller";
 import { upload } from "../lib/cloudinary";
 
 const router = express.Router();
@@ -48,7 +50,6 @@ router.get("/", getClassrooms);
 
 // Get classroom by ID
 router.get("/:id", idParamValidator, handleValidation, getClassroomById);
-
 
 router.use(authMiddleware); // all routes require auth
 // Get all enrolledclassrooms
@@ -129,8 +130,8 @@ router
 router
   .route("/:classroomId/lectures/:id")
   .put(
-    updateLectureValidator,
-    handleValidation,
+    // updateLectureValidator,
+    // handleValidation,
     authorizeOwnerMiddleware("lecture"),
     updateLecture,
   )

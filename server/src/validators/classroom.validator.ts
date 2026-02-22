@@ -123,7 +123,7 @@ export const saveAssignmentValidator = [
   body("maxPoints")
     .notEmpty()
     .withMessage("Max points are required")
-    .isInt({ min: 1 })
+    .isInt({ min: 0 })
     .withMessage("Points must be a positive integer"),
 
   body("dueDate")

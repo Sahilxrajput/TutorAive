@@ -35,8 +35,9 @@ router.post("/:classroomId/cloudinary/signature", authorizeOwnerMiddleware("clas
 
 router.post(
   "/:classroomId/save",
-  saveAssignmentValidator,
-  handleValidation, // This middleware should check validationResult(req)
+    saveAssignmentValidator,
+    handleValidation, // This middleware should check validationResult(req)
+  authorizeOwnerMiddleware("classroom"),
   saveAssignment,
 );
 //get all assignments of classroom -> for instructor

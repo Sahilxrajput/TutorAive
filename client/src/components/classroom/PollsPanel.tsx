@@ -63,15 +63,17 @@ export default function PollsPanel({ isTeacher = false }: PollsPanelProps) {
         socket.emit("poll:vote", { pollId, lectureId, optionId })
     };
 
-    const handleCreatePoll = () => {
+    const handleCreatePoll = async () => {
         if (!newQuestion.trim() || newOptions.filter(o => o.trim()).length < 2) return;
         if (!socket || !lectureId) return;
 
-        socket.emit("poll:create", {
+        const { publicPoll } = await socket.emitWithAck("poll:create", {
             lectureId,
             question: newQuestion,
             options: newOptions.filter(o => o.trim()),
         });
+
+        setPolls(prev => [publicPoll, ...prev]);
 
         setNewQuestion("");
         setNewOptions(["", ""]);
@@ -171,7 +173,7 @@ export default function PollsPanel({ isTeacher = false }: PollsPanelProps) {
 
             <ScrollArea className="flex-1 px-4 min-h-0">
                 <div className="space-y-4 py-4">
-                    
+
                     {polls.length === 0 && (
                         <div className="text-center text-muted-foreground py-10">
                             <p className="font-medium">No polls yet</p>

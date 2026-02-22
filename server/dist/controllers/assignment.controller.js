@@ -54,7 +54,7 @@ const saveAssignment = (req, res) => __awaiter(void 0, void 0, void 0, function*
         // 1. Authorization Check
         const classroomDoc = req.authorizedResource;
         if (!classroomDoc)
-            return;
+            return res.status(404).json({ message: "classroom not found" });
         // 2. Create Assignment
         const assignment = yield assignment_model_1.default.create({
             classroom: classroomId,
@@ -83,7 +83,8 @@ const saveAssignment = (req, res) => __awaiter(void 0, void 0, void 0, function*
             data: assignment,
         });
     }
-    catch (_a) {
+    catch (err) {
+        console.log(err);
         return res.status(500).json({
             success: false,
             message: "Failed to create assignment",
@@ -201,7 +202,7 @@ const getAssignmentsByClassroomId = (req, res) => __awaiter(void 0, void 0, void
             return;
         const assignments = yield assignment_model_1.default.find({
             classroom: req.params.classroomId,
-        });
+        }).sort({ createdBy: -1 }); //* @check filter is true or not
         if (!assignments)
             return res.status(404).json({ message: "Assignment not found" });
         res.status(200).json({ data: assignments, success: true });

@@ -21,7 +21,7 @@ router.get("/:id", isEnrolled_middleware_1.isEnrolled, assignment_controller_1.g
 // router.use(isInstructor); //@check no need
 router.post("/:classroomId/cloudinary/signature", (0, authorizeOwner_middleware_1.authorizeOwnerMiddleware)("classroom"), assignment_controller_1.cloudinarySignature);
 router.post("/:classroomId/save", classroom_validator_1.saveAssignmentValidator, handleValidation_1.handleValidation, // This middleware should check validationResult(req)
-assignment_controller_1.saveAssignment);
+(0, authorizeOwner_middleware_1.authorizeOwnerMiddleware)("classroom"), assignment_controller_1.saveAssignment);
 //get all assignments of classroom -> for instructor
 router.get("/classroom/:classroomId", authorizeOwner_middleware_1.authorizeOwnerMiddleware, assignment_controller_1.getAssignmentsByClassroomId);
 //get all assignments of all classroom created by instructor

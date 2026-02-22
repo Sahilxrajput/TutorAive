@@ -24,6 +24,10 @@ const AttendanceSchema = new mongoose_1.Schema({
     joinTime: Date,
     leaveTime: Date,
     markedAt: Date,
+    totalDuration: {
+        type: Number,
+        default: 0, // in milliseconds
+    },
     markedBy: {
         type: mongoose_1.Schema.Types.ObjectId,
         ref: "User", // teacher/admin

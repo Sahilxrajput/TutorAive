@@ -13,22 +13,41 @@ exports.authorizeOwnerMiddleware = void 0;
 const authorizeOwner_1 = require("../utils/authorization/authorizeOwner");
 const authorizeOwnerMiddleware = (resourceType) => (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const resourceId = req.params.id ||
-            req.params.assignmentId ||
-            req.params.lectureId ||
-            req.params.classroomId;
+        // Ensure user is authenticated
+        if (!req.userId) {
+            return res.status(401).json({
+                success: false,
+                message: "Unauthorized. User not authenticated.",
+            });
+        }
+        // Map resource type to param name
+        const paramMap = {
+            lecture: "lectureId",
+            assignment: "assignmentId",
+            classroom: "classroomId",
+        };
+        const rawId = req.params[paramMap[resourceType]] || req.params.id;
+        if (!rawId || Array.isArray(rawId)) {
+            return res.status(400).json({
+                success: false,
+                message: `${resourceType} id is required`,
+            });
+        }
+        const resourceId = rawId; // 
         const resource = yield (0, authorizeOwner_1.authorizeOwner)({
             resourceType,
-            resourceId: resourceId,
+            resourceId,
             userId: req.userId,
         });
+        // attach resource for controller use
         req.authorizedResource = resource;
         next();
     }
     catch (err) {
+        console.error("AuthorizeOwner Error:", err);
         res.status(err.status || 500).json({
             success: false,
-            message: err.message,
+            message: err.message || "Authorization failed",
         });
     }
 });

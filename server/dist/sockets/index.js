@@ -71,7 +71,7 @@ const initSocket = (httpServer) => __awaiter(void 0, void 0, void 0, function* (
         //     `${user.userName} joined the live class`
         //   );
         // });
-        // registered Sockets
+        //* registered Sockets
         (0, qna_socket_1.registerQnaSocket)(socket);
         (0, chat_socket_1.registerChatSocket)(socket);
         (0, poll_socket_1.registerPollSocket)(socket);

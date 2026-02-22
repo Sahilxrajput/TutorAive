@@ -73,7 +73,7 @@ const SectorCard = ({ course, isEnrolled, index, onClick }: Props) => {
                 <button className={cn(
                     "w-full py-4 rounded-xl font-oswald font-bold uppercase tracking-[0.2em] text-[10px] transition-all flex items-center justify-center gap-2",
                     isEnrolled
-                        ? "bg-muted hover:bg-primary hover:text-white text-muted-foreground"
+                        ? "bg-muted border-primary/20 border hover:bg-primary hover:text-white text-muted-foreground"
                         : "bg-primary text-white shadow-lg shadow-primary/20 hover:shadow-primary/40 hover:scale-[1.02]"
                 )}>
                     {isEnrolled ? (

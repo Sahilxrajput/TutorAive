@@ -37,12 +37,12 @@ const ClassroomSchema = new Schema<IClassroom>(
     //     ref: "Lecture",
     //   },
     // ],
-    assignments: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: "Assignment",
-      },
-    ],
+    // assignments: [
+    //   {
+    //     type: Schema.Types.ObjectId,
+    //     ref: "Assignment",
+    //   },
+    // ],
     exams: [
       {
         type: Schema.Types.ObjectId,

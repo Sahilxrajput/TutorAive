@@ -165,7 +165,6 @@ const Home = () => {
                         Upcoming Schedule
                     </h3>
                     <DaySchedule />
-
                     <BadgeCard />
                 </section>
 

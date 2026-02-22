@@ -49,11 +49,16 @@ export function LectureDropdownMenu({ lecture, cn }: { lecture: ILecture, cn?: s
             return toast.warning("Delay reason is required");
         }
 
-        await API.put(`/classrooms/${classroomId}/lectures/${lecture._id}`, {
-            status: "delayed",
-            delayTime: Number(timeValue),
-            reason,
-        });
+       try {
+         const {data} = await API.put(`/classrooms/${classroomId}/lectures/${lecture._id}`, {
+             status: "delayed",
+             delayTime: Number(timeValue),
+             reason,
+         });
+         console.log("data : ", data)
+       } catch (error) {
+        console.log(error)
+       }
 
     };
 
@@ -87,7 +92,6 @@ export function LectureDropdownMenu({ lecture, cn }: { lecture: ILecture, cn?: s
             status: "cancelled",
             reason,
         });
-
     };
 
     const handleSubmit = async () => {

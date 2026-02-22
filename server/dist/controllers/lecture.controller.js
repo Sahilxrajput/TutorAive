@@ -70,6 +70,7 @@ exports.createLecture = createLecture;
 const updateLecture = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { status, title, newStartTime, delayTime, reason } = req.body;
+        console.log(req.body);
         const lecture = req.authorizedResource;
         if (!lecture) {
             return res.status(500).json({
@@ -77,6 +78,7 @@ const updateLecture = (req, res) => __awaiter(void 0, void 0, void 0, function* 
                 message: "Authorized lecture missing",
             });
         }
+        console.log(lecture);
         if (title)
             lecture.title = title;
         let notificationTime;
@@ -103,8 +105,7 @@ const updateLecture = (req, res) => __awaiter(void 0, void 0, void 0, function* 
             lecture.status = status;
         }
         yield lecture.save();
-        if (status)
-            (0, queue_1.addClassNotificationJob)(lecture);
+        (0, queue_1.addClassNotificationJob)(lecture);
         res.json({
             success: true,
             message: `Lecture updated`,
@@ -112,6 +113,7 @@ const updateLecture = (req, res) => __awaiter(void 0, void 0, void 0, function* 
         });
     }
     catch (error) {
+        console.log(error);
         handleError(res, error);
     }
 });

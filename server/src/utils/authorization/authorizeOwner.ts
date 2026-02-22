@@ -8,7 +8,7 @@ type ResourceType = "lecture" | "assignment" | "classroom";
 interface AuthorizeParams {
   resourceType: ResourceType;
   resourceId: string;
-  userId?: string;
+  userId: string;
 }
 
 export const authorizeOwner = async ({
@@ -16,38 +16,36 @@ export const authorizeOwner = async ({
   resourceId,
   userId,
 }: AuthorizeParams) => {
-  if (!userId) {
-    throw { status: 401, message: "Unauthorized" };
-  }
-
-  if (!resourceId) {
-    throw { status: 400, message: "Resource ID is required" };
-  }
-
   try {
-    let classroomId: string | null = null;
     let resource: any = null;
+    let teacherId: string | null = null;
 
     // ───────── LECTURE ─────────
     if (resourceType === "lecture") {
-      resource = await Lecture.findById(resourceId).populate("classroom");
+      resource = await Lecture.findById(resourceId).populate(
+        "classroom",
+        "teacher",
+      );
 
       if (!resource) {
         throw { status: 404, message: "Lecture not found" };
       }
 
-      classroomId = resource.classroom?._id;
+      teacherId = resource.createdBy?.toString();
     }
 
     // ───────── ASSIGNMENT ─────────
     else if (resourceType === "assignment") {
-      resource = await Assignment.findById(resourceId).populate("classroom");
+      resource = await Assignment.findById(resourceId).populate(
+        "classroom",
+        "teacher",
+      );
 
       if (!resource) {
         throw { status: 404, message: "Assignment not found" };
       }
 
-      classroomId = resource.classroom?._id;
+      teacherId = resource.createdBy?.toString();
     }
 
     // ───────── CLASSROOM ─────────
@@ -58,14 +56,15 @@ export const authorizeOwner = async ({
         throw { status: 404, message: "Classroom not found" };
       }
 
-      classroomId = resource._id;
+      teacherId = resource.teacher?.toString();
     }
 
-    if (!classroomId) {
-      throw { status: 500, message: "Classroom reference missing" };
+    if (!teacherId) {
+      throw { status: 500, message: "Teacher reference missing" };
     }
 
-    if (resource.teacher.toString() !== userId) {
+    // Ownership check
+    if (teacherId !== userId) {
       throw {
         status: 403,
         message: "You do not have permission to modify this resource",

@@ -28,7 +28,7 @@ const shouldShowLecture = (lecture: ILecture) => {
     }
 }
 
-const LectureList = ({ lectures }: Props) => {
+const LectureList = ({ lectures=[] }: Props) => {
    
     const visibleLectures = lectures
         .filter(shouldShowLecture)

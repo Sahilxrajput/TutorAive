@@ -70,26 +70,52 @@ export const leaveStudentLiveSession = (socket: Socket) => async () => {
   peerManager.remove(socket.id);
 
   // ---- ATTENDANCE LOGIC STARTS HERE ----
+  const attendance = await Attendance.findOne({
+    lecture: roomId,
+    student: studentId,
+  });
+
+  if (!attendance || !attendance.joinedAt) {
+    console.log("No attendance record found for duration calculation");
+    return;
+  }
+
+  const now = new Date();
+  const sessionDuration = now.getTime() - attendance.joinedAt.getTime();
+
+  const totalDuration = (attendance.totalDuration || 0) + sessionDuration;
+
   const lecture = await Lecture.findById(roomId);
   if (!lecture) return;
 
   const lectureStartTime = new Date(lecture.startTime);
-  const now = new Date();
 
-  const diffMinutes = (now.getTime() - lectureStartTime.getTime()) / 60000;
+  // Calculate lateness based on JOIN time, not leave time
+  const joinedLate =
+    attendance.joinedAt.getTime() - lectureStartTime.getTime() > 10 * 60 * 1000; // 10 min
 
-  const status = diffMinutes > 10 ? "late" : "present";
+  const MIN_REQUIRED_DURATION = 5 * 60 * 1000; // 5 minutes
 
-  await Attendance.findOneAndUpdate(
+  let status: "present" | "late" | "absent" = "absent";
+
+  if (totalDuration >= MIN_REQUIRED_DURATION) {
+    status = joinedLate ? "late" : "present";
+  }
+
+  await Attendance.updateOne(
     { lecture: roomId, student: studentId },
     {
-      status,
-      markedAt: now,
+      $set: {
+        leftAt: now,
+        totalDuration,
+        status,
+      },
     },
-    { upsert: true },
   );
 
   console.log(
-    `[attendance] ${studentId} marked ${status} for lecture ${roomId}`,
+    `[attendance] ${studentId} marked ${status} (duration: ${Math.floor(
+      totalDuration / 60000,
+    )} min)`,
   );
-};
+};;

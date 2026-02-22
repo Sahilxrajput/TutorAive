@@ -61,7 +61,6 @@ const createClassroom = (req, res) => __awaiter(void 0, void 0, void 0, function
     }
 });
 exports.createClassroom = createClassroom;
-// @todo
 // Get all classrooms (with optional filtering)
 const getClassrooms = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -94,8 +93,7 @@ const getClassroomById = (req, res) => __awaiter(void 0, void 0, void 0, functio
             .populate("students", "name email profilePicture");
         if (!classroom)
             return res.status(404).json({ message: "Classroom not found" });
-        console.log(classroom);
-        res.json(classroom);
+        res.status(200).json(classroom);
     }
     catch (error) {
         res.status(500).json({ message: "Error fetching classroom", error });
@@ -133,7 +131,7 @@ const deleteClassroom = (req, res) => __awaiter(void 0, void 0, void 0, function
 exports.deleteClassroom = deleteClassroom;
 const enrollClassroom = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { classroomId } = req.body;
+        const { classroomId } = req.params;
         const userId = new mongoose_1.Types.ObjectId(req.userId);
         const classroom = yield classroom_model_1.Classroom.findById(classroomId);
         if (!classroom) {

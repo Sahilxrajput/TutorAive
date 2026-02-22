@@ -13,7 +13,7 @@ import { IAssignment, ISubmission } from "@/types/type";
 import useAuth from "@/hooks/useAuth";
 const AssignmentCard = lazy(() => import("./AssignmentCard"));
 const SubmissionCard = lazy(() => import("./SubmissionCard"));
-const PdfUploadDialog  = lazy(() => import("./PdfUploadDialog"));
+const PdfUploadDialog = lazy(() => import("./PdfUploadDialog"));
 const SectorHeader = lazy(() => import("./SectorHeader"));
 
 
@@ -89,7 +89,7 @@ function AssignmentSector() {
 
     return (
         <div className="min-h-screen bg-background text-foreground transition-colors duration-500 relative overflow-hidden font-inter">
-            <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-primary/5 blur-[140px] rounded-full z-10 pointer-events-none" />
+            <div className="absolute top-0 left-1/4 w-150 h-150 bg-primary/5 blur-[140px] rounded-full z-10 pointer-events-none" />
             <div className="absolute bottom-0 right-0 w-96 h-96 bg-primary/5 blur-[120px] rounded-full z-10 pointer-events-none" />
 
             <div className="max-w-7xl mx-auto space-y-20">
@@ -105,7 +105,7 @@ function AssignmentSector() {
                                     Icon={Plus}
                                     buttonText="Add Assignment"
                                     type="assignment"
-                                    id="1"
+                                    id={classroomId || "1"}
                                     title="add new assignmnet"
                                 />
                             )}

@@ -68,7 +68,6 @@ export const createClassroom = async (req: Request, res: Response) => {
   }
 };
 
-// @todo
 // Get all classrooms (with optional filtering)
 export const getClassrooms = async (req: Request, res: Response) => {
   try {
@@ -86,7 +85,7 @@ export const getClassrooms = async (req: Request, res: Response) => {
       .status(200)
       .json({ message: "fetch classrooms successfully", data: classrooms });
   } catch (error) {
-    console.log(error)
+    console.log(error);
     res
       .status(500)
       .json({ message: "Failed to sync with TutorAive Database.", error });
@@ -102,8 +101,8 @@ export const getClassroomById = async (req: Request, res: Response) => {
 
     if (!classroom)
       return res.status(404).json({ message: "Classroom not found" });
-    console.log(classroom)
-    res.json(classroom);
+
+    res.status(200).json(classroom);
   } catch (error) {
     res.status(500).json({ message: "Error fetching classroom", error });
   }
@@ -142,7 +141,7 @@ export const deleteClassroom = async (req: Request, res: Response) => {
 
 export const enrollClassroom = async (req: Request, res: Response) => {
   try {
-    const { classroomId } = req.body;
+    const { classroomId } = req.params;
     const userId = new Types.ObjectId(req.userId);
 
     const classroom = await Classroom.findById(classroomId);

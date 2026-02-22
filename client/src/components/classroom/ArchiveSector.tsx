@@ -49,8 +49,6 @@ const ArchiveSector = () => {
         }
 
         e.preventDefault();
-
-
         let cloudData;
 
         // 1. get signature + upload
@@ -108,6 +106,14 @@ const ArchiveSector = () => {
             toast.success("Resource posted successfully.");
             setIsModalOpen(false)
             // @todo after successfully upload and save into db
+            // const tempFile = {
+            //     title: noteName,
+            //     file:{
+            //         url: data.
+            //     }
+            // } 
+
+            // setFiles((prev) => [...prev, ])
         } catch (err) {
             console.log(err)
             toast.error("Failed to save resource.");
@@ -178,7 +184,7 @@ const ArchiveSector = () => {
                         initial={{ scale: 0.95, opacity: 0, y: 20 }}
                         animate={{ scale: 1, opacity: 1, y: 0 }}
                         exit={{ scale: 0.95, opacity: 0, y: 20 }}
-                        className="relative w-full max-w-md p-8 rounded-[2rem] bg-card border border-border shadow-2xl"
+                        className="relative w-full max-w-md p-8 rounded-4xl bg-card border border-border shadow-2xl"
                     >
                         <button
                             onClick={() => setIsModalOpen(false)}

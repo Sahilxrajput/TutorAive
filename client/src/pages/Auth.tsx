@@ -70,21 +70,21 @@ const App = () => {
         }));
     };
 
-    // const GoogleAuth = () => {
-    //     try {
-    //         if (!formData.role.trim()) {
-    //             toast.info("select user role");
-    //             return;
-    //         }
-    //         setLocalLoading(true);
+    const GoogleAuth = () => {
+        try {
+            if (!formData.role.trim()) {
+                toast.info("select user role");
+                return;
+            }
+            setLocalLoading(true);
 
-    //         window.location.href = `${import.meta.env.VITE_API_URL}/auth/google?role=${formData.role}`;
-    //     } catch (error) {
-    //         notifyError(error);
-    //     } finally {
-    //         setLocalLoading(false);
-    //     }
-    // };
+            window.location.href = `${import.meta.env.VITE_API_URL}/auth/google?role=${formData.role}`;
+        } catch (error) {
+            notifyError(error);
+        } finally {
+            setLocalLoading(false);
+        }
+    };
 
 
     return (
@@ -200,7 +200,7 @@ const App = () => {
                     </div>
 
                     {/* Social Gateway */}
-                    {/* <button
+                    <button
                         className="w-full flex items-center justify-center gap-4 py-4 rounded-3xl border border-border hover:bg-muted/50 transition-all group mb-8"
                         disabled={loading || localLoading}
                         onClick={GoogleAuth}
@@ -209,7 +209,7 @@ const App = () => {
                             <Chrome className="w-4 h-4 text-slate-700" />
                         </div>
                         <span className="text-xs font-black uppercase tracking-widest">Continue with Google</span>
-                    </button> */}
+                    </button>
 
                     <div className="flex items-center gap-4 mb-8 opacity-20 px-4">
                         <div className="h-px flex-1 bg-foreground" />

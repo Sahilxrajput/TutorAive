@@ -5,6 +5,7 @@ import { Device } from "mediasoup-client";
 import { toast } from "sonner";
 import type { AppData, Consumer, DtlsParameters, RtpCapabilities, RtpParameters, Transport } from "mediasoup-client/types";
 import { useNavigate, useParams } from "react-router-dom";
+import { ClassStartPermissionAlert } from "@/components/classroom/ClassStartPermissionAlert";
 const SidebarTabs = lazy(() => import("@/components/classroom/SidebarTabs"));
 const VideoStage = lazy(() => import("@/components/classroom/VideoStage"));
 const ControlBarForStudent = lazy(() => import("./ControlBarForStudent"));
@@ -14,6 +15,7 @@ interface IJoinRoom {
 }
 
 const LiveStudentPage = () => {
+    const [isModalOpen, setIsModalOpen] = useState(true);
     const [openChat, setOpenChat] = useState(false)
     const [viewerCount] = useState(42);
     const { user, isInstructor } = useAuth();
@@ -32,11 +34,6 @@ const LiveStudentPage = () => {
     const screenAudioConsumerRef = useRef<Consumer | null>(null);
     const [isScreenSharing, setIsScreenSharing] = useState(false);
     const navigate = useNavigate();
-
-
-    useEffect(() => {
-        goConnect()
-    }, [])
 
 
     const clearStram = () => {
@@ -320,7 +317,7 @@ const LiveStudentPage = () => {
                 />
 
             </main>
-
+            <ClassStartPermissionAlert isOpen={isModalOpen} setIsOpen={setIsModalOpen} onConfirm={goConnect} />
             {openChat && <SidebarTabs isTeacher={isInstructor} />}
         </div>
     );

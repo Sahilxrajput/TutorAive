@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, ReactNode } from "react";
+import { useState, useEffect, useMemo, ReactNode, useContext } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
     MoreHorizontal,
@@ -57,6 +57,9 @@ const RosterSector = () => {
     const [openAddStudent, setOpenAddStudent] = useState(false)
 
     const { classroomId } = useParams();
+    const { isClassInstructor } = useOutletContext<{
+        isClassInstructor: boolean;
+    }>();
 
     useEffect(() => {
         const fetchStudents = async () => {
@@ -110,7 +113,7 @@ const RosterSector = () => {
                         />
                     </div>
 
-                    <div className="flex items-center gap-3">
+                    {isClassInstructor && <div className="flex items-center gap-3">
                         <button className="flex items-center gap-2 px-5 py-3 rounded-xl bg-card/40 border border-border dark:border-white/5 text-[10px] font-bold font-oswald uppercase tracking-widest hover:bg-muted/50 transition-all">
                             <Filter size={14} /> Filters
                         </button>
@@ -119,7 +122,7 @@ const RosterSector = () => {
                             className="flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-white text-[10px] font-bold font-oswald uppercase tracking-widest shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all">
                             <UserPlus size={14} /> Authorize Identity
                         </button>
-                    </div>
+                    </div>}
                 </header>
 
                 {/* Search & Intelligence Grid */}

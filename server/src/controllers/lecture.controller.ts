@@ -80,6 +80,7 @@ export const createLecture = async (req: Request, res: Response) => {
 export const updateLecture = async (req: Request, res: Response) => {
   try {
     const { status, title, newStartTime, delayTime, reason } = req.body;
+    console.log(req.body);
 
     const lecture = req.authorizedResource as ILecture;
     if (!lecture) {
@@ -88,6 +89,7 @@ export const updateLecture = async (req: Request, res: Response) => {
         message: "Authorized lecture missing",
       });
     }
+    console.log(lecture);
 
     if (title) lecture.title = title;
 
@@ -126,7 +128,7 @@ export const updateLecture = async (req: Request, res: Response) => {
 
     await lecture.save();
 
-    if (status) addClassNotificationJob(lecture);
+    addClassNotificationJob(lecture);
 
     res.json({
       success: true,
@@ -134,6 +136,7 @@ export const updateLecture = async (req: Request, res: Response) => {
       lecture,
     });
   } catch (error) {
+    console.log(error);
     handleError(res, error);
   }
 };

@@ -18,31 +18,25 @@ const lecture_model_1 = __importDefault(require("../../models/lecture.model"));
 const assignment_model_1 = __importDefault(require("../../models/assignment.model"));
 const classroom_model_1 = require("../../models/classroom.model");
 const authorizeOwner = (_a) => __awaiter(void 0, [_a], void 0, function* ({ resourceType, resourceId, userId, }) {
-    var _b, _c;
-    if (!userId) {
-        throw { status: 401, message: "Unauthorized" };
-    }
-    if (!resourceId) {
-        throw { status: 400, message: "Resource ID is required" };
-    }
+    var _b, _c, _d;
     try {
-        let classroomId = null;
         let resource = null;
+        let teacherId = null;
         // ───────── LECTURE ─────────
         if (resourceType === "lecture") {
-            resource = yield lecture_model_1.default.findById(resourceId).populate("classroom");
+            resource = yield lecture_model_1.default.findById(resourceId).populate("classroom", "teacher");
             if (!resource) {
                 throw { status: 404, message: "Lecture not found" };
             }
-            classroomId = (_b = resource.classroom) === null || _b === void 0 ? void 0 : _b._id;
+            teacherId = (_b = resource.createdBy) === null || _b === void 0 ? void 0 : _b.toString();
         }
         // ───────── ASSIGNMENT ─────────
         else if (resourceType === "assignment") {
-            resource = yield assignment_model_1.default.findById(resourceId).populate("classroom");
+            resource = yield assignment_model_1.default.findById(resourceId).populate("classroom", "teacher");
             if (!resource) {
                 throw { status: 404, message: "Assignment not found" };
             }
-            classroomId = (_c = resource.classroom) === null || _c === void 0 ? void 0 : _c._id;
+            teacherId = (_c = resource.createdBy) === null || _c === void 0 ? void 0 : _c.toString();
         }
         // ───────── CLASSROOM ─────────
         else if (resourceType === "classroom") {
@@ -50,12 +44,13 @@ const authorizeOwner = (_a) => __awaiter(void 0, [_a], void 0, function* ({ reso
             if (!resource) {
                 throw { status: 404, message: "Classroom not found" };
             }
-            classroomId = resource._id;
+            teacherId = (_d = resource.teacher) === null || _d === void 0 ? void 0 : _d.toString();
         }
-        if (!classroomId) {
-            throw { status: 500, message: "Classroom reference missing" };
+        if (!teacherId) {
+            throw { status: 500, message: "Teacher reference missing" };
         }
-        if (resource.teacher.toString() !== userId) {
+        // Ownership check
+        if (teacherId !== userId) {
             throw {
                 status: 403,
                 message: "You do not have permission to modify this resource",

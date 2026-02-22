@@ -25,7 +25,11 @@ const AttendanceSchema = new Schema<IAttendance>(
     },
     joinTime: Date,
     leaveTime: Date,
-    markedAt:Date,
+    markedAt: Date,
+    totalDuration: {
+      type: Number,
+      default: 0, // in milliseconds
+    },
     markedBy: {
       type: Schema.Types.ObjectId,
       ref: "User", // teacher/admin

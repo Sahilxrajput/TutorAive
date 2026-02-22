@@ -60,7 +60,7 @@ const LectureCard = ({ lecture }: { lecture: ILecture }) => {
             whileHover={{ y: -4 }}
             onClick={lecture.status !== "cancelled" ? onOpen : undefined}
             className={cn(
-                "group relative p-6 rounded-[2rem] transition-all duration-500 cursor-pointer overflow-hidden",
+                "group relative p-6 rounded-4xl transition-all duration-500 cursor-pointer overflow-hidden",
                 "bg-card/60 dark:bg-neutral-900/40 backdrop-blur-xl border border-border dark:border-white/5 shadow-2xl ",
                 style.glow,
                 lecture.status === "cancelled" && "line-through cursor-not-allowed"

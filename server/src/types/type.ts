@@ -69,9 +69,10 @@ export interface IAttendance extends Document {
   lecture: Types.ObjectId;
   student: Types.ObjectId;
   markedBy: Types.ObjectId;
-  leaveTime?: Date;
   markedAt?: Date;
+  totalDuration?: number;
   joinTime?: Date;
+  leaveTime?: Date;
   status: "present" | "absent" | "late";
 }
 // export interface IClassroom extends Document {

@@ -83,7 +83,7 @@ export const initSocket = async (httpServer: HttpServer) => {
     //   );
     // });
 
-    // registered Sockets
+    //* registered Sockets
     registerQnaSocket(socket);
     registerChatSocket(socket);
     registerPollSocket(socket);

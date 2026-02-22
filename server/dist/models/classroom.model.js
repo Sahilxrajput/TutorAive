@@ -37,12 +37,12 @@ const ClassroomSchema = new mongoose_1.Schema({
     //     ref: "Lecture",
     //   },
     // ],
-    assignments: [
-        {
-            type: mongoose_1.Schema.Types.ObjectId,
-            ref: "Assignment",
-        },
-    ],
+    // assignments: [
+    //   {
+    //     type: Schema.Types.ObjectId,
+    //     ref: "Assignment",
+    //   },
+    // ],
     exams: [
         {
             type: mongoose_1.Schema.Types.ObjectId,

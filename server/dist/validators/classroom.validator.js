@@ -102,7 +102,7 @@ exports.saveAssignmentValidator = [
     (0, express_validator_1.body)("maxPoints")
         .notEmpty()
         .withMessage("Max points are required")
-        .isInt({ min: 1 })
+        .isInt({ min: 0 })
         .withMessage("Points must be a positive integer"),
     (0, express_validator_1.body)("dueDate")
         .notEmpty()

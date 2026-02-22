@@ -18,7 +18,7 @@ import { LucideIcon } from "lucide-react"
 interface Props {
     buttonText: string
     type: "assignment" | "resource" | "note" | "submission"
-    id: string
+    id: string 
     Icon?: LucideIcon
     title: string
     cn?: string
@@ -70,7 +70,6 @@ export default function PdfUploadDialog({ buttonText, title, cn, id, type, Icon,
 
             const { data } = await API.post(signatureUrl);
 
-
             const formData = new FormData();
             formData.append("file", file);
             formData.append("api_key", data.apiKey);
@@ -114,7 +113,7 @@ export default function PdfUploadDialog({ buttonText, title, cn, id, type, Icon,
                         title: inputTitle,
                         description,
                         dueDate: new Date(dueDate),
-                        maxPoints: Number(maxPoints),
+                        maxPoints: Number(maxPoints) || 0,
                     }
                     : {
                         pdfUrl: cloudData.secure_url,
@@ -123,7 +122,6 @@ export default function PdfUploadDialog({ buttonText, title, cn, id, type, Icon,
                     };
 
             await API.post(saveUrl, payload);
-
 
 
             toast.success(
@@ -135,7 +133,8 @@ export default function PdfUploadDialog({ buttonText, title, cn, id, type, Icon,
 
             // after successfully upload and save into db
             onComplete?.(id)
-        } catch {
+        } catch(e) {
+            console.log("error",e)
             toast.error("Database error");
         } finally {
             setUploading(false)

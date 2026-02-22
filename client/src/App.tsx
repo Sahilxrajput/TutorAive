@@ -77,6 +77,7 @@ const App: React.FC = () => {
                                     path=":classroomId"
                                     element={<ClassroomPage />}
                                 />
+                                
                                 <Route
                                     path=":classroomId/lecture/live/:lectureId"
                                     element={<LiveSession />}

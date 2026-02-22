@@ -50,7 +50,10 @@ router
     .post(lecture_validtor_1.createLectureValidator, handleValidation_1.handleValidation, (0, authorizeOwner_middleware_1.authorizeOwnerMiddleware)("classroom"), lecture_controller_1.createLecture);
 router
     .route("/:classroomId/lectures/:id")
-    .put(lecture_validtor_1.updateLectureValidator, handleValidation_1.handleValidation, (0, authorizeOwner_middleware_1.authorizeOwnerMiddleware)("lecture"), lecture_controller_1.updateLecture)
+    .put(
+// updateLectureValidator,
+// handleValidation,
+(0, authorizeOwner_middleware_1.authorizeOwnerMiddleware)("lecture"), lecture_controller_1.updateLecture)
     .delete(classroom_validator_1.idParamValidator, handleValidation_1.handleValidation, (0, authorizeOwner_middleware_1.authorizeOwnerMiddleware)("lecture"), classroom_controller_1.deleteClassroom);
 //! create a --------------------lecture------------------------ in classroom
 router.post("/:classroomId/resources", (0, authorizeOwner_middleware_1.authorizeOwnerMiddleware)("classroom"), assignment_controller_1.cloudinarySignature);

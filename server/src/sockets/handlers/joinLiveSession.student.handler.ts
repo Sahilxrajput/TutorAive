@@ -14,66 +14,61 @@ interface Payload {
 export const handleStudentJoinLiveSession =
   (socket: Socket) =>
   async ({ roomId, name, userId }: Payload, cb: any) => {
-    const lecture = await Lecture.findById(roomId).select("status");
+    try {
+        console.log("roomId:", roomId )
+      if (!roomId || !userId) {
+        return cb({ error: "Invalid data" });
+      }
 
-    if (!lecture) {
-      return cb({ error: "Lecture not found" });
-    }
+      const lecture = await Lecture.findById(roomId).select("status");
+      if (!lecture) return cb({ error: "Lecture not found" });
+      if (lecture.status !== "live") return cb({ error: "Lecture not live" });
 
-    if (lecture.status !== "live") {
-      return cb({ error: "Lecture not started yet" });
-    }
+      const room = roomManager.get(roomId);
+      if (!room) return cb({ error: "Room unavailable" });
 
-    const room = roomManager.get(roomId);
-    if (!room) {
-      return cb({ error: "Live room not available" });
-    }
+      if (room.hasPeer(userId)) {
+        return cb({ error: "Already joined" });
+      }
 
-    if (room.hasPeer(userId)) {
-      return cb({ error: "User already joined" });
-    }
+      //@todo Enrollment check here
 
-    const peer = new Peer({
-      name,
-      socketId: socket.id,
-      userId,
-      roomId,
-    });
-
-    room.addPeer(peer);
-    peerManager.add(peer);
-
-    if (!roomId || !userId) {
-      console.error("Invalid attendance data", { roomId, userId });
-      return;
-    }
-
-    //@todo isenrolled gaurd
-    await Attendance.findOneAndUpdate(
-      { lecture: roomId, student: userId },
-      {
-        $setOnInsert: {
-          lecture: roomId,
-          student: userId,
+      await Attendance.findOneAndUpdate(
+        { lecture: roomId, student: userId },
+        {
+          $setOnInsert: {
+            lecture: roomId,
+            student: userId,
+          },
+          $set: {
+            joinedAt: new Date(),
+          },
         },
-        $set: {
-          status: "present",
-          markedAt: new Date(),
-        },
-      },
-      { upsert: true, new: true },
-    );
+        { upsert: true, new: true },
+      );
 
-    socket.data.activeRoomId = roomId;
-    socket.join(roomId);
+      const peer = new Peer({
+        name,
+        socketId: socket.id,
+        userId,
+        roomId,
+      });
 
-    socket.to(roomId).emit("peer-joined", {
-      socketId: socket.id,
-      name,
-      userId,
-    });
+      room.addPeer(peer);
+      peerManager.add(peer);
 
-    cb({
-      rtpCapabilities: room.router.rtpCapabilities,
-    });
+      socket.data.activeRoomId = roomId;
+      socket.join(roomId);
+
+      socket.to(roomId).emit("peer-joined", {
+        socketId: socket.id,
+        name,
+        userId,
+      });
+
+      return cb({ rtpCapabilities: room.router.rtpCapabilities });
+    } catch (err) {
+      console.error(err);
+      return cb({ error: "Internal server error" });
+    }
   };
