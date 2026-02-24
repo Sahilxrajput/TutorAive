@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, ReactNode, useContext } from "react";
+import { useState, useEffect, useMemo, ReactNode } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
     MoreHorizontal,
@@ -98,7 +98,7 @@ const RosterSector = () => {
         <div className="min-h-screen p-4 md:p-8 lg:p-12 font-inter relative overflow-hidden ">
             <InvitationDialog isOpen={openAddStudent} onClose={() => setOpenAddStudent(false)} />
             {/* Structural Depth Glows */}
-            <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-primary/5 blur-[140px] rounded-full -z-10 pointer-events-none" />
+            <div className="absolute top-0 left-1/4 w-150h-150 bg-primary/5 blur-[140px] rounded-full -z-10 pointer-events-none" />
             <div className="absolute bottom-0 right-0 w-96 h-96 bg-indigo-500/5 blur-[120px] rounded-full -z-10 pointer-events-none" />
 
             <div className="max-w-7xl mx-auto space-y-12">
@@ -171,7 +171,7 @@ const RosterSector = () => {
                 {/* Main Data Terminal */}
                 <div className="bg-card/30 backdrop-blur-2xl border border-border dark:border-white/5 rounded-[2.5rem] overflow-hidden shadow-2xl">
                     <div className="overflow-x-auto custom-scrollbar">
-                        <table className="w-full text-left border-collapse min-w-[800px]">
+                        <table className="w-full text-left border-collapse min-w-200">
                             <thead>
                                 <tr className="border-b border-border dark:border-white/5 bg-muted/20">
                                     <th className="px-8 py-6 text-[10px] font-bold font-oswald text-muted-foreground uppercase tracking-[0.2em]">
@@ -187,7 +187,7 @@ const RosterSector = () => {
                                 {isLoading ? (
                                     [1, 2, 3].map(i => (
                                         <tr key={i} className="animate-pulse">
-                                            <td colSpan={5} className="px-8 py-10 bg-muted/5 border-b border-border/10" />
+                                            <td colSpan={5} className="px-8 py-10 bg-muted/50 border-b border-border/10" />
                                         </tr>
                                     ))
                                 ) : (
@@ -198,7 +198,7 @@ const RosterSector = () => {
                                                 initial={{ opacity: 0, y: 10 }}
                                                 animate={{ opacity: 1, y: 0 }}
                                                 transition={{ delay: i * 0.05 }}
-                                                className="group hover:bg-primary/[0.02] transition-all duration-300 cursor-default"
+                                                className="group hover:bg-primary/2 transition-all duration-300 cursor-default"
                                             >
                                                 <td className="px-8 py-6">
                                                     <div className="flex items-center gap-5">

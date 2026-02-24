@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from "framer-motion";
 import SectorHeader from "./SectorHeader";
-import { BookOpen, Download, FileText, Plus, Upload, X } from "lucide-react";
+import { BookOpen, Download, FileText, Plus, Upload } from "lucide-react";
 import { FormEvent, useEffect, useState } from "react";
 import API from "@/lib/api";
 import { useOutletContext, useParams } from "react-router-dom";
@@ -8,6 +8,8 @@ import { toast } from "sonner";
 import axios from "axios";
 import { Progress } from "../ui/progress";
 import { IResource } from "@/types/type";
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from "../ui/dialog";
+import { CardHeader } from "../ui/card";
 
 
 const ArchiveSector = () => {
@@ -171,72 +173,56 @@ const ArchiveSector = () => {
 
         {/* Teacher Add Note Modal */}
         <AnimatePresence>
-            {isModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        onClick={() => setIsModalOpen(false)}
-                        className="absolute inset-0 bg-background/80 backdrop-blur-md"
-                    />
-                    <motion.div
-                        initial={{ scale: 0.95, opacity: 0, y: 20 }}
-                        animate={{ scale: 1, opacity: 1, y: 0 }}
-                        exit={{ scale: 0.95, opacity: 0, y: 20 }}
-                        className="relative w-full max-w-md p-8 rounded-4xl bg-card border border-border shadow-2xl"
-                    >
-                        <button
-                            onClick={() => setIsModalOpen(false)}
-                            className="absolute top-6 right-6 p-2 rounded-full hover:bg-muted transition-colors"
-                        >
-                            <X size={20} />
-                        </button>
+            <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
 
-                        <div className="mb-6">
-                            <h3 className="text-xl font-bold font-oswald uppercase">Upload New Material</h3>
-                            <p className="text-sm text-muted-foreground">Add a new PDF note to the knowledge vault.</p>
+                <DialogContent className="sm:max-w-100">
+                    <CardHeader>
+                        <DialogTitle className="text-xl font-bold font-oswald uppercase">
+                            Upload New Material
+                        </DialogTitle>
+                        <DialogDescription>
+                            Add a new PDF note to the knowledge vault.
+                        </DialogDescription>
+                    </CardHeader>
+
+                    <form onSubmit={resourceUpload} className="space-y-4">
+                        <div className="space-y-2">
+                            <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Note Title</label>
+                            <input
+                                autoFocus
+                                type="text"
+                                placeholder="e.g. Advanced_WebRTC_Patterns"
+                                value={noteName}
+                                required
+                                onChange={(e) => setNoteName(e.target.value)}
+                                className="w-full p-4 rounded-2xl bg-muted/50 border border-transparent focus:border-primary focus:bg-background transition-all outline-none"
+                            />
                         </div>
+                        <div className="space-y-2">
+                            <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">File</label>
+                            <input
+                                autoFocus
+                                type="file"
+                                onChange={handleFileChange}
+                                required
+                                className="w-full p-4 rounded-2xl bg-muted/50 border border-transparent focus:border-primary focus:bg-background transition-all outline-none"
+                            />
+                        </div>
+                        {uploading && <Progress value={progress} />}
 
-                        <form onSubmit={resourceUpload} className="space-y-4">
-                            <div className="space-y-2">
-                                <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Note Title</label>
-                                <input
-                                    autoFocus
-                                    type="text"
-                                    placeholder="e.g. Advanced_WebRTC_Patterns"
-                                    value={noteName}
-                                    required
-                                    onChange={(e) => setNoteName(e.target.value)}
-                                    className="w-full p-4 rounded-2xl bg-muted/50 border border-transparent focus:border-primary focus:bg-background transition-all outline-none"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">File</label>
-                                <input
-                                    autoFocus
-                                    type="file"
-                                    onChange={handleFileChange}
-                                    required
-                                    className="w-full p-4 rounded-2xl bg-muted/50 border border-transparent focus:border-primary focus:bg-background transition-all outline-none"
-                                />
-                            </div>
-                            {uploading && <Progress value={progress} />}
-
-                            <motion.button
-                                whileHover={{ scale: 1.01 }}
-                                whileTap={{ scale: 0.99 }}
-                                type="submit"
-                                // disabled={!!file || uploading}
-                                className="w-full py-4 mt-4 rounded-2xl bg-primary text-primary-foreground font-bold flex items-center justify-center gap-2"
-                            >
-                                <Upload size={18} />
-                                {uploading ? "Uploading..." : "Confirm Upload"}
-                            </motion.button>
-                        </form>
-                    </motion.div>
-                </div>
-            )}
+                        <motion.button
+                            whileHover={{ scale: 1.01 }}
+                            whileTap={{ scale: 0.99 }}
+                            type="submit"
+                            // disabled={!!file || uploading}
+                            className="w-full py-4 mt-4 rounded-2xl bg-primary text-primary-foreground font-bold flex items-center justify-center gap-2"
+                        >
+                            <Upload size={18} />
+                            {uploading ? "Uploading..." : "Confirm Upload"}
+                        </motion.button>
+                    </form>
+                </DialogContent >
+            </Dialog>
         </AnimatePresence>
     </>
     );

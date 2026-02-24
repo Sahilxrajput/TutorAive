@@ -17,7 +17,7 @@ export default function ClassroomNavbar({ activeTab, setActiveTab }: Props) {
     ];
 
     return (
-        <nav className="flex items-center gap-2 p-2 rounded-[2rem] bg-card/40 dark:bg-black/40 border border-border dark:border-white/5 backdrop-blur-2xl shadow-2xl">
+        <nav className="flex items-center gap-2 p-2 rounded-4xl bg-card/40 dark:bg-black/40 border border-border dark:border-white/5 backdrop-blur-2xl shadow-2xl">
             {sectors.map((sector) => {
                 const IsActive = activeTab === sector.id;
                 return (

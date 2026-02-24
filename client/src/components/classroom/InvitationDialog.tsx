@@ -110,7 +110,7 @@ const InvitationDialog = ({ isOpen, onClose }: { isOpen: boolean, onClose: () =>
                         className="relative bg-card/90 dark:bg-neutral-900/90 border border-primary/20 rounded-[2.5rem] max-w-lg w-full shadow-2xl overflow-hidden backdrop-blur-2xl"
                     >
                         {/* Modal Header */}
-                        <div className="p-8 border-b border-white/5 flex items-center justify-between bg-primary/[0.02]">
+                        <div className="p-8 border-b border-white/5 flex items-center justify-between bg-primary/2">
                             <div className="space-y-1">
                                 <div className="flex items-center gap-2 text-primary">
                                     <UserPlus size={16} />
@@ -134,7 +134,7 @@ const InvitationDialog = ({ isOpen, onClose }: { isOpen: boolean, onClose: () =>
                                             setDeploymentStatus("idle"); // Reset status when switching methods
                                         }}
                                         className={cn(
-                                            "relative flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all duration-500 group flex-shrink-0",
+                                            "relative flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all duration-500 group shrink-0",
                                             activeMethod === m.id ? "text-primary" : "text-muted-foreground hover:text-foreground"
                                         )}
                                     >
@@ -148,7 +148,7 @@ const InvitationDialog = ({ isOpen, onClose }: { isOpen: boolean, onClose: () =>
                             </div>
                         </div>
 
-                        <div className="p-8 min-h-[320px] flex flex-col justify-center">
+                        <div className="p-8 min-h-80 flex flex-col justify-center">
                             <AnimatePresence mode="wait">
                                 {activeMethod === "link" && (
                                     <motion.div key="link" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6">

@@ -35,7 +35,7 @@ export default function ClassroomPage() {
         <>
             <div className="min-h-screen bg-background text-foreground transition-colors duration-500 relative overflow-hidden font-inter">
                 {/* Background Glows */}
-                <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-primary/5 blur-[160px] rounded-full -z-10" />
+                <div className="absolute top-0 right-0 w-200px h-200px bg-primary/5 blur-[160px] rounded-full -z-10" />
                 <div className="absolute bottom-0 left-0 w-96 h-96 bg-indigo-500/5 blur-[120px] rounded-full -z-10" />
 
                 <div className="max-w-7xl mx-auto p-6 md:p-12 space-y-12">

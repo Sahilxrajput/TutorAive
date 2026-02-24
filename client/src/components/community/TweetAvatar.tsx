@@ -11,12 +11,12 @@ const TweetAvatar = ({ author, size  }: Props) => {
         author?.profilePicture ? (
             <Avatar className={`w-${size} rounded-full h-${size}`}>
                 <AvatarImage src={author.profilePicture} alt="U" />
-                <AvatarFallback className="font-bold text-primary uppercase">
+                <AvatarFallback className={`w-${size} rounded-full h-${size} font-bold text-primary uppercase`}>
                     {author?.firstName?.charAt(0) || "U"}
                 </AvatarFallback>
             </Avatar>
         ) : (
-            <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center text-[8px] font-bold text-primary">
+            <div className={`w-${size} rounded-full h-${size} rounded-full bg-primary/10 uppercase flex items-center justify-center font-bold text-primary`}>
                 {author?.userName?.charAt(0) || "U"}
             </div>
         )

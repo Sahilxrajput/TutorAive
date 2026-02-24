@@ -15,7 +15,7 @@ API.interceptors.request.use((config) => {
 });
 
 const refreshAccessToken = async () => {
-  const { data } = await axios.get(
+  const { data } = await axios.post(
     `${import.meta.env.VITE_API_URL}/auth/refresh`,
     { withCredentials: true },
   );

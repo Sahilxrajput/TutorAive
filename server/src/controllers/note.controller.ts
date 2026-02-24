@@ -3,6 +3,7 @@ import Note from "../models/note.model";
 import { ICollaborator, INote, IUser } from "../types/type";
 import User from "../models/user.model";
 import Resource from "../models/resource.model";
+import { addAssignmentNotificationJob, addResourceJob } from "../redis/queue";
 
 export const saveNote = async (req: Request, res: Response) => {
   try {
@@ -421,7 +422,13 @@ export const saveResources = async (req: Request, res: Response) => {
 
     console.log("resource", resource);
 
-    //@todo Message Queue (Email/Push Notifications)
+    // Message Queue (Email/Push Notifications)
+    await addResourceJob({
+      classroomId: classroomDoc._id.toString(),
+      classroomTitle: classroomDoc.title,
+      title: resource.title,
+      resourceUrl: resource.file.url,
+    });
 
     return res.status(201).json({
       success: true,

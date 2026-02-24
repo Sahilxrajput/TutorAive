@@ -8,11 +8,12 @@ const PdfUploadDialog = lazy(() => import("./PdfUploadDialog"));
 type AssignmentCardProps = {
     item: IAssignment;
     isPending: boolean;
+    isInstructor: boolean;
     // onUploadComplete: (id: string) => void;
 };
 
 const AssignmentCard = forwardRef<HTMLDivElement, AssignmentCardProps>(
-    ({ item, isPending }, ref) => {
+    ({ item, isPending, isInstructor }, ref) => {
         return (
             <motion.div
                 ref={ref}
@@ -76,19 +77,21 @@ const AssignmentCard = forwardRef<HTMLDivElement, AssignmentCardProps>(
                 </div>
 
                 <div className="mt-8 flex gap-3 relative z-10">
-                    {isPending ? (
-                        <PdfUploadDialog
-                            // onComplete={(id) => onUploadComplete(id)}
-                            buttonText="Initialize Upload"
-                            type="submission"
-                            title="Authorize Submission"
-                            id={item._id}
-                        />
-                    ) : (
-                        <button className="flex-1 py-3 rounded-xl bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 font-oswald text-[10px] font-bold uppercase tracking-widest flex items-center justify-center gap-2">
-                            <CheckCircle2 size={12} /> Transmission Verified
-                        </button>
-                    )}
+                    {!isInstructor && <>
+                        {isPending ? (
+                            <PdfUploadDialog
+                                // onComplete={(id) => onUploadComplete(id)}
+                                buttonText="Initialize Upload"
+                                type="submission"
+                                title="Authorize Submission"
+                                id={item._id}
+                            />
+                        ) : (
+                            <button className="flex-1 py-3 rounded-xl bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 font-oswald text-[10px] font-bold uppercase tracking-widest flex items-center justify-center gap-2">
+                                <CheckCircle2 size={12} /> Transmission Verified
+                            </button>
+                        )}
+                    </>}
 
                     <a
                         href={item.file.url}

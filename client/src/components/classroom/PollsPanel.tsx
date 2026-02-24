@@ -194,7 +194,7 @@ export default function PollsPanel({ isTeacher = false }: PollsPanelProps) {
                             <div className="flex items-start justify-between gap-2 mb-3">
                                 <h3 className="font-medium text-sm">{poll.question}</h3>
                                 {poll.isActive && (
-                                    <span className="text-[10px] bg-primary/30 text-primary font-semibold px-1.5 py-0.5 rounded flex-shrink-0">
+                                    <span className="text-[10px] bg-primary/30 text-primary font-semibold px-1.5 py-0.5 rounded shrink-0">
                                         Active
                                     </span>
                                 )}

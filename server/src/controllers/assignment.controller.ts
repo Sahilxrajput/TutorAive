@@ -3,9 +3,7 @@ import Assignment from "../models/assignment.model";
 import { Classroom } from "../models/classroom.model";
 import Submission from "../models/submission.model";
 import {
-  IAssignment,
   IClassroom,
-  INotification,
   ISubmission,
 } from "../types/type";
 import { cloudinary } from "../lib/cloudinary";

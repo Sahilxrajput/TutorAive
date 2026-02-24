@@ -12,10 +12,11 @@ import {
   googleCallback,
   refreshAccessToken,
 } from "../controllers/auth.controller";
+import { authLimiter, refreshLimiter } from "../middlewares/rateLimit";
 
 const router = Router();
 
-router.get("/google", (req, res, next) => {
+router.get("/google", authLimiter, (req, res, next) => {
   let role = req.query.role;
   if (Array.isArray(role)) role = role[0];
   if (typeof role !== "string") role = "student";
@@ -43,14 +44,14 @@ router.get(
 );
 
 // login failed
-router.get("/login/failed", loginfailed);
+router.get("/login/failed", authLimiter, loginfailed);
 
 // @todo validation
-router.post("/signup", signup);
+router.post("/signup", authLimiter, signup);
 
 // @todo validation
-router.post("/signin", signin);
-router.get("/refresh", refreshAccessToken);
+router.post("/signin",authLimiter,  signin);
+router.post("/refresh", refreshLimiter, refreshAccessToken);
 
 router.get("/signout", authMiddleware, signout);
 // router.put("/reset-password", authMiddleware, resetPassword);

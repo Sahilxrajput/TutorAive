@@ -21,15 +21,15 @@ const transporter = createTransport({
 export const sendAssignmentEmail = async ({
   toEmail,
   classroomName,
-  assignmentId,
+  assignmentUrl,
+  assignmentTitle,
 }: {
   toEmail: string;
   classroomName?: string;
-  assignmentId: string;
+  assignmentUrl: string;
+  assignmentTitle: string;
 }) => {
   try {
-    const assignmentUrl = `${process.env.SERVER_URL}/assignments/${assignmentId}`;
-
     const mailOptions = {
       from: `"Online Tutor" <online@tutor.in>`,
       to: toEmail,
@@ -39,7 +39,7 @@ export const sendAssignmentEmail = async ({
       <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; padding: 24px; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.08);">
       
       <h2 style="margin-top: 0; color: #1f2937;">
-        New Assignment Posted
+        New Assignment ${assignmentTitle} Posted
       </h2>
   
       <p style="color: #374151; font-size: 14px;">
@@ -104,6 +104,105 @@ export const sendAssignmentEmail = async ({
     await transporter.sendMail(mailOptions);
   } catch {
     throw new Error("Terminal was unable to dispatch the mail packet.");
+  }
+};
+
+export const sendResourceUploadEmail = async ({
+  toEmail,
+  classroomName,
+  resourceUrl,
+  resourceTitle,
+}: {
+  toEmail: string;
+  classroomName?: string;
+  resourceUrl: string;
+  resourceTitle?: string;
+}) => {
+  try {
+    const mailOptions = {
+      from: `"Online Tutor" <online@tutor.in>`,
+      to: toEmail,
+      subject: "New Learning Resource Available",
+      html: `
+      <div style="font-family: Arial, Helvetica, sans-serif; background-color: #f4f6f8; padding: 20px;">
+        <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; padding: 24px; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.08);">
+          
+          <h2 style="margin-top: 0; color: #1f2937;">
+            New Learning Resource Uploaded
+          </h2>
+      
+          <p style="color: #374151; font-size: 14px;">
+            Hello,
+          </p>
+      
+          <p style="color: #374151; font-size: 14px;">
+            A new learning resource has been uploaded to your classroom:
+          </p>
+      
+          <p style="font-size: 15px; font-weight: bold; color: #111827; margin: 16px 0;">
+            ${classroomName || "Your Classroom"}
+          </p>
+
+          ${
+            resourceTitle
+              ? `<p style="color: #374151; font-size: 14px;">
+                   Resource Title: <strong>${resourceTitle}</strong>
+                 </p>`
+              : ""
+          }
+      
+          <p style="color: #374151; font-size: 14px;">
+            Please review the material to stay up to date with the latest content.
+          </p>
+      
+          <div style="text-align: center; margin: 24px 0;">
+            <a 
+              href="${resourceUrl}"
+              target="_blank"
+              style="
+                display: inline-block;
+                padding: 12px 22px;
+                background-color: #2563eb;
+                color: #ffffff;
+                text-decoration: none;
+                border-radius: 4px;
+                font-size: 14px;
+                font-weight: 600;
+              "
+            >
+              View Resource
+            </a>
+          </div>
+      
+          <p style="color: #6b7280; font-size: 12px;">
+            If the button doesn't work, copy and paste the link below into your browser:
+          </p>
+      
+          <p style="font-size: 12px; word-break: break-all;">
+            <a href="${resourceUrl}" style="color: #2563eb;">
+              ${resourceUrl}
+            </a>
+          </p>
+      
+          <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;" />
+      
+          <p style="color: #6b7280; font-size: 12px;">
+            This is an automated message. Replies are not monitored.
+          </p>
+      
+          <p style="color: #6b7280; font-size: 12px; margin-bottom: 0;">
+            © ${new Date().getFullYear()} Online Tutor
+          </p>
+        </div>
+      </div>
+      `,
+    };
+
+    await transporter.sendMail(mailOptions);
+  } catch {
+    throw new Error(
+      "Mail delivery failed during resource notification dispatch.",
+    );
   }
 };
 

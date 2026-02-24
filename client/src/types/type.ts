@@ -16,7 +16,7 @@ export interface IUser {
 export interface INotification {
   _id: string;
   user: string;
-  type: "lecture" | "assignment" | "message" | "system";
+  type: "lecture" | "assignment" | "message" | "system" | "resource";
   message: string;
   data?: {
     classroomId?: string;
@@ -287,8 +287,14 @@ export interface LectureUpdatePayload {
 }
 
 export interface AssignmentPayload {
-  assignmentId: string;
+  assignmentUrl: string;
   classroomId: string;
-  title: string;
+  classroomTitle: string;
+  assignmentTitle: string;
   dueDate: Date;
+}
+export interface ResourcePayload {
+  classroomId: string;
+  classroomTitle: string;
+  title: string;
 }

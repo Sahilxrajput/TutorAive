@@ -6,7 +6,7 @@ import { MyJwtPayload } from "../types/type";
 export default function authMiddleware(
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) {
   const authHeader = req.headers.authorization;
 
@@ -19,14 +19,17 @@ export default function authMiddleware(
   try {
     const decoded = jwt.verify(
       token,
-      process.env.ACCESS_TOKEN_SECRET!
+      process.env.ACCESS_TOKEN_SECRET!,
     ) as MyJwtPayload;
+
     req.userId = decoded._id;
     req.userRole = decoded.role;
     req.userName = decoded.userName;
 
     next();
   } catch (err) {
-    return res.status(403).json({ error: "Access token expired." });
+    return res.status(401).json({
+      message: "Unauthorized: Invalid or expired token",
+    });
   }
 }

@@ -11,6 +11,7 @@ import { useOutletContext, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { IAssignment, ISubmission } from "@/types/type";
 import useAuth from "@/hooks/useAuth";
+import { Skeleton } from "../ui/skeleton";
 const AssignmentCard = lazy(() => import("./AssignmentCard"));
 const SubmissionCard = lazy(() => import("./SubmissionCard"));
 const PdfUploadDialog = lazy(() => import("./PdfUploadDialog"));
@@ -78,10 +79,10 @@ function AssignmentSector() {
 
     if (isLoading) {
         return (
-            <div className="min-h-screen bg-background p-10 space-y-10">
-                <div className="h-20 w-64 bg-muted animate-pulse rounded-[2rem]" />
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    {[1, 2, 3, 4].map(i => <div key={i} className="h-64 rounded-[2.5rem] bg-muted animate-pulse border border-border/10" />)}
+            <div className="min-h-screen bg-background p-8 space-y-10">
+                <Skeleton className="h-20 w-64" />
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-64" />)}
                 </div>
             </div>
         );
@@ -120,7 +121,7 @@ function AssignmentSector() {
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                                 <AnimatePresence mode="popLayout">
                                     {pending.map((item) => (
-                                        <AssignmentCard key={item._id} item={item} isPending={true} />
+                                        <AssignmentCard key={item._id} item={item} isInstructor={isClassInstructor} isPending={true} />
                                     ))}
                                 </AnimatePresence>
                             </div>

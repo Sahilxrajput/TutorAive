@@ -16,11 +16,12 @@ import useAuth from '@/hooks/useAuth'
 import LearningCard from '@/components/home/LeaningCard'
 import DaySchedule from '@/components/home/DaySchedule'
 import { ShortcutForHideSidebar } from '@/components/ShortcutForHideSidebar'
-import BadgeCard from '@/components/home/BadgeCard'
+import TutoraiveUserCard from '@/components/home/BadgeCard'
 
 const Home = () => {
     const { user } = useAuth()
     const [pendingAssignments, setPendingAssignments] = useState(0)
+    const [scheduleLecture, setScheduleLecture] = useState(0)
     const [quote, setQuote] = useState('')
 
     /* ---------------- FETCH ASSIGNMENTS ---------------- */
@@ -36,6 +37,8 @@ const Home = () => {
                 console.error("Assignment fetch error", err)
             }
         }
+
+
 
         fetchAssignments()
         return () => { isMounted = false }
@@ -58,9 +61,9 @@ const Home = () => {
         <main className="min-h-screen bg-background text-foreground p-6 lg:p-10 relative overflow-hidden transition-colors duration-500">
             <ShortcutForHideSidebar />
 
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[500px] bg-primary/5 dark:bg-primary/10 blur-[120px] rounded-full pointer-events-none z-10" />
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-125 bg-primary/5 dark:bg-primary/10 blur-[120px] rounded-full pointer-events-none z-10" />
 
-            <div className="max-w-[1600px] mx-auto flex flex-col lg:flex-row gap-8">
+            <div className="max-w-400 mx-auto flex flex-col lg:flex-row gap-8">
 
                 <section className="flex-1 flex flex-col gap-8">
 
@@ -69,12 +72,12 @@ const Home = () => {
                         animate={{ opacity: 1, scale: 1 }}
                         className="relative w-full h-56 md:h-72 rounded-[3rem] overflow-hidden border border-border dark:border-white/10 shadow-2xl"
                     >
-                        <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-card to-background dark:from-indigo-900/40 dark:via-neutral-900 dark:to-black" />
+                        <div className="absolute inset-0 bg-linear-to-br from-primary/20 via-card to-background dark:from-indigo-900/40 dark:via-neutral-900 dark:to-black" />
 
                         <motion.div
                             animate={{ scale: [1, 1.2, 1], opacity: [0.2, 0.4, 0.2] }}
                             transition={{ duration: 10, repeat: Infinity }}
-                            className="absolute top-[-50%] right-[-10%] w-[400px] h-[400px] bg-primary/10 blur-[100px] rounded-full"
+                            className="absolute top-[-50%] right-[-10%] w-100 h-100 bg-primary/10 blur-[100px] rounded-full"
                         />
 
                         <div className="relative z-10 h-full p-10 flex flex-col justify-center">
@@ -101,7 +104,7 @@ const Home = () => {
                     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6">
                         <LearningCard title="Pending Tasks" Icon={BookHeartIcon} number={pendingAssignments} iconColor="green" delay={0.1} />
                         <LearningCard title="Certificates" Icon={Bookmark} number={0} iconColor="indigo" delay={0.2} />
-                        <LearningCard title="Scheduled" Icon={Rocket} number={0} iconColor="green" delay={0.3} />
+                        <LearningCard title="Scheduled" Icon={Rocket} number={scheduleLecture} iconColor="green" delay={0.3} />
                         <LearningCard title="Streak Days" Icon={Zap} number={0} iconColor="indigo" delay={0.4} />
                         <LearningCard title="Hours Learned" Icon={Clock} number={0} iconColor="green" delay={0.5} />
                     </div >
@@ -160,12 +163,12 @@ const Home = () => {
                     </div>
                 </section>
 
-                <section className="w-full lg:w-[380px] space-y-8">
+                <section className="w-full lg:w-95 space-y-8">
                     <h3 className="text-sm font-bold uppercase tracking-[0.3em] font-oswald border-b border-border pb-4">
                         Upcoming Schedule
                     </h3>
-                    <DaySchedule />
-                    <BadgeCard />
+                    <DaySchedule onLecturechange={(number) => setScheduleLecture(number)} />
+                    <TutoraiveUserCard name={user?.firstName + " " + user?.lastName}/>
                 </section>
 
             </div>

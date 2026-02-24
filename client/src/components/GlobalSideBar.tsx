@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { BookOpen, Twitch, Compass, Bell, Home } from "lucide-react";
+import { Twitch, Compass, Bell, Home } from "lucide-react";
 import { motion } from "framer-motion";
 import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
 import { NavLink, useLocation } from "react-router-dom";
@@ -19,12 +19,12 @@ interface Indicator {
 const navItems = [
     { id: "/home", icon: Home, label: "Home" },
     { id: "/classrooms", icon: Compass, label: "Explore" },
-    { id: "/community", icon: Twitch, label: "Feed" },
+    { id: "/community", icon: Twitch, label: "Community" },
 ];
 
 const Cursor = ({ indicator }: { indicator: Indicator }) => (
     <motion.div
-        className="absolute left-0 w-full rounded-xl bg-gradient-to-r from-indigo-600/10 to-transparent border-l-2 border-indigo-500/50"
+        className="absolute left-0 w-full rounded-xl bg-linear-to-r from-indigo-600/10 to-transparent border-l-2 border-indigo-500/50"
         animate={{
             top: indicator.top,
             height: indicator.height,
@@ -37,7 +37,7 @@ const Cursor = ({ indicator }: { indicator: Indicator }) => (
         }}
     >
         {/* The "Electric" Glow Line */}
-        <div className="absolute left-0 top-1/4 h-1/2 w-[3px] bg-primary shadow-[0_0_20px_rgba(var(--primary-rgb),0.8)] rounded-full" />
+        <div className="absolute left-0 top-1/4 h-1/2 w-0.75 bg-primary shadow-[0_0_20px_rgba(var(--primary-rgb),0.8)] rounded-full" />
     </motion.div>
 );
 
@@ -78,7 +78,7 @@ export default function GlobalSideBar() {
 
     return (
         <>
-            <aside className="hidden md:flex h-screen w-20 bg-background/80 dark:bg-black/40 border-r border-border dark:border-white/5 flex-col items-center justify-between py-8 relative z-[100] backdrop-blur-2xl transition-colors duration-500">
+            <aside className="hidden md:flex h-screen w-20 bg-background/80 dark:bg-black/40 border-r border-border dark:border-white/5 flex-col items-center justify-between py-8 relative z-100 backdrop-blur-2xl transition-colors duration-500">
 
                 <NavLink className="flex flex-col items-center gap-2 group cursor-pointer" to={"/"}>
                     <Logo />
@@ -139,7 +139,7 @@ export default function GlobalSideBar() {
                         )}
                     >
                         <Avatar className="w-full h-full">
-                            <AvatarImage className="object-cover w-full h-full" src={user?.profilePicture || defaultAvatar} />
+                            <AvatarImage className="object-cover w-full h-full" src={!user ? defaultAvatar :  user?.profilePicture || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.userName}`} />
                             <AvatarFallback className="bg-primary/10 text-primary font-bold text-xs flex items-center justify-center w-full h-full">
                                 {user?.userName?.substring(0, 2).toUpperCase() || "SR"}
                             </AvatarFallback>
@@ -147,7 +147,7 @@ export default function GlobalSideBar() {
                     </NavLink>
                 </div>
 
-                <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-primary/30 to-transparent pointer-events-none opacity-50" />
+                <div className="absolute top-0 left-0 w-full h-32 bg-linear-to-b from-primary/30 to-transparent pointer-events-none opacity-50" />
             </aside>
             <NotificationSidebar open={NotificationOpen} setOpen={setNotificationOpen} />
         </>

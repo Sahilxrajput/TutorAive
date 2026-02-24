@@ -4,6 +4,7 @@ import {
   AssignmentPayload,
   ITweetPayload,
   ILecture,
+  IResourceJob,
 } from "../../types/type";
 
 export function emitLectureNotification({
@@ -22,8 +23,13 @@ export function emitLectureNotification({
 
 export function emitAssignmentNotification(payload: AssignmentPayload) {
   const socket = getIO();
-  console.log("assignment emitter payload", payload);
   socket.to(`user:${payload.studentId}`).emit("assignment:update", payload);
+}
+
+export function emitResourceNotification(payload: IResourceJob) {
+  const socket = getIO();
+  console.log("resource payload in emitter: ", payload);
+  socket.to(`user:${payload.studentId}`).emit("resource:update", payload);
 }
 
 export function emitTweetNotification(payload: ITweetPayload) {

@@ -17,7 +17,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const refreshUser = useCallback(async () => {
         try {
             setLoading(true);
-            const { data: { user, accessToken } } = await API.get("/auth/refresh");
+            const { data: { user, accessToken } } = await API.post("/auth/refresh");
             localStorage.setItem("accessToken", accessToken)
 
             setIsInstructor(user?.role === "instructor")

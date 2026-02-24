@@ -26,6 +26,7 @@ import { useNotifications } from "@/tanStack/hooks/useNotifications";
 import type { INotification } from "@/types/type";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 interface Props {
     open: boolean,
@@ -35,6 +36,7 @@ interface Props {
 export function NotificationSidebar({ open, setOpen }: Props) {
     const [notifications, setNotifications] = useState<INotification[]>([]);
     const [activeTab, setActiveTab] = useState<string>("all");
+    const navigate = useNavigate();
 
     const { data, isLoading } = useNotifications();
 
@@ -80,6 +82,39 @@ export function NotificationSidebar({ open, setOpen }: Props) {
                 return <MessageSquare className="h-4 w-4 text-green-600" />;
             default:
                 return <Bell className="h-4 w-4 text-gray-600" />;
+        }
+    };
+
+    const handleNotificationClick = async (item: INotification) => {
+        try {
+            if (!item.isRead) {
+                await API.patch(`/notifications/${item._id}/mark-read`);
+            }
+
+
+            switch (item.type) {
+                case "assignment":
+                    navigate(`/classrooms/${item.data?.classroomId}`);
+                    break;
+
+                case "lecture":
+                    navigate(`/classrooms/${item.data?.classroomId}`);
+                    break;
+                    
+                case "resource":
+                    navigate(`/classrooms/${item.data?.classroomId}`);
+                    break;
+
+                case "message":
+                    // navigate(`/chat/${item.data?.referenceId}`);
+                    break;
+
+                default:
+                    break;
+            }
+            setOpen(false); // close sidebar
+        } catch {
+            toast.info("Something went wrong");
         }
     };
 
@@ -148,8 +183,9 @@ export function NotificationSidebar({ open, setOpen }: Props) {
                             )}
 
                             {filteredNotifications && filteredNotifications.map(item => (
-                                <div
+                                <button
                                     key={item._id}
+                                    onClick={() => handleNotificationClick(item)}
                                     className={cn(
                                         "flex gap-4 p-4 rounded-2xl border transition-all duration-300 relative group w-full",
                                         item.isRead
@@ -192,7 +228,7 @@ export function NotificationSidebar({ open, setOpen }: Props) {
                                             </div>
                                         </div>
                                     )}
-                                </div>
+                                </button>
                             ))}
                         </div>
                     </div>

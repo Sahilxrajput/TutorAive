@@ -201,7 +201,7 @@ export const getStudents = async (req: Request, res: Response) => {
   try {
     // pagination values
     const page = Number(req.query.page) || 1;
-    const limit = 1;
+    const limit = 5;
     const skip = (page - 1) * limit;
 
     const classroom = req.authorizedResource;

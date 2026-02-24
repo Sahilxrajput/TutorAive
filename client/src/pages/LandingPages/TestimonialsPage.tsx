@@ -9,37 +9,37 @@ const Testimonials = () => {
     gsap.registerPlugin(ScrollTrigger);
 
     const feedbacks = [
-            {
-                userName: "Sahil Rajput",
-                feedback: "The platform is easy to use and doesn’t overwhelm you with useless features. I joined as a student and ended up creating a small course myself.",
-                location: "Varanasi, India",
-                rating: 5,
-            },
-            {
-                userName: "Ananya Verma",
-                feedback: "I like how tutors and students are treated equally here. The course structure is clean and the UI feels modern. Solid start for GSoC prep.",
-                location: "Bengaluru, India",
-                rating: 4,
-            },
-            {
-                userName: "Rohit Sharma",
-                feedback: "Content quality depends on the tutor, but the platform itself stays out of the way, which is good. Great for technical learning.",
-                location: "Pune, India",
-                rating: 5,
-            },
-            {
-                userName: "Neha Gupta",
-                feedback: "As a tutor, managing lectures was straightforward. Analytics are improving, and for a growing platform, this works perfectly.",
-                location: "Jaipur, India",
-                rating: 4,
-            },
-            {
-                userName: "Aman Khan",
-                feedback: "No unnecessary pop-ups, no aggressive selling. Loads smoothly even on late-night coding sessions. High quality UI.",
-                location: "Lucknow, India",
-                rating: 5,
-            },
-        ];
+        {
+            userName: "Sahil Rajput",
+            feedback: "The platform is easy to use and doesn’t overwhelm you with useless features. I joined as a student and ended up creating a small course myself.",
+            location: "Varanasi, India",
+            rating: 5,
+        },
+        {
+            userName: "Ananya Verma",
+            feedback: "I like how tutors and students are treated equally here. The course structure is clean and the UI feels modern. Solid start for GSoC prep.",
+            location: "Bengaluru, India",
+            rating: 4,
+        },
+        {
+            userName: "Rohit Sharma",
+            feedback: "Content quality depends on the tutor, but the platform itself stays out of the way, which is good. Great for technical learning.",
+            location: "Pune, India",
+            rating: 5,
+        },
+        {
+            userName: "Neha Gupta",
+            feedback: "As a tutor, managing lectures was straightforward. Analytics are improving, and for a growing platform, this works perfectly.",
+            location: "Jaipur, India",
+            rating: 4,
+        },
+        {
+            userName: "Aman Khan",
+            feedback: "No unnecessary pop-ups, no aggressive selling. Loads smoothly even on late-night coding sessions. High quality UI.",
+            location: "Lucknow, India",
+            rating: 5,
+        },
+    ];
     useGSAP(() => {
         const cards = gsap.utils.toArray(".feedback-card") as Element[];
 
@@ -89,8 +89,8 @@ const Testimonials = () => {
     return (
         <div className="testimonials-wrapper h-screen w-full bg-background flex flex-col items-center justify-start pt-24 overflow-hidden relative perspective-1200">
 
-            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 blur-[120px] rounded-full -z-10" />
-            <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-primary/5 blur-[120px] rounded-full -z-10" />
+            <div className="absolute top-0 right-0 w-125 h-125 bg-primary/5 blur-[120px] rounded-full -z-10" />
+            <div className="absolute bottom-0 left-0 w-125 h-125 bg-primary/5 blur-[120px] rounded-full -z-10" />
 
             <div className="text-center mb-12 z-10 px-6">
                 <motion.span
@@ -106,7 +106,7 @@ const Testimonials = () => {
                 </h2>
             </div>
 
-            <div className="relative h-[500px] w-full max-w-[650px] px-6 flex items-center justify-center">
+            <div className="relative h-125 w-full max-w-162.5 px-6 flex items-center justify-center">
                 {feedbacks.map((f, i) => (
                     <div
                         key={i}
@@ -114,7 +114,7 @@ const Testimonials = () => {
                         style={{ zIndex: i }}
                     >
                         <svg
-                            className='absolute w-48 h-auto top-10 left-10 text-primary/[0.07] dark:text-white/[0.03] pointer-events-none -z-10'
+                            className='absolute w-48 h-auto top-10 left-10 text-primary/[0.07] dark:text-white/3 pointer-events-none -z-10'
                             xmlns="http://www.w3.org/2000/svg"
                             viewBox="0 0 512 379.51"
                         >

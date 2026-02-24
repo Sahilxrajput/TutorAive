@@ -3,7 +3,7 @@ import rateLimit from "express-rate-limit";
 const createRateLimiter = (windowMs: number, max: number, message: string) => {
   return rateLimit({
     windowMs,
-    limit: max,
+    max,
     standardHeaders: true,
     legacyHeaders: false,
     message: {
@@ -14,19 +14,25 @@ const createRateLimiter = (windowMs: number, max: number, message: string) => {
 };
 
 export const globalLimiter = createRateLimiter(
-  10 * 60 * 1000,
-  150,
+  15 * 60 * 1000, // 15 minutes
+  600, // ~40 req/min average
   "Too many requests. Please try again later.",
 );
 
 export const authLimiter = createRateLimiter(
-  10 * 60 * 1000,
-  20,
-  "Too many auth attempts. Try again later.",
+  15 * 60 * 1000,
+  15, 
+  "Too many authentication attempts. Try again later.",
+);
+
+export const refreshLimiter = createRateLimiter(
+  15 * 60 * 1000,
+  50, 
+  "Too many token refresh requests.",
 );
 
 export const paymentLimiter = createRateLimiter(
-  10 * 60 * 1000,
+  15 * 60 * 1000,
   10,
   "Too many payment requests. Try again later.",
 );

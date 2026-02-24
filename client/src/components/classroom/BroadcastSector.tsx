@@ -3,7 +3,7 @@ import SectorHeader from "./SectorHeader";
 import { AnimatePresence, motion } from 'framer-motion'
 import { useEffect, useState } from "react";
 import API from "@/lib/api";
-import { useOutletContext, useParams } from "react-router-dom";
+import { useNavigate, useOutletContext, useParams } from "react-router-dom";
 import { ILecture } from "@/types/type";
 import { notifyError } from "@/utils/notifyError";
 import { StartClass } from "./StartClass";
@@ -12,6 +12,7 @@ export default function BroadcastSector() {
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [sessions, setSessions] = useState<ILecture[]>([])
     const { classroomId } = useParams();
+    const navigate = useNavigate();
     const { isClassInstructor } = useOutletContext<{
         isClassInstructor: boolean;
     }>();
@@ -67,7 +68,10 @@ export default function BroadcastSector() {
                                         dateStyle: "medium", timeStyle: "short"
                                     }) : "No date"}
                             </p>
-                            <button className="w-full py-4 rounded-xl bg-primary text-white font-oswald text-[10px] font-bold uppercase tracking-widest shadow-lg shadow-primary/20 flex items-center justify-center gap-2 group-hover:scale-[1.02] transition-all">
+                            <button
+                                disabled={session.status !== "live" && session.status !== "scheduled"}
+                                onClick={() => navigate(`lecture/live/${session._id}`)}
+                                className="w-full py-4 rounded-xl bg-primary text-white font-oswald text-[10px] font-bold uppercase tracking-widest shadow-lg shadow-primary/20 flex items-center justify-center gap-2 group-hover:scale-[1.02] transition-all">
                                 {(session.status === "live" || session.status === "scheduled") ? "Enter Cockpit" : "Replay Transmission"} <ArrowRight size={14} />
                             </button>
                         </div>

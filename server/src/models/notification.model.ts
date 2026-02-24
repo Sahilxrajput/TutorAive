@@ -11,7 +11,7 @@ const NotificationSchema = new Schema<INotification>(
     },
     type: {
       type: String,
-      enum: ["lecture", "assignment", "message", "system"],
+      enum: ["lecture", "assignment", "message", "resource", "system"],
       required: true,
     },
     message: {

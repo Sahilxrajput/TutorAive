@@ -26,7 +26,7 @@ export interface IUser {
 
 export interface INotification extends Document {
   user: Types.ObjectId;
-  type: "lecture" | "assignment" | "message" | "system";
+  type: "lecture" | "assignment" | "message" | "resource" | "system";
   message: string;
   data?: {
     classroomId?: Types.ObjectId;
@@ -259,12 +259,12 @@ export interface LectureUpdatePayload {
 }
 
 export interface AssignmentPayload {
-  assignmentId: string;
   studentId: string;
   classroomId: string;
   classroomTitle: string;
-  title: string;
-  dueDate: Date;
+  assignmentTitle: string;
+  assignmentUrl?: string;
+//   dueDate: Date;
 }
 
 export interface ITweetPayload {
@@ -286,6 +286,14 @@ export interface IAssignmentNotificationJob {
   assignmentId: string;
   title: string;
   dueDate: string;
+}
+
+export interface IResourceJob {
+  studentId?: string;
+  classroomId: string;
+  classroomTitle: string;
+  title: string;
+  resourceUrl: string;
 }
 
 export interface IClassNotificationJob {

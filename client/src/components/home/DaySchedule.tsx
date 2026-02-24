@@ -6,7 +6,7 @@ import type { ILecture } from "@/types/type"
 import useAuth from "@/hooks/useAuth";
 import API from "@/lib/api";
 
-const DaySchedule = () => {
+const DaySchedule = ({ onLecturechange }: { onLecturechange: (number: number) => void }) => {
     const [lectures, setLectures] = useState<ILecture[]>([])
     const [loading, setLoading] = useState(true);
     const { socket } = useSocketContext();
@@ -24,6 +24,7 @@ const DaySchedule = () => {
                 setLoading(true);
                 const { data } = await API.get(detectPath());
                 setLectures(data.data);
+                onLecturechange(data.data?.length ?? 0)
             } catch (error) {
                 console.error('Error fetching lectures:', error);
             } finally {
@@ -31,7 +32,7 @@ const DaySchedule = () => {
             }
         };
         fetchScheduleLectures();
-    }, [detectPath]);
+    }, [detectPath, onLecturechange]);
 
     useEffect(() => {
         if (!socket) return;
@@ -40,22 +41,24 @@ const DaySchedule = () => {
             setLectures(prev => {
                 const idx = prev.findIndex(l => l._id === payload._id);
 
-                // ---- UPDATE EXISTING LECTURE ----
-                if (idx !== -1) {
-                    const updated = [...prev];
+                let updatedLectures;
 
-                    updated[idx] = {
-                        ...updated[idx],
+                if (idx !== -1) {
+                    updatedLectures = [...prev];
+                    updatedLectures[idx] = {
+                        ...updatedLectures[idx],
                         status: payload.status,
-                        title: payload.title ?? updated[idx].title,
-                        newStartTime: payload.startTime ?? updated[idx].newStartTime,
+                        title: payload.title ?? updatedLectures[idx].title,
+                        newStartTime: payload.startTime ?? updatedLectures[idx].newStartTime,
                         updatedAt: new Date(),
                     };
-
-                    return updated;
+                } else {
+                    updatedLectures = [payload, ...prev];
                 }
 
-                return [payload, ...prev];
+                onLecturechange(updatedLectures.length);
+
+                return updatedLectures;
             });
         };
 
@@ -64,7 +67,7 @@ const DaySchedule = () => {
         return () => {
             socket.off("lecture:update", onLectureUpdate);
         };
-    }, [socket]);
+    }, [socket, onLecturechange]);
 
 
     if (loading)

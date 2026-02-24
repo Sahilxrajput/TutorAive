@@ -2,6 +2,7 @@ import { Queue } from "bullmq";
 import {
   IAssignmentNotificationJob,
   ILecture,
+  IResourceJob,
   ITweetNotificationJob,
 } from "../types/type";
 
@@ -48,6 +49,34 @@ export const addAssignmentNotificationJob = async ({
   console.log("added in assignmnet queue : ");
 };
 
+export const addResourceJob = async ({
+  classroomId,
+  classroomTitle,
+  title,
+  resourceUrl,
+}: IResourceJob) => {
+  await notificationQueue.add(
+    "resource-notification",
+    {
+      classroomId,
+      classroomTitle,
+      title,
+      resourceUrl,
+    },
+    {
+      attempts: 5,
+      backoff: {
+        type: "exponential",
+        delay: 3000,
+      },
+      removeOnComplete: true,
+      removeOnFail: false,
+    },
+  );
+
+  console.log("added in resource notification queue");
+};
+
 export const addClassNotificationJob = async (lecture: ILecture) => {
   await notificationQueue.add(
     "lecture-notification",
@@ -64,30 +93,6 @@ export const addClassNotificationJob = async (lecture: ILecture) => {
   );
   console.log("added in class queue : ");
 };
-
-// export const addClassNotificationJob = async ({
-//   classroomId,
-//   startTime,
-//   reason,
-//   lectureId,
-//   status,
-//   title,
-// }: IClassNotificationJob) => {
-//   await notificationQueue.add(
-//     "class-notification",
-//     { lectureId, startTime, reason, classroomId, title, status },
-//     {
-//       attempts: 5,
-//       backoff: {
-//         type: "exponential",
-//         delay: 3000,
-//       },
-//       removeOnComplete: true,
-//       removeOnFail: false,
-//     }
-//   );
-//   console.log("added in class queue : ");
-// };
 
 export const addTweetNotificationJob = async ({
   userId,

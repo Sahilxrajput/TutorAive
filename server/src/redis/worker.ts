@@ -1,11 +1,16 @@
 // workers/notification.worker.ts
 import { Job, Worker } from "bullmq";
 import { Classroom } from "../models/classroom.model";
-import { sendAssignmentEmail, sendClassStatusEmail } from "../utils/sendEmail";
+import {
+  sendAssignmentEmail,
+  sendClassStatusEmail,
+  sendResourceUploadEmail,
+} from "../utils/sendEmail";
 import { Notification } from "../models/notification.model";
 import {
   emitAssignmentNotification,
   emitLectureNotification,
+  emitResourceNotification,
   emitTweetNotification,
 } from "../sockets/emitters/notification.emitter";
 import { ILecture } from "../types/type";
@@ -19,11 +24,15 @@ export function createRedisWorker() {
 
       switch (job.name) {
         case "assignment-notification": {
-          const { classroomId, assignmentId, classroomTitle, dueDate, title } =
-            job.data;
+          const {
+            classroomId,
+            classroomTitle,
+            assignmentTitle,
+            assignmentUrl,
+          } = job.data;
 
-          if (!classroomId || !assignmentId) {
-            throw new Error("ClassroomId / assignmentId not found");
+          if (!classroomId) {
+            throw new Error("ClassroomId not found");
           }
 
           const classroom = await Classroom.findById(classroomId).populate(
@@ -43,11 +52,9 @@ export function createRedisWorker() {
           const notifications = classroom.students.map((student: any) => ({
             user: student._id,
             type: "assignment",
-            message: `New assignment "${title}" posted in classroom ${classroomTitle}`,
+            message: `New assignment "${assignmentTitle}" posted in classroom ${classroomTitle}`,
             data: {
-              assignmentId,
               classroomId,
-              dueDate,
             },
           }));
 
@@ -57,24 +64,80 @@ export function createRedisWorker() {
           for (const student of classroom.students) {
             emitAssignmentNotification({
               studentId: student._id.toString(),
-              assignmentId,
+              classroomId,
+              classroomTitle,
+              assignmentUrl,
+              assignmentTitle,
+            });
+          }
+          //  3. Send Emails (optional)
+          for (const student of classroom.students) {
+            const studentObj = student as any;
+            if (!studentObj.email) continue;
+            await sendAssignmentEmail({
+              toEmail: studentObj.email,
+              classroomName: classroomTitle,
+              assignmentUrl,
+              assignmentTitle,
+            });
+          }
+          break;
+        }
+
+        case "resource-notification": {
+          const { classroomId, classroomTitle, title, resourceUrl } = job.data;
+
+          if (!classroomId) {
+            throw new Error("ClassroomId / assignmentId not found");
+          }
+
+          const classroom = await Classroom.findById(classroomId).populate(
+            "students",
+            "_id email",
+          );
+
+          if (
+            !classroom ||
+            !classroom.students ||
+            classroom.students.length === 0
+          ) {
+            return;
+          }
+
+          //   1. Persist Notifications
+          const notifications = classroom.students.map((student: any) => ({
+            user: student._id,
+            type: "resource",
+            message: `New resource "${title}" posted in classroom ${classroomTitle}`,
+            data: {
+              classroomId,
+            },
+          }));
+
+          await Notification.insertMany(notifications);
+
+          //  2. Emit Socket Events
+          for (const student of classroom.students) {
+            emitResourceNotification({
+              studentId: student._id.toString(),
               classroomId,
               classroomTitle,
               title,
-              dueDate,
+              resourceUrl,
             });
           }
 
           //  3. Send Emails (optional)
           for (const student of classroom.students) {
-            // if (!student.email) continue;
-            // await sendAssignmentEmail({
-            //   toEmail: student.email,
-            //   classroomName: classroomTitle,
-            //   assignmentTitle: title,
-            //   dueDate,
-            // });
-            // console.log("Email sent to:", student.email);
+            const studentObj = student as any;
+            if (!studentObj.email) continue;
+            await sendResourceUploadEmail({
+              toEmail: studentObj.email,
+              classroomName: classroomTitle,
+              resourceUrl,
+              resourceTitle: title,
+            });
+            console.log("Email sent to:", studentObj.email);
           }
           break;
         }
@@ -203,27 +266,22 @@ export function createRedisWorker() {
     },
     {
       connection: { url: process.env.REDIS_URL! },
-      //   connection: {
-      //     host: process.env.REDIS_HOST,
-      //     port: Number(process.env.REDIS_PORT),
-      //     password: process.env.REDIS_PASSWORD,
-      //   },
       concurrency: 2,
     },
   );
 
-    worker.on("completed", async (job) => {
-      console.log(`Job ${job.id} completed`);
-    });
+  worker.on("completed", async (job) => {
+    console.log(`Job ${job.id} completed`);
+  });
 
-    worker.on("active", (job) =>
-      console.log(
-        "[redis worker] active job : ",
-        job.data.tweetId ?? job.data.lectureId ?? job.data.classroomId,
-      ),
-    );
-    worker.on("failed", (job, err) =>
-      console.error(`Job ${job?.id} failed:`, err),
-    );
-    worker.on("error", (err) => console.error("Worker error:", err));
+  worker.on("active", (job) =>
+    console.log(
+      "[redis worker] active job : ",
+      job.data.tweetId ?? job.data.lectureId ?? job.data.classroomId,
+    ),
+  );
+  worker.on("failed", (job, err) =>
+    console.error(`Job ${job?.id} failed:`, err),
+  );
+  worker.on("error", (err) => console.error("Worker error:", err));
 }
