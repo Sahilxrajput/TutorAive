@@ -6,25 +6,11 @@ import {
   ITweetNotificationJob,
 } from "../types/type";
 
-
 export const notificationQueue = new Queue("notifications", {
   connection: {
-      url: process.env.REDIS_URL!,
-      // host: process.env.REDIS_HOST,
-    // port: Number(process.env.REDIS_PORT),
-    // password: process.env.REDIS_PASSWORD,
+    url: process.env.REDIS_URL!,
   },
 });
-// connection
-//   .ping()
-//   .then((res) => {
-//     console.log("Redis says:", res); // should be PONG
-//     process.exit(0);
-//   })
-//   .catch((err) => {
-//     console.error("Redis is not reachable:", err);
-//     process.exit(1);
-//   });
 
 export const addAssignmentNotificationJob = async ({
   classroomId,

@@ -177,6 +177,7 @@ export function createRedisWorker() {
                   : (lecture.delayReason ?? "no reason"),
             },
           }));
+
           if (lecture.status !== "completed")
             await Notification.insertMany(notificationDocs);
 
@@ -190,15 +191,16 @@ export function createRedisWorker() {
 
           //  3. Send Emails (optional)
           for (const student of classroom.students) {
-            // if (!student.email) continue;
-            // await sendClassStatusEmail({
-            //   toEmail: student.email,
-            //   classroomName: classroom.title,
-            //   lectureTitle: title,
-            //   status,
-            //   startTime,
-            // });
-            // console.log("Lecture email sent to:", student.email);
+            const studentObj = student as any;
+            if (!studentObj.email) continue;
+            await sendClassStatusEmail({
+              toEmail: studentObj.email,
+              classroomName: classroom.title,
+              lectureId: lecture._id.toString(),
+              status: lecture.status,
+              title: lecture.title,
+              startTime: lecture.startTime.toString(),
+            });
           }
 
           break;

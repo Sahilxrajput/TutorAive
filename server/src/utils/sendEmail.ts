@@ -31,7 +31,7 @@ export const sendAssignmentEmail = async ({
 }) => {
   try {
     const mailOptions = {
-      from: `"Online Tutor" <online@tutor.in>`,
+      from: `"TutorAive" <no-reply@tutoraive.com>`,
       to: toEmail,
       subject: "New Assignment Posted",
       html: `
@@ -120,7 +120,7 @@ export const sendResourceUploadEmail = async ({
 }) => {
   try {
     const mailOptions = {
-      from: `"Online Tutor" <online@tutor.in>`,
+      from: `"TutorAive" <no-reply@tutoraive.com>`,
       to: toEmail,
       subject: "New Learning Resource Available",
       html: `
@@ -285,57 +285,94 @@ const CLASS_STATUS_CONFIG: Record<
 
 export const sendClassStatusEmail = async ({
   toEmail,
-  classroomName = "Advanced Backend",
+  classroomName = "TutorAive Classroom",
   lectureId,
   status,
   title,
+  startTime,
 }: {
   toEmail: string;
   classroomName?: string;
   lectureId: string;
   status: LectureStatus;
   title: string;
+  startTime: string;
 }) => {
   try {
     const lectureUrl = `${process.env.SERVER_URL}/lectures/${lectureId}`;
     const config = CLASS_STATUS_CONFIG[status];
 
     await transporter.sendMail({
-      from: `"Online Tutor" <online@tutor.in>`,
+      from: `"TutorAive" <no-reply@tutoraive.com>`,
       to: toEmail,
       subject: config.subject,
       html: `
-        <div style="font-family: Arial; background:#f4f6f8; padding:20px">
-          <div style="max-width:600px;margin:auto;background:#fff;padding:24px;border-radius:6px">
-            <h2 style="color:${config.color}">${config.heading}</h2>
-            <p><strong>${title}</strong> — ${classroomName}</p>
-            <p>${config.message}</p>
-  
+        <div style="font-family: Arial, Helvetica, sans-serif; background-color:#f4f6f8; padding:24px;">
+          <div style="max-width:600px; margin:0 auto; background:#ffffff; padding:28px; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.06);">
+            
+            <h2 style="margin-top:0; color:${config.color}; font-size:20px;">
+              ${config.heading}
+            </h2>
+
+            <p style="font-size:14px; color:#374151; margin-bottom:8px;">
+              <strong>${title}</strong>
+            </p>
+
+            <p style="font-size:13px; color:#6b7280; margin:0 0 16px 0;">
+              ${classroomName}
+            </p>
+
+            <p style="font-size:14px; color:#374151; line-height:1.6;">
+              ${config.message}
+            </p>
+
             ${
-              config.showButton
-                ? `<a href="${lectureUrl}" style="
-                    display:inline-block;
-                    margin-top:16px;
-                    padding:12px 22px;
-                    background:${config.color};
-                    color:#fff;
-                    text-decoration:none;
-                    border-radius:4px;
-                    font-weight:600;">
-                    ${config.buttonText}
-                  </a>`
+              startTime
+                ? `<p style="font-size:13px; color:#111827; margin-top:16px;">
+                    <strong>Scheduled Time:</strong> ${startTime}
+                  </p>`
                 : ""
             }
-  
-            <p style="font-size:12px;color:#6b7280;margin-top:24px">
-              This is an automated notification.
+
+            ${
+              config.showButton
+                ? `
+                <div style="margin-top:24px; text-align:center;">
+                  <a href="${lectureUrl}" 
+                     style="
+                       display:inline-block;
+                       padding:12px 24px;
+                       background:${config.color};
+                       color:#ffffff;
+                       text-decoration:none;
+                       border-radius:6px;
+                       font-size:14px;
+                       font-weight:600;
+                     ">
+                    ${config.buttonText}
+                  </a>
+                </div>
+                `
+                : ""
+            }
+
+            <hr style="border:none; border-top:1px solid #e5e7eb; margin:28px 0;" />
+
+            <p style="font-size:12px; color:#6b7280; margin:0;">
+              This is an automated notification from TutorAive. Replies to this email are not monitored.
+            </p>
+
+            <p style="font-size:12px; color:#6b7280; margin:8px 0 0 0;">
+              © ${new Date().getFullYear()} TutorAive. All rights reserved.
             </p>
           </div>
         </div>
       `,
     });
   } catch {
-    throw new Error("Terminal was unable to dispatch the mail packet.");
+    throw new Error(
+      "Email dispatch failed during lecture status notification process.",
+    );
   }
 };
 
@@ -352,7 +389,7 @@ export const sendContactMail = async ({
 }) => {
   try {
     await transporter.sendMail({
-      from: `"TutorAive Contact" <${process.env.EMAIL_USER}>`,
+      from: `"TutorAive" <no-reply@tutoraive.com>`,
       to: process.env.CONTACT_USER,
       subject: "New Contact Message",
       html: `
@@ -377,7 +414,7 @@ export const sendClassInviteEmail = async ({
 }: InviteProps) => {
   try {
     const mailOptions = {
-      from: `"${teacherName}" <${process.env.EMAIL_USER}>`,
+      from: `"TutorAive" <no-reply@tutoraive.com>`,
       to: studentEmail,
       subject: `Authorization Required: Your Invitation to ${classroomName}`,
       html: `
