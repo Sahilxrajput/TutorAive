@@ -7,8 +7,9 @@ const express_1 = require("express");
 const passport_1 = __importDefault(require("passport"));
 const auth_middleware_1 = __importDefault(require("../middlewares/auth.middleware"));
 const auth_controller_1 = require("../controllers/auth.controller");
+const rateLimit_1 = require("../middlewares/rateLimit");
 const router = (0, express_1.Router)();
-router.get("/google", (req, res, next) => {
+router.get("/google", rateLimit_1.authLimiter, (req, res, next) => {
     let role = req.query.role;
     if (Array.isArray(role))
         role = role[0];
@@ -30,12 +31,12 @@ router.get("/callback/google", (req, _res, next) => {
     failureRedirect: "/login/failed",
 }), auth_controller_1.googleCallback);
 // login failed
-router.get("/login/failed", auth_controller_1.loginfailed);
+router.get("/login/failed", rateLimit_1.authLimiter, auth_controller_1.loginfailed);
 // @todo validation
-router.post("/signup", auth_controller_1.signup);
+router.post("/signup", rateLimit_1.authLimiter, auth_controller_1.signup);
 // @todo validation
-router.post("/signin", auth_controller_1.signin);
-router.get("/refresh", auth_controller_1.refreshAccessToken);
+router.post("/signin", rateLimit_1.authLimiter, auth_controller_1.signin);
+router.post("/refresh", rateLimit_1.refreshLimiter, auth_controller_1.refreshAccessToken);
 router.get("/signout", auth_middleware_1.default, auth_controller_1.signout);
 // router.put("/reset-password", authMiddleware, resetPassword);
 // router.put("/forget-password", authMiddleware, forgotPassword);

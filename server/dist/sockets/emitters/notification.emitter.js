@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.emitLectureNotification = emitLectureNotification;
 exports.emitAssignmentNotification = emitAssignmentNotification;
+exports.emitResourceNotification = emitResourceNotification;
 exports.emitTweetNotification = emitTweetNotification;
 const __1 = require("..");
 function emitLectureNotification({ payload, userId, }) {
@@ -13,8 +14,12 @@ function emitLectureNotification({ payload, userId, }) {
 }
 function emitAssignmentNotification(payload) {
     const socket = (0, __1.getIO)();
-    console.log("assignment emitter payload", payload);
     socket.to(`user:${payload.studentId}`).emit("assignment:update", payload);
+}
+function emitResourceNotification(payload) {
+    const socket = (0, __1.getIO)();
+    console.log("resource payload in emitter: ", payload);
+    socket.to(`user:${payload.studentId}`).emit("resource:update", payload);
 }
 function emitTweetNotification(payload) {
     const io = (0, __1.getIO)();

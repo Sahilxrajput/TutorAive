@@ -29,99 +29,83 @@ export default function QnAPanel() {
     const [newQuestion, setNewQuestion] = useState("");
     const [upvoted, setUpvoted] = useState<Set<string>>(new Set());
 
-    /* ---------------- sync on join ---------------- */
+    /* ================= SYNC + LISTENERS ================= */
     useEffect(() => {
         if (!socket || !lectureId) return;
 
         socket.emit("qna:sync", { lectureId }, (res: { questions: Question[] }) => {
-            setQuestions(res.questions);
-        });
-
-        socket.on("qna:new", (q: Question) => {
-            setQuestions((prev) => [q, ...prev]);
-        });
-
-        socket.on(
-            "qna:update",
-            ({ questionId, upvotes }: { questionId: string; upvotes: number }) => {
-                setQuestions((prev) =>
-                    prev.map((q) =>
-                        q._id === questionId ? { ...q, upvotes } : q
-                    )
-                );
+            if (res?.questions) {
+                setQuestions(res.questions);
             }
-        );
-
-        socket.on("qna:answered", ({ questionId }: { questionId: string }) => {
-            setQuestions((prev) =>
-                prev.map((q) =>
-                    q._id === questionId ? { ...q, isAnswered: true } : q
-                )
-            );
         });
+
+        const onNew = (q: Question) => {
+            setQuestions(prev => [q, ...prev]);
+        };
+
+        const onUpdate = ({ questionId, upvotes }: { questionId: string; upvotes: number }) => {
+            setQuestions(prev =>
+                prev.map(q => q._id === questionId ? { ...q, upvotes } : q)
+            );
+        };
+
+        const onAnswered = ({ questionId }: { questionId: string }) => {
+            setQuestions(prev =>
+                prev.map(q => q._id === questionId ? { ...q, isAnswered: true } : q)
+            );
+        };
+
+        socket.on("qna:new", onNew);
+        socket.on("qna:update", onUpdate);
+        socket.on("qna:answered", onAnswered);
 
         return () => {
-            socket.off("qna:new");
-            socket.off("qna:update");
-            socket.off("qna:answered");
-            socket.off("qna:deleted");
+            socket.off("qna:new", onNew);
+            socket.off("qna:update", onUpdate);
+            socket.off("qna:answered", onAnswered);
         };
+
     }, [socket, lectureId]);
 
+    /* ================= ASK ================= */
     const handleAskQuestion = async () => {
-        if (!newQuestion.trim() || !socket) return;
+        if (!newQuestion.trim() || !socket || !user) return;
 
-        const { question }: { question: Question } = await socket.emitWithAck("qna:ask", {
+        const res = await socket.emitWithAck("qna:ask", {
             lectureId,
             question: newQuestion,
-            userId: user!._id,
-            userProfilePicture: user!.profilePicture,
-            userName: user!.userName,
+            userId: user._id,
+            userName: user.userName,
+            userProfilePicture: user.profilePicture,
         });
 
-        setQuestions((prev) => [question, ...prev]);
+        if (res?.error) return;
+
         setNewQuestion("");
     };
 
+    /* ================= UPVOTE ================= */
     const handleUpvote = (questionId: string) => {
-        if (upvoted.has(questionId) || !socket) return;
-
-        // optimistic increment for THIS user
-        setQuestions((prev) =>
-            prev.map((q) =>
-                q._id === questionId
-                    ? { ...q, upvotes: q.upvotes + 1 }
-                    : q
-            )
-        );
+        if (upvoted.has(questionId) || !socket || !user) return;
 
         socket.emit("qna:upvote", {
             lectureId,
             questionId,
-            userId: user!._id,
+            userId: user._id,
         });
 
-        setUpvoted((prev) => new Set(prev).add(questionId));
+        setUpvoted(prev => new Set(prev).add(questionId));
     };
 
+    /* ================= MARK ANSWERED ================= */
     const handleAnswer = (questionId: string) => {
-
-        if (!socket) return
-        
-        setQuestions((prev) =>
-            prev.map((q) =>
-                q._id === questionId
-                    ? { ...q, isAnswered: true }
-                    : q
-            )
-        )
+        if (!socket) return;
 
         socket.emit("qna:mark-answered", {
+            lectureId,
             questionId,
-            lectureId
-        })
-
-    }
+        });
+    };
 
     const sortedQuestions = [...questions].sort(
         (a, b) => b.upvotes - a.upvotes
@@ -129,33 +113,28 @@ export default function QnAPanel() {
 
     return (
         <div className="flex flex-col h-full">
-            {/* Ask box */}
-            {!isInstructor && <div className="flex gap-2 p-4 border-b border-border">
-                <Input
-                    value={newQuestion}
-                    onChange={(e) => setNewQuestion(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && handleAskQuestion()}
-                    placeholder="Ask a question..."
-                    className="flex-1 bg-secondary/50 border-0 focus-visible:ring-1"
-                />
-                <Button
-                    size="icon"
-                    onClick={handleAskQuestion}
-                    disabled={!newQuestion.trim()}
-                >
-                    <Send className="h-4 w-4" />
-                </Button>
-            </div>}
 
-            {/* Questions */}
+            {!isInstructor && (
+                <div className="flex gap-2 p-4 border-b border-border">
+                    <Input
+                        value={newQuestion}
+                        onChange={(e) => setNewQuestion(e.target.value)}
+                        onKeyDown={(e) => e.key === "Enter" && handleAskQuestion()}
+                        placeholder="Ask a question..."
+                        className="flex-1 bg-secondary/50 border-0 focus-visible:ring-1"
+                    />
+                    <Button
+                        size="icon"
+                        onClick={handleAskQuestion}
+                        disabled={!newQuestion.trim()}
+                    >
+                        <Send className="h-4 w-4" />
+                    </Button>
+                </div>
+            )}
+
             <ScrollArea className="flex-1 px-4">
                 <div className="space-y-3 py-4">
-                    {sortedQuestions.length === 0 && (
-                        <div className="text-center text-muted-foreground py-10">
-                            <p className="font-medium">No Questions yet</p>
-                            <p className="text-xs">Questions will appear here once asked</p>
-                        </div>
-                    )}
 
                     {sortedQuestions.map((q) => (
                         <div
@@ -169,9 +148,7 @@ export default function QnAPanel() {
                         >
                             <div className="flex gap-3">
                                 <Avatar className="h-8 w-8">
-                                    <AvatarImage
-                                        src={q.userProfilePicture}
-                                    />
+                                    <AvatarImage src={q.userProfilePicture} />
                                     <AvatarFallback>
                                         {q.userName.slice(0, 2).toUpperCase()}
                                     </AvatarFallback>
@@ -202,15 +179,19 @@ export default function QnAPanel() {
                                         {q.upvotes}
                                     </button>
                                 </div>
-                                {(isInstructor && !q.isAnswered) && <button
-                                    className="text-green-500 self-center"
-                                    onClick={() => handleAnswer(q._id)}
-                                >
-                                    <CircleCheckBig />
-                                </button>}
+
+                                {isInstructor && !q.isAnswered && (
+                                    <button
+                                        className="text-green-500 self-center"
+                                        onClick={() => handleAnswer(q._id)}
+                                    >
+                                        <CircleCheckBig />
+                                    </button>
+                                )}
                             </div>
                         </div>
                     ))}
+
                 </div>
             </ScrollArea>
         </div>

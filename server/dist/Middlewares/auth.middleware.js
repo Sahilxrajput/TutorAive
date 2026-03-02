@@ -20,6 +20,8 @@ function authMiddleware(req, res, next) {
         next();
     }
     catch (err) {
-        return res.status(403).json({ error: "Access token expired." });
+        return res.status(401).json({
+            message: "Unauthorized: Invalid or expired token",
+        });
     }
 }

@@ -35,6 +35,7 @@ const server = http_1.default.createServer(app);
 (0, sockets_1.initSocket)(server);
 // app is running behind a proxy. Trust the headers the proxy sends.
 app.set("trust proxy", 1);
+app.use(rateLimit_1.globalLimiter);
 const corsOptions = {
     origin: process.env.CLIENT_URL,
     credentials: true,
@@ -50,18 +51,18 @@ app.use(passport_1.default.initialize());
 (0, worker_1.createRedisWorker)();
 app.get("/", (_, res) => res.send("Server is  Running"));
 app.use("/health", health_route_1.default);
-app.use("/api/assignments", rateLimit_1.globalLimiter, assignment_routes_1.default);
-app.use("/api/attendance", rateLimit_1.globalLimiter, attendence_routes_1.default);
-app.use("/api/auth", rateLimit_1.authLimiter, auth_routes_1.default);
-app.use("/api/contact", rateLimit_1.globalLimiter, contact_routes_1.default);
-app.use("/api/classrooms", rateLimit_1.globalLimiter, classroom_routes_1.default);
-app.use("/api/lectures", rateLimit_1.globalLimiter, lecture_route_1.default); // all required auth
-app.use("/api/notes", rateLimit_1.globalLimiter, note_routes_1.default); // all required auth
-app.use("/api/notifications", rateLimit_1.globalLimiter, notification_routes_1.default);
+app.use("/api/assignments", assignment_routes_1.default);
+app.use("/api/attendance", attendence_routes_1.default);
+app.use("/api/auth", auth_routes_1.default);
+app.use("/api/contact", contact_routes_1.default);
+app.use("/api/classrooms", classroom_routes_1.default);
+app.use("/api/lectures", lecture_route_1.default); // all required auth
+app.use("/api/notes", note_routes_1.default); // all required auth
+app.use("/api/notifications", notification_routes_1.default);
 app.use("/api/payment", rateLimit_1.paymentLimiter, payment_routes_1.default);
-app.use("/api/quizs", rateLimit_1.globalLimiter, quiz_routes_1.default);
-app.use("/api/submissions", rateLimit_1.globalLimiter, submission_routes_1.default);
-app.use("/api/tweets", rateLimit_1.globalLimiter, tweet_routes_1.default);
-app.use("/api/users", rateLimit_1.globalLimiter, user_routes_1.default);
+app.use("/api/quizs", quiz_routes_1.default);
+app.use("/api/submissions", submission_routes_1.default);
+app.use("/api/tweets", tweet_routes_1.default);
+app.use("/api/users", user_routes_1.default);
 console.log("Server restarted at", new Date().toISOString());
 server.listen(PORT, () => console.log(` Server running on port http://localhost:${PORT}`));

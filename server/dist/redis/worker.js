@@ -13,6 +13,7 @@ exports.createRedisWorker = createRedisWorker;
 // workers/notification.worker.ts
 const bullmq_1 = require("bullmq");
 const classroom_model_1 = require("../models/classroom.model");
+const sendEmail_1 = require("../utils/sendEmail");
 const notification_model_1 = require("../models/notification.model");
 const notification_emitter_1 = require("../sockets/emitters/notification.emitter");
 function createRedisWorker() {
@@ -21,9 +22,9 @@ function createRedisWorker() {
         console.log("Processing job:", job.name);
         switch (job.name) {
             case "assignment-notification": {
-                const { classroomId, assignmentId, classroomTitle, dueDate, title } = job.data;
-                if (!classroomId || !assignmentId) {
-                    throw new Error("ClassroomId / assignmentId not found");
+                const { classroomId, classroomTitle, assignmentTitle, assignmentUrl, } = job.data;
+                if (!classroomId) {
+                    throw new Error("ClassroomId not found");
                 }
                 const classroom = yield classroom_model_1.Classroom.findById(classroomId).populate("students", "_id email");
                 if (!classroom ||
@@ -35,11 +36,9 @@ function createRedisWorker() {
                 const notifications = classroom.students.map((student) => ({
                     user: student._id,
                     type: "assignment",
-                    message: `New assignment "${title}" posted in classroom ${classroomTitle}`,
+                    message: `New assignment "${assignmentTitle}" posted in classroom ${classroomTitle}`,
                     data: {
-                        assignmentId,
                         classroomId,
-                        dueDate,
                     },
                 }));
                 yield notification_model_1.Notification.insertMany(notifications);
@@ -47,23 +46,69 @@ function createRedisWorker() {
                 for (const student of classroom.students) {
                     (0, notification_emitter_1.emitAssignmentNotification)({
                         studentId: student._id.toString(),
-                        assignmentId,
                         classroomId,
                         classroomTitle,
-                        title,
-                        dueDate,
+                        assignmentUrl,
+                        assignmentTitle,
                     });
                 }
                 //  3. Send Emails (optional)
                 for (const student of classroom.students) {
-                    // if (!student.email) continue;
-                    // await sendAssignmentEmail({
-                    //   toEmail: student.email,
-                    //   classroomName: classroomTitle,
-                    //   assignmentTitle: title,
-                    //   dueDate,
-                    // });
-                    // console.log("Email sent to:", student.email);
+                    const studentObj = student;
+                    if (!studentObj.email)
+                        continue;
+                    yield (0, sendEmail_1.sendAssignmentEmail)({
+                        toEmail: studentObj.email,
+                        classroomName: classroomTitle,
+                        assignmentUrl,
+                        assignmentTitle,
+                    });
+                }
+                break;
+            }
+            case "resource-notification": {
+                const { classroomId, classroomTitle, title, resourceUrl } = job.data;
+                if (!classroomId) {
+                    throw new Error("ClassroomId / assignmentId not found");
+                }
+                const classroom = yield classroom_model_1.Classroom.findById(classroomId).populate("students", "_id email");
+                if (!classroom ||
+                    !classroom.students ||
+                    classroom.students.length === 0) {
+                    return;
+                }
+                //   1. Persist Notifications
+                const notifications = classroom.students.map((student) => ({
+                    user: student._id,
+                    type: "resource",
+                    message: `New resource "${title}" posted in classroom ${classroomTitle}`,
+                    data: {
+                        classroomId,
+                    },
+                }));
+                yield notification_model_1.Notification.insertMany(notifications);
+                //  2. Emit Socket Events
+                for (const student of classroom.students) {
+                    (0, notification_emitter_1.emitResourceNotification)({
+                        studentId: student._id.toString(),
+                        classroomId,
+                        classroomTitle,
+                        title,
+                        resourceUrl,
+                    });
+                }
+                //  3. Send Emails (optional)
+                for (const student of classroom.students) {
+                    const studentObj = student;
+                    if (!studentObj.email)
+                        continue;
+                    yield (0, sendEmail_1.sendResourceUploadEmail)({
+                        toEmail: studentObj.email,
+                        classroomName: classroomTitle,
+                        resourceUrl,
+                        resourceTitle: title,
+                    });
+                    console.log("Email sent to:", studentObj.email);
                 }
                 break;
             }
@@ -110,15 +155,17 @@ function createRedisWorker() {
                 }
                 //  3. Send Emails (optional)
                 for (const student of classroom.students) {
-                    // if (!student.email) continue;
-                    // await sendClassStatusEmail({
-                    //   toEmail: student.email,
-                    //   classroomName: classroom.title,
-                    //   lectureTitle: title,
-                    //   status,
-                    //   startTime,
-                    // });
-                    // console.log("Lecture email sent to:", student.email);
+                    const studentObj = student;
+                    if (!studentObj.email)
+                        continue;
+                    yield (0, sendEmail_1.sendClassStatusEmail)({
+                        toEmail: studentObj.email,
+                        classroomName: classroom.title,
+                        lectureId: lecture._id.toString(),
+                        status: lecture.status,
+                        title: lecture.title,
+                        startTime: lecture.startTime.toString(),
+                    });
                 }
                 break;
             }
@@ -177,11 +224,6 @@ function createRedisWorker() {
         }
     }), {
         connection: { url: process.env.REDIS_URL },
-        //   connection: {
-        //     host: process.env.REDIS_HOST,
-        //     port: Number(process.env.REDIS_PORT),
-        //     password: process.env.REDIS_PASSWORD,
-        //   },
         concurrency: 2,
     });
     worker.on("completed", (job) => __awaiter(this, void 0, void 0, function* () {

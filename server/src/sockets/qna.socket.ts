@@ -1,11 +1,40 @@
-import { Socket } from "socket.io";
+import { Namespace, Socket } from "socket.io";
 import { liveQnA, LiveQuestion } from "../store/liveStore";
 
-export const registerQnaSocket = (socket: Socket) => {
-  socket.on(
-    "qna:ask",
-    ({ lectureId, question, userId, userName, userProfilePicture }, cb) => {
-        if (socket.data.activeRoomId !== lectureId) return;
+interface AskPayload {
+  lectureId: string;
+  question: string;
+  userId: string;
+  userName: string;
+  userProfilePicture: string;
+}
+
+interface UpvotePayload {
+  lectureId: string;
+  questionId: string;
+  userId: string;
+}
+
+interface MarkAnsweredPayload {
+  lectureId: string;
+  questionId: string;
+}
+
+export const registerQnaSocket = (classroom: Namespace, socket: Socket) => {
+  /* ================= ASK QUESTION ================= */
+  socket.on("qna:ask", (data: AskPayload, cb) => {
+    try {
+      const { lectureId, question, userId, userName, userProfilePicture } =
+        data;
+
+      if (socket.data.activeRoomId !== lectureId) {
+        return cb?.({ error: "User not in room" });
+      }
+
+      if (!question?.trim() || !userId) {
+        return cb?.({ error: "Invalid question data" });
+      }
+
       const qnaRoom = liveQnA.get(lectureId) ?? new Map();
 
       const q: LiveQuestion = {
@@ -23,75 +52,93 @@ export const registerQnaSocket = (socket: Socket) => {
       qnaRoom.set(q._id, q);
       liveQnA.set(lectureId, qnaRoom);
 
-      socket.to(lectureId).emit("qna:new", q);
-      cb({ question: q });
+      // Broadcast to everyone in namespace room (including sender)
+      classroom.to(lectureId).emit("qna:new", q);
+      socket.emit("qna:new", q);
+
+      cb?.({ success: true });
+    } catch (err) {
+      cb?.({ error: "Failed to ask question" });
     }
-  );
-
-  socket.on("qna:upvote", ({ lectureId, questionId, userId }) => {
-    if (socket.data.activeRoomId !== lectureId) return;
-    
-    const qnaRoom = liveQnA.get(lectureId);
-    if (!qnaRoom) return;
-
-    const q = qnaRoom.get(questionId);
-    if (!q) return;
-
-    if (q.upvotedUsers.has(userId)) return;
-
-    q.upvotedUsers.add(userId);
-    q.upvotes++;
-
-    socket.to(lectureId).emit("qna:update", {
-      questionId,
-      upvotes: q.upvotes,
-    });
   });
 
-  socket.on("qna:mark-answered", ({ lectureId, questionId }) => {
-    if (socket.data.activeRoomId !== lectureId) return;
-    
-    const qnaRoom = liveQnA.get(lectureId);
-    if (!qnaRoom) return;
+  /* ================= UPVOTE ================= */
+  socket.on("qna:upvote", (data: UpvotePayload, cb) => {
+    try {
+      const { lectureId, questionId, userId } = data;
 
-    const q = qnaRoom.get(questionId);
-    if (!q) return;
+      if (socket.data.activeRoomId !== lectureId) {
+        return cb?.({ error: "User not in room" });
+      }
 
-    q.isAnswered = true;
+      const qnaRoom = liveQnA.get(lectureId);
+      if (!qnaRoom) return;
 
-    socket.to(lectureId).emit("qna:answered", {
-      questionId,
-    });
+      const q = qnaRoom.get(questionId);
+      if (!q) return;
+
+      if (q.upvotedUsers.has(userId)) return;
+
+      q.upvotedUsers.add(userId);
+      q.upvotes++;
+
+      classroom.to(lectureId).emit("qna:update", {
+        questionId,
+        upvotes: q.upvotes,
+      });
+
+      socket.emit("qna:update", {
+        questionId,
+        upvotes: q.upvotes,
+      });
+
+      cb?.({ success: true });
+    } catch (err) {
+      cb?.({ error: "Upvote failed" });
+    }
   });
 
+  /* ================= MARK ANSWERED ================= */
+  socket.on("qna:mark-answered", (data: MarkAnsweredPayload, cb) => {
+    try {
+      const { lectureId, questionId } = data;
+
+      if (socket.data.activeRoomId !== lectureId) {
+        return cb?.({ error: "User not in room" });
+      }
+
+      const qnaRoom = liveQnA.get(lectureId);
+      if (!qnaRoom) return;
+
+      const q = qnaRoom.get(questionId);
+      if (!q) return;
+
+      q.isAnswered = true;
+
+      classroom.to(lectureId).emit("qna:answered", {
+        questionId,
+      });
+
+      socket.emit("qna:answered", {
+        questionId,
+      });
+
+      cb?.({ success: true });
+    } catch (err) {
+      cb?.({ error: "Failed to mark answered" });
+    }
+  });
+
+  /* ================= SYNC ================= */
   socket.on("qna:sync", ({ lectureId }, cb) => {
-    if (socket.data.activeRoomId !== lectureId) return;
-  
+    if (socket.data.activeRoomId !== lectureId) {
+      return cb?.({ error: "User not in room" });
+    }
+
     const qnaRoom = liveQnA.get(lectureId);
-    cb({
+
+    cb?.({
       questions: qnaRoom ? [...qnaRoom.values()] : [],
     });
-  });
-
-  socket.on("class:finish", async ({ lectureId }) => {
-    if (socket.data.activeRoomId !== lectureId) return;
-   
-    const qnaRoom = liveQnA.get(lectureId);
-    if (!qnaRoom) return;
-
-    const questionsToSave = [...qnaRoom.values()].map((q) => ({
-      lectureId,
-      userId: q.userId,
-      userName: q.userName,
-      question: q.question,
-      upvotes: q.upvotes,
-      isAnswered: q.isAnswered,
-      createdAt: q.createdAt,
-    }));
-
-    //@note think it should be save or not?
-    // await QnaModel.insertMany(questionsToSave);
-
-    liveQnA.delete(lectureId);
   });
 };

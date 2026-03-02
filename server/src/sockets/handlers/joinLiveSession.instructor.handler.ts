@@ -63,7 +63,6 @@ export const handleInstructorJoinLiveSession =
 
       room = roomManager.createRoom(roomId, router, peer);
       peerManager.add(peer);
-      console.log("room create");
 
       socket.to(roomId).emit("live-session:started", {
         socketId: socket.id,

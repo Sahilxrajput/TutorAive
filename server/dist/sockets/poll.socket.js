@@ -31,6 +31,7 @@ const registerPollSocket = (socket) => {
                 return cb === null || cb === void 0 ? void 0 : cb({ error: "Not inside lecture" });
             }
             if (!question || !Array.isArray(options) || options.length < 2) {
+                console.log("invalid poll data");
                 return cb === null || cb === void 0 ? void 0 : cb({ error: "Invalid poll data" });
             }
             const poll = {
@@ -55,6 +56,7 @@ const registerPollSocket = (socket) => {
                 options: poll.options,
                 isActive: poll.isActive,
             };
+            console.log("publicPoll", publicPoll);
             socket.to(lectureId).emit("poll:created", publicPoll);
             cb === null || cb === void 0 ? void 0 : cb({ success: true, poll: publicPoll });
         }

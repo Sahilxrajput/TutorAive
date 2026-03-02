@@ -1,48 +1,90 @@
-import { Socket } from "socket.io";
+import { Namespace, Socket } from "socket.io";
 import { LiveChatMessage, liveChats } from "../store/liveStore";
 
-export const registerChatSocket = (socket: Socket) => {
-  socket.on("chat:sync", ({ lectureId }, cb) => {
-    if (socket.data.activeRoomId !== lectureId) return;
+interface SendPayload {
+  lectureId: string;
+  message: string;
+  user: {
+    _id: string;
+    userName: string;
+    profilePicture?: string;
+    role: "student" | "instructor";
+  };
+}
 
-    const messages = liveChats.get(lectureId) ?? [];
-    cb({ messages });
+interface SyncPayload {
+  lectureId: string;
+}
+
+interface FinishPayload {
+  lectureId: string;
+}
+
+export const registerChatSocket = (classroom: Namespace, socket: Socket) => {
+  /* ================= SYNC ================= */
+  socket.on("chat:sync", (data: SyncPayload, cb) => {
+    try {
+      const { lectureId } = data;
+
+      if (socket.data.activeRoomId !== lectureId) {
+        return cb?.({ error: "User not in room" });
+      }
+
+      const messages = liveChats.get(lectureId) ?? [];
+      cb?.({ messages });
+    } catch {
+      cb?.({ error: "Failed to sync chat" });
+    }
   });
 
-  socket.on("chat:send", ({ lectureId, message, user }, cb) => {
-    if (socket.data.activeRoomId !== lectureId) return;
-    if (!message?.trim()) return;
+  /* ================= SEND MESSAGE ================= */
+  socket.on("chat:send", (data: SendPayload, cb) => {
+    try {
+      const { lectureId, message, user } = data;
 
-    console.log("socket.data.activeRoomId: ", socket.data.activeRoomId);
+      if (socket.data.activeRoomId !== lectureId) {
+        return cb?.({ error: "User not in room" });
+      }
 
-    const msg: LiveChatMessage = {
-      _id: crypto.randomUUID(),
-      lectureId,
-      userId: user._id,
-      userName: user.userName,
-      userProfilePicture: user.profilePicture,
-      role: user.role, // "student" | "instructor"
-      message,
-      createdAt: new Date(),
-    };
+      if (!message?.trim()) {
+        return cb?.({ error: "Message cannot be empty" });
+      }
 
-    const chat = liveChats.get(lectureId) ?? [];
-    chat.push(msg);
-    liveChats.set(lectureId, chat);
+      const msg: LiveChatMessage = {
+        _id: crypto.randomUUID(),
+        lectureId,
+        userId: user._id,
+        userName: user.userName,
+        userProfilePicture: user.profilePicture,
+        role: user.role,
+        message,
+        createdAt: new Date(),
+      };
 
-    // send to everyone INCLUDING sender
-    socket.to(lectureId).emit("chat:new", msg); //@note in or to
+      const chatRoom = liveChats.get(lectureId) ?? [];
+      chatRoom.push(msg);
+      liveChats.set(lectureId, chatRoom);
 
-    cb?.({ msg });
+      // Broadcast to everyone INCLUDING sender
+      classroom.to(lectureId).emit("chat:new", msg);
+      socket.emit("chat:new", msg);
+
+      cb?.({ success: true });
+    } catch {
+      cb?.({ error: "Failed to send message" });
+    }
   });
 
-  socket.on("class:finish", async ({ lectureId }) => {
+  /* ================= CLASS FINISH ================= */
+  socket.on("class:finish", (data: FinishPayload) => {
+    const { lectureId } = data;
+
     if (socket.data.activeRoomId !== lectureId) return;
 
     const chat = liveChats.get(lectureId);
     if (!chat) return;
 
-    const chats = chat.map((m) => ({
+    const chatsToSave = chat.map((m) => ({
       lectureId,
       userId: m.userId,
       userName: m.userName,
@@ -51,7 +93,7 @@ export const registerChatSocket = (socket: Socket) => {
       createdAt: m.createdAt,
     }));
 
-    //  await ChatMessageModel.insertMany(chats);
+    //@follow-up await ChatMessageModel.insertMany(chatsToSave);
 
     liveChats.delete(lectureId);
   });

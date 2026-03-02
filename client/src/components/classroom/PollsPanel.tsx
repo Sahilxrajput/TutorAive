@@ -7,6 +7,7 @@ import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import useSocketContext from "@/hooks/useSocketContext";
 import { useParams } from "react-router-dom";
+import { toast } from "sonner";
 
 interface PollOption {
     _id: string;
@@ -67,13 +68,18 @@ export default function PollsPanel({ isTeacher = false }: PollsPanelProps) {
         if (!newQuestion.trim() || newOptions.filter(o => o.trim()).length < 2) return;
         if (!socket || !lectureId) return;
 
-        const { publicPoll } = await socket.emitWithAck("poll:create", {
+        const res = await socket.emitWithAck("poll:create", {
             lectureId,
             question: newQuestion,
             options: newOptions.filter(o => o.trim()),
         });
 
-        setPolls(prev => [publicPoll, ...prev]);
+        if (res?.error) {
+            toast.error(res.error);
+            return;
+        }
+
+        if (!res?.publicPoll) return;
 
         setNewQuestion("");
         setNewOptions(["", ""]);
@@ -94,6 +100,8 @@ export default function PollsPanel({ isTeacher = false }: PollsPanelProps) {
         };
 
         const onPollUpdated = (updatedPoll: Poll) => {
+            console.log("update : ", updatedPoll)
+
             setPolls(prev =>
                 prev.map(p => (p._id === updatedPoll._id ? updatedPoll : p))
             );
@@ -183,17 +191,17 @@ export default function PollsPanel({ isTeacher = false }: PollsPanelProps) {
 
                     {polls.map((poll) => (
                         <div
-                            key={poll._id}
+                            key={poll?._id}
                             className={cn(
                                 "p-4 rounded-xl border animate-fade-in",
-                                poll.isActive
+                                poll?.isActive
                                     ? "border-primary"
                                     : "border-border bg-secondary/30"
                             )}
                         >
                             <div className="flex items-start justify-between gap-2 mb-3">
-                                <h3 className="font-medium text-sm">{poll.question}</h3>
-                                {poll.isActive && (
+                                <h3 className="font-medium text-sm">{poll?.question}</h3>
+                                {poll?.isActive && (
                                     <span className="text-[10px] bg-primary/30 text-primary font-semibold px-1.5 py-0.5 rounded shrink-0">
                                         Active
                                     </span>
@@ -201,27 +209,27 @@ export default function PollsPanel({ isTeacher = false }: PollsPanelProps) {
                             </div>
 
                             <div className="space-y-2">
-                                {poll.options.map((option) => {
+                                {poll?.options.map((option) => {
                                     const percentage =
-                                        poll.totalVotes > 0
-                                            ? Math.round((option.votes / poll.totalVotes) * 100)
+                                        poll?.totalVotes > 0
+                                            ? Math.round((option.votes / poll?.totalVotes) * 100)
                                             : 0;
 
-                                    const myVote = userVotes[poll._id];
+                                    const myVote = userVotes[poll?._id];
                                     const isSelected = myVote === option._id;
-                                    const showResults = !!myVote || !poll.isActive;
+                                    const showResults = !!myVote || !poll?.isActive;
 
                                     return (
                                         <button
                                             key={option._id}
                                             onClick={() =>
-                                                poll.isActive && handleVote(poll._id, option._id)
+                                                poll?.isActive && handleVote(poll?._id, option._id)
                                             }
-                                            disabled={!poll.isActive || Boolean(myVote)}
+                                            disabled={!poll?.isActive || Boolean(myVote)}
                                             className={cn(
                                                 "poll-option w-full py-2 px-4  border-2 rounded-lg text-left transition-all",
                                                 isSelected && "border-primary/30 bg-primary/10",
-                                                !poll.isActive && "cursor-default"
+                                                !poll?.isActive && "cursor-default"
                                             )}
                                         >
                                             <div className="flex items-center justify-between mb-1">
@@ -250,7 +258,7 @@ export default function PollsPanel({ isTeacher = false }: PollsPanelProps) {
 
                             <div className="flex items-center gap-2 mt-3 text-xs text-muted-foreground">
                                 <BarChart2 className="h-3.5 w-3.5" />
-                                <span>{poll.totalVotes} votes</span>
+                                <span>{poll?.totalVotes} votes</span>
                             </div>
                         </div>
                     ))}

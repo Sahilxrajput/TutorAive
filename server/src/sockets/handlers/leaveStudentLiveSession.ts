@@ -1,121 +1,130 @@
 import Lecture from "../../models/lecture.model";
-import { Socket } from "socket.io";
+import { Namespace, Socket } from "socket.io";
 import { peerManager } from "../../managers/PeerManager";
 import { roomManager } from "../../managers/RoomManager";
 import Attendance from "../../models/attendence.model";
 
-export const leaveStudentLiveSession = (socket: Socket) => async () => {
-  const peer = peerManager.get(socket.id);
-  if (!peer || !peer.roomId) {
-    console.log("peer / roomId not exist");
-    return;
-  }
+export const leaveStudentLiveSession =
+  (classroom: Namespace, socket: Socket) => async () => {
+    const peer = peerManager.get(socket.id);
+    if (!peer || !peer.roomId) {
+      console.log("peer / roomId not exist");
+      return;
+    }
 
-  const roomId = peer.roomId;
-  const studentId = peer.userId; // IMPORTANT
+    const roomId = peer.roomId;
+    const studentId = peer.userId; // IMPORTANT
 
-  const room = roomManager.get(roomId);
-  if (!room) {
-    console.log("room not exist");
-    return;
-  }
+    const room = roomManager.get(roomId);
+    if (!room) {
+      console.log("room not exist");
+      return;
+    }
 
-  console.log("[leave] student left:", peer.socketId);
+    console.log("[leave] student left:", peer.socketId);
 
-  delete socket.data.activeRoomId;
-  socket.leave(roomId);
+    delete socket.data.activeRoomId;
+    socket.leave(roomId);
 
-  // 1. consumers
-  for (const consumer of peer.consumers.values()) {
-    try {
-      consumer.removeAllListeners();
-      consumer.close();
-    } catch {}
-  }
-  peer.consumers.clear();
+    setTimeout(() => {
+      const room = classroom.adapter.rooms.get(roomId);
+      const count = room ? room.size : 0;
 
-  // 2. producers
-  for (const key of Object.keys(peer.producers) as Array<
-    keyof typeof peer.producers
-  >) {
-    const producer = peer.producers[key];
-    if (!producer) continue;
+      classroom.to(roomId).emit("peer:count", { count });
+    }, 0);
 
-    try {
-      producer.removeAllListeners();
-      producer.close();
-    } catch {}
-    peer.producers[key] = null;
-  }
+    // 1. consumers
+    for (const consumer of peer.consumers.values()) {
+      try {
+        consumer.removeAllListeners();
+        consumer.close();
+      } catch {}
+    }
+    peer.consumers.clear();
 
-  // 3. transports
-  if (peer.upTransport) {
-    try {
-      peer.upTransport.removeAllListeners();
-      peer.upTransport.close();
-    } catch {}
-    peer.upTransport = null;
-  }
+    // 2. producers
+    for (const key of Object.keys(peer.producers) as Array<
+      keyof typeof peer.producers
+    >) {
+      const producer = peer.producers[key];
+      if (!producer) continue;
 
-  if (peer.downTransport) {
-    try {
-      peer.downTransport.removeAllListeners();
-      peer.downTransport.close();
-    } catch {}
-    peer.downTransport = null;
-  }
+      try {
+        producer.removeAllListeners();
+        producer.close();
+      } catch {}
+      peer.producers[key] = null;
+    }
 
-  // 4. remove peer
-  room.removePeer(socket.id);
-  peerManager.remove(socket.id);
+    // 3. transports
+    if (peer.upTransport) {
+      try {
+        peer.upTransport.removeAllListeners();
+        peer.upTransport.close();
+      } catch {}
+      peer.upTransport = null;
+    }
 
-  // ---- ATTENDANCE LOGIC STARTS HERE ----
-  const attendance = await Attendance.findOne({
-    lecture: roomId,
-    student: studentId,
-  });
+    if (peer.downTransport) {
+      try {
+        peer.downTransport.removeAllListeners();
+        peer.downTransport.close();
+      } catch {}
+      peer.downTransport = null;
+    }
 
-  if (!attendance || !attendance.joinedAt) {
-    console.log("No attendance record found for duration calculation");
-    return;
-  }
+    // 4. remove peer
+    room.removePeer(socket.id);
+    peerManager.remove(socket.id);
 
-  const now = new Date();
-  const sessionDuration = now.getTime() - attendance.joinedAt.getTime();
+    // ---- ATTENDANCE LOGIC STARTS HERE ----
+    const attendance = await Attendance.findOne({
+      lecture: roomId,
+      student: studentId,
+    });
 
-  const totalDuration = (attendance.totalDuration || 0) + sessionDuration;
+    if (!attendance || !attendance.joinedAt) {
+      console.log("No attendance record found for duration calculation");
+      return;
+    }
 
-  const lecture = await Lecture.findById(roomId);
-  if (!lecture) return;
+    const now = new Date();
+    const sessionDuration = now.getTime() - attendance.joinedAt.getTime();
 
-  const lectureStartTime = new Date(lecture.startTime);
+    const totalDuration = (attendance.totalDuration || 0) + sessionDuration;
 
-  // Calculate lateness based on JOIN time, not leave time
-  const joinedLate =
-    attendance.joinedAt.getTime() - lectureStartTime.getTime() > 10 * 60 * 1000; // 10 min
+    const lecture = await Lecture.findById(roomId);
+    if (!lecture) return;
 
-  const MIN_REQUIRED_DURATION = 5 * 60 * 1000; // 5 minutes
+    const lectureStartTime = new Date(lecture.startTime);
 
-  let status: "present" | "late" | "absent" = "absent";
+    // Calculate lateness based on JOIN time, not leave time
+    const joinedLate =
+      attendance.joinedAt.getTime() - lectureStartTime.getTime() >
+      10 * 60 * 1000; // 10 min
 
-  if (totalDuration >= MIN_REQUIRED_DURATION) {
-    status = joinedLate ? "late" : "present";
-  }
+    const MIN_REQUIRED_DURATION = 5 * 60 * 1000; // 5 minutes
 
-  await Attendance.updateOne(
-    { lecture: roomId, student: studentId },
-    {
-      $set: {
-        leftAt: now,
-        totalDuration,
-        status,
+    let status: "present" | "late" | "absent" = "absent";
+
+    if (totalDuration >= MIN_REQUIRED_DURATION) {
+      status = joinedLate ? "late" : "present";
+    }
+
+    await Attendance.updateOne(
+      { lecture: roomId, student: studentId },
+      {
+        $set: {
+          leftAt: now,
+          totalDuration,
+          status,
+        },
       },
-    },
-  );
+    );
 
-  console.log(
-    `[attendance] ${studentId} marked ${status} (duration: ${Math.floor(
-      totalDuration / 60000,
-    )} min)`,
-  );
-};;
+    console.log(
+      `[attendance] ${studentId} marked ${status} (duration: ${Math.floor(
+        totalDuration / 60000,
+      )} min)`,
+    );
+  };

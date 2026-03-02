@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.sendClassInviteEmail = exports.sendContactMail = exports.sendClassStatusEmail = exports.sendAssignmentEmail = void 0;
+exports.sendClassInviteEmail = exports.sendContactMail = exports.sendClassStatusEmail = exports.sendResourceUploadEmail = exports.sendAssignmentEmail = void 0;
 const nodemailer_1 = require("nodemailer");
 const transporter = (0, nodemailer_1.createTransport)({
     service: "gmail",
@@ -20,11 +20,10 @@ const transporter = (0, nodemailer_1.createTransport)({
         pass: process.env.MAIL_PASS,
     },
 });
-const sendAssignmentEmail = (_a) => __awaiter(void 0, [_a], void 0, function* ({ toEmail, classroomName, assignmentId, }) {
+const sendAssignmentEmail = (_a) => __awaiter(void 0, [_a], void 0, function* ({ toEmail, classroomName, assignmentUrl, assignmentTitle, }) {
     try {
-        const assignmentUrl = `${process.env.SERVER_URL}/assignments/${assignmentId}`;
         const mailOptions = {
-            from: `"Online Tutor" <online@tutor.in>`,
+            from: `"TutorAive" <no-reply@tutoraive.com>`,
             to: toEmail,
             subject: "New Assignment Posted",
             html: `
@@ -32,7 +31,7 @@ const sendAssignmentEmail = (_a) => __awaiter(void 0, [_a], void 0, function* ({
       <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; padding: 24px; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.08);">
       
       <h2 style="margin-top: 0; color: #1f2937;">
-        New Assignment Posted
+        New Assignment ${assignmentTitle} Posted
       </h2>
   
       <p style="color: #374151; font-size: 14px;">
@@ -100,6 +99,91 @@ const sendAssignmentEmail = (_a) => __awaiter(void 0, [_a], void 0, function* ({
     }
 });
 exports.sendAssignmentEmail = sendAssignmentEmail;
+const sendResourceUploadEmail = (_a) => __awaiter(void 0, [_a], void 0, function* ({ toEmail, classroomName, resourceUrl, resourceTitle, }) {
+    try {
+        const mailOptions = {
+            from: `"TutorAive" <no-reply@tutoraive.com>`,
+            to: toEmail,
+            subject: "New Learning Resource Available",
+            html: `
+      <div style="font-family: Arial, Helvetica, sans-serif; background-color: #f4f6f8; padding: 20px;">
+        <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; padding: 24px; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.08);">
+          
+          <h2 style="margin-top: 0; color: #1f2937;">
+            New Learning Resource Uploaded
+          </h2>
+      
+          <p style="color: #374151; font-size: 14px;">
+            Hello,
+          </p>
+      
+          <p style="color: #374151; font-size: 14px;">
+            A new learning resource has been uploaded to your classroom:
+          </p>
+      
+          <p style="font-size: 15px; font-weight: bold; color: #111827; margin: 16px 0;">
+            ${classroomName || "Your Classroom"}
+          </p>
+
+          ${resourceTitle
+                ? `<p style="color: #374151; font-size: 14px;">
+                   Resource Title: <strong>${resourceTitle}</strong>
+                 </p>`
+                : ""}
+      
+          <p style="color: #374151; font-size: 14px;">
+            Please review the material to stay up to date with the latest content.
+          </p>
+      
+          <div style="text-align: center; margin: 24px 0;">
+            <a 
+              href="${resourceUrl}"
+              target="_blank"
+              style="
+                display: inline-block;
+                padding: 12px 22px;
+                background-color: #2563eb;
+                color: #ffffff;
+                text-decoration: none;
+                border-radius: 4px;
+                font-size: 14px;
+                font-weight: 600;
+              "
+            >
+              View Resource
+            </a>
+          </div>
+      
+          <p style="color: #6b7280; font-size: 12px;">
+            If the button doesn't work, copy and paste the link below into your browser:
+          </p>
+      
+          <p style="font-size: 12px; word-break: break-all;">
+            <a href="${resourceUrl}" style="color: #2563eb;">
+              ${resourceUrl}
+            </a>
+          </p>
+      
+          <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;" />
+      
+          <p style="color: #6b7280; font-size: 12px;">
+            This is an automated message. Replies are not monitored.
+          </p>
+      
+          <p style="color: #6b7280; font-size: 12px; margin-bottom: 0;">
+            © ${new Date().getFullYear()} Online Tutor
+          </p>
+        </div>
+      </div>
+      `,
+        };
+        yield transporter.sendMail(mailOptions);
+    }
+    catch (_b) {
+        throw new Error("Mail delivery failed during resource notification dispatch.");
+    }
+});
+exports.sendResourceUploadEmail = sendResourceUploadEmail;
 const CLASS_STATUS_CONFIG = {
     live: {
         subject: "🔴 Class Started",
@@ -158,37 +242,68 @@ const CLASS_STATUS_CONFIG = {
         showButton: false,
     },
 };
-const sendClassStatusEmail = (_a) => __awaiter(void 0, [_a], void 0, function* ({ toEmail, classroomName = "Advanced Backend", lectureId, status, title, }) {
+const sendClassStatusEmail = (_a) => __awaiter(void 0, [_a], void 0, function* ({ toEmail, classroomName = "TutorAive Classroom", lectureId, status, title, startTime, }) {
     try {
         const lectureUrl = `${process.env.SERVER_URL}/lectures/${lectureId}`;
         const config = CLASS_STATUS_CONFIG[status];
         yield transporter.sendMail({
-            from: `"Online Tutor" <online@tutor.in>`,
+            from: `"TutorAive" <no-reply@tutoraive.com>`,
             to: toEmail,
             subject: config.subject,
             html: `
-        <div style="font-family: Arial; background:#f4f6f8; padding:20px">
-          <div style="max-width:600px;margin:auto;background:#fff;padding:24px;border-radius:6px">
-            <h2 style="color:${config.color}">${config.heading}</h2>
-            <p><strong>${title}</strong> — ${classroomName}</p>
-            <p>${config.message}</p>
-  
-            ${config.showButton
-                ? `<a href="${lectureUrl}" style="
-                    display:inline-block;
-                    margin-top:16px;
-                    padding:12px 22px;
-                    background:${config.color};
-                    color:#fff;
-                    text-decoration:none;
-                    border-radius:4px;
-                    font-weight:600;">
-                    ${config.buttonText}
-                  </a>`
+        <div style="font-family: Arial, Helvetica, sans-serif; background-color:#f4f6f8; padding:24px;">
+          <div style="max-width:600px; margin:0 auto; background:#ffffff; padding:28px; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.06);">
+            
+            <h2 style="margin-top:0; color:${config.color}; font-size:20px;">
+              ${config.heading}
+            </h2>
+
+            <p style="font-size:14px; color:#374151; margin-bottom:8px;">
+              <strong>${title}</strong>
+            </p>
+
+            <p style="font-size:13px; color:#6b7280; margin:0 0 16px 0;">
+              ${classroomName}
+            </p>
+
+            <p style="font-size:14px; color:#374151; line-height:1.6;">
+              ${config.message}
+            </p>
+
+            ${startTime
+                ? `<p style="font-size:13px; color:#111827; margin-top:16px;">
+                    <strong>Scheduled Time:</strong> ${startTime}
+                  </p>`
                 : ""}
-  
-            <p style="font-size:12px;color:#6b7280;margin-top:24px">
-              This is an automated notification.
+
+            ${config.showButton
+                ? `
+                <div style="margin-top:24px; text-align:center;">
+                  <a href="${lectureUrl}" 
+                     style="
+                       display:inline-block;
+                       padding:12px 24px;
+                       background:${config.color};
+                       color:#ffffff;
+                       text-decoration:none;
+                       border-radius:6px;
+                       font-size:14px;
+                       font-weight:600;
+                     ">
+                    ${config.buttonText}
+                  </a>
+                </div>
+                `
+                : ""}
+
+            <hr style="border:none; border-top:1px solid #e5e7eb; margin:28px 0;" />
+
+            <p style="font-size:12px; color:#6b7280; margin:0;">
+              This is an automated notification from TutorAive. Replies to this email are not monitored.
+            </p>
+
+            <p style="font-size:12px; color:#6b7280; margin:8px 0 0 0;">
+              © ${new Date().getFullYear()} TutorAive. All rights reserved.
             </p>
           </div>
         </div>
@@ -196,14 +311,14 @@ const sendClassStatusEmail = (_a) => __awaiter(void 0, [_a], void 0, function* (
         });
     }
     catch (_b) {
-        throw new Error("Terminal was unable to dispatch the mail packet.");
+        throw new Error("Email dispatch failed during lecture status notification process.");
     }
 });
 exports.sendClassStatusEmail = sendClassStatusEmail;
 const sendContactMail = (_a) => __awaiter(void 0, [_a], void 0, function* ({ name, email, subject, message, }) {
     try {
         yield transporter.sendMail({
-            from: `"TutorAive Contact" <${process.env.EMAIL_USER}>`,
+            from: `"TutorAive" <no-reply@tutoraive.com>`,
             to: process.env.CONTACT_USER,
             subject: "New Contact Message",
             html: `
@@ -224,7 +339,7 @@ exports.sendContactMail = sendContactMail;
 const sendClassInviteEmail = (_a) => __awaiter(void 0, [_a], void 0, function* ({ studentEmail, teacherName = "TutorAIve Teaacher", classroomName, invitationLink, }) {
     try {
         const mailOptions = {
-            from: `"${teacherName}" <${process.env.EMAIL_USER}>`,
+            from: `"TutorAive" <no-reply@tutoraive.com>`,
             to: studentEmail,
             subject: `Authorization Required: Your Invitation to ${classroomName}`,
             html: `

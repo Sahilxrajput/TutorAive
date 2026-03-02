@@ -34,12 +34,10 @@ export const initSocket = async (httpServer: HttpServer) => {
   classroom.use(socketAuthMiddleware);
 
   classroom.on("connection", (socket: Socket) => {
-    console.log("Somthing connected!", socket.id);
     const userId = socket.data.userId;
     const isInstructor = socket.data.userRole === "instructor";
 
     if (!userId) {
-      console.error("Socket connected WITHOUT userId");
       socket.disconnect(true);
       return;
     }
@@ -51,7 +49,7 @@ export const initSocket = async (httpServer: HttpServer) => {
       "join:live-session",
       isInstructor
         ? handleInstructorJoinLiveSession(socket)
-        : handleStudentJoinLiveSession(socket),
+        : handleStudentJoinLiveSession(classroom, socket),
     );
 
     socket.on("createWebRtcTransport", handleCreateWebRtcTransport(socket));
@@ -70,7 +68,7 @@ export const initSocket = async (httpServer: HttpServer) => {
       "leave:live-session",
       isInstructor
         ? leaveInstructorLiveSession(socket)
-        : leaveStudentLiveSession(socket),
+        : leaveStudentLiveSession(classroom, socket),
     );
 
     // socket.on("lecture:join", ({ lectureId, user }) => {
@@ -84,9 +82,9 @@ export const initSocket = async (httpServer: HttpServer) => {
     // });
 
     //* registered Sockets
-    registerQnaSocket(socket);
-    registerChatSocket(socket);
-    registerPollSocket(socket);
+    registerQnaSocket(classroom, socket);
+    registerChatSocket(classroom, socket);
+    registerPollSocket(classroom, socket);
     registerSystemSocket(socket);
 
     socket.on("join:classroom", (classroomId: string) => {
@@ -116,7 +114,7 @@ export const initSocket = async (httpServer: HttpServer) => {
       "disconnect",
       isInstructor
         ? leaveInstructorLiveSession(socket)
-        : leaveStudentLiveSession(socket),
+        : leaveStudentLiveSession(classroom, socket),
     );
   });
 };

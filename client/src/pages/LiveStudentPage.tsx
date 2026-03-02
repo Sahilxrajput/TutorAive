@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import type { AppData, Consumer, DtlsParameters, RtpCapabilities, RtpParameters, Transport } from "mediasoup-client/types";
 import { useNavigate, useParams } from "react-router-dom";
 import { ClassStartPermissionAlert } from "@/components/classroom/ClassStartPermissionAlert";
-const SidebarTabs = lazy(() => import("@/components/classroom/SidebarTabs"));
+import SidebarTabs from "@/components/classroom/SidebarTabs";
 const VideoStage = lazy(() => import("@/components/classroom/VideoStage"));
 const ControlBarForStudent = lazy(() => import("./ControlBarForStudent"));
 interface IJoinRoom {

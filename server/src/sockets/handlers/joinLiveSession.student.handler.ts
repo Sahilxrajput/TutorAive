@@ -1,5 +1,5 @@
 import Attendance from "../../models/attendence.model";
-import { Socket } from "socket.io";
+import { Namespace, Socket } from "socket.io";
 import Peer from "../../classes/peer";
 import { peerManager } from "../../managers/PeerManager";
 import { roomManager } from "../../managers/RoomManager";
@@ -12,10 +12,10 @@ interface Payload {
 }
 
 export const handleStudentJoinLiveSession =
-  (socket: Socket) =>
+  (classroom: Namespace, socket: Socket) =>
   async ({ roomId, name, userId }: Payload, cb: any) => {
     try {
-        console.log("roomId:", roomId )
+      console.log("roomId:", roomId);
       if (!roomId || !userId) {
         return cb({ error: "Invalid data" });
       }
@@ -60,11 +60,16 @@ export const handleStudentJoinLiveSession =
       socket.data.activeRoomId = roomId;
       socket.join(roomId);
 
-      socket.to(roomId).emit("peer-joined", {
+      socket.to(roomId).emit("new-peer-joined", {
         socketId: socket.id,
         name,
         userId,
       });
+
+      const roomSocket = classroom.adapter.rooms.get(roomId);
+      const count = roomSocket ? roomSocket.size : 0;
+
+      classroom.to(roomId).emit("peer:count", { count });
 
       return cb({ rtpCapabilities: room.router.rtpCapabilities });
     } catch (err) {

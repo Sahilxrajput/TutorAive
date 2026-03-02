@@ -1,4 +1,4 @@
-import { lazy, useRef, useState } from 'react'
+import { lazy, useEffect, useRef, useState } from 'react'
 import { Device } from 'mediasoup-client'
 import type {
     AppData,
@@ -14,8 +14,8 @@ import useAuth from '@/hooks/useAuth';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { ClassStartPermissionAlert } from '@/components/classroom/ClassStartPermissionAlert';
+import SidebarTabs from "@/components/classroom/SidebarTabs";
 const ControlsBar = lazy(() => import('@/components/classroom/ControlsBar'));
-const SidebarTabs = lazy(() => import("@/components/classroom/SidebarTabs"));
 const VideoStage = lazy(() => import("@/components/classroom/VideoStage"));
 
 
@@ -31,7 +31,7 @@ const LiveTeacherPage = () => {
     const [isCamOff, setIsCamOff] = useState(false);
     const [isScreenSharing, setIsScreenSharing] = useState(false);
     const [openChat, setOpenChat] = useState(false)
-    const [viewerCount] = useState(42);
+    const [peerCount, setPeerCount] = useState(0)
     const { user } = useAuth();
     const { socket, } = useSocketContext();
     const { lectureId } = useParams<{
@@ -53,6 +53,19 @@ const LiveTeacherPage = () => {
     const deviceRef = useRef<Device>(null);
     const navigate = useNavigate();
 
+    useEffect(() => {
+        if (!socket || !lectureId) return;
+
+        const handlePeerCount = ({ count }: { count: number }) => {
+            setPeerCount(count);
+        };
+
+        socket.on("peer:count", handlePeerCount);
+
+        return () => {
+            socket.off("peer:count", handlePeerCount);
+        };
+    }, [socket, lectureId]);
 
     async function start() {
         const stream = await navigator.mediaDevices.getUserMedia({
@@ -461,7 +474,7 @@ const LiveTeacherPage = () => {
                     videoRef={localVideoRef}
                     screenRef={screenVideoRef}
                     isInstructor={true}
-                    viewerCount={viewerCount}
+                    peerCount={peerCount}
                     isCamOff={isCamOff}
                     isScreenSharing={isScreenSharing}
                 />

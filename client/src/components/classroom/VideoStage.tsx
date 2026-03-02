@@ -13,11 +13,11 @@ interface VideoStageProps {
     videoRef: React.RefObject<HTMLVideoElement | null>;
     isScreenSharing: boolean;
     isCamOff?: boolean;
-    viewerCount: number;
+    peerCount: number;
 }
 
 const VideoStage =
-    ({ isInstructor, isScreenSharing, isCamOff, viewerCount, screenRef, videoRef }: VideoStageProps) => {
+    ({ isInstructor, isScreenSharing, isCamOff, peerCount, screenRef, videoRef }: VideoStageProps) => {
         const { user } = useAuth();
         const containerRef = useRef<HTMLDivElement>(null);
         const { isFullScreen } = useFullscreen()
@@ -35,9 +35,9 @@ const VideoStage =
                             Live
                         </Badge>
 
-                        <Badge className="bg-card-foreground flex items-center gap-1">
+                        <Badge className="bg-card flex items-center gap-2">
                             <Users className="h-3.5 w-3.5" />
-                            {viewerCount} watching
+                            {peerCount} watching
                         </Badge>
                     </div>
                 )}

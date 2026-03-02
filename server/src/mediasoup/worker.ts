@@ -6,7 +6,7 @@ export async function CreateWorker() {
     rtcMaxPort: 40999,
   });
   console.log(`Worker pid : ${worker.pid}`);
-  worker.on("died", (error) => {
+  worker.on("died", (_error) => {
     console.error("medisoup worker has died");
     setTimeout(() => process.exit(1), 2000);
   });

@@ -16,6 +16,7 @@ exports.getResources = exports.saveResources = exports.searchQuery = exports.rem
 const note_model_1 = __importDefault(require("../models/note.model"));
 const user_model_1 = __importDefault(require("../models/user.model"));
 const resource_model_1 = __importDefault(require("../models/resource.model"));
+const queue_1 = require("../redis/queue");
 const saveNote = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         console.log("body", req.body);
@@ -381,7 +382,13 @@ const saveResources = (req, res) => __awaiter(void 0, void 0, void 0, function* 
             },
         });
         console.log("resource", resource);
-        //@todo Message Queue (Email/Push Notifications)
+        // Message Queue (Email/Push Notifications)
+        yield (0, queue_1.addResourceJob)({
+            classroomId: classroomDoc._id.toString(),
+            classroomTitle: classroomDoc.title,
+            title: resource.title,
+            resourceUrl: resource.file.url,
+        });
         return res.status(201).json({
             success: true,
             message: "Resources posted successfully",

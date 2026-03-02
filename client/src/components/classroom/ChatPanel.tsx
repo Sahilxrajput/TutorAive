@@ -1,10 +1,9 @@
 import { Send } from "lucide-react";
-import { Avatar, AvatarFallback } from "../ui/avatar";
-import { AvatarImage } from "@radix-ui/react-avatar";
-import { ScrollArea } from "../ui/scroll-area";
-import { Input } from "../ui/input";
-import { Button } from "../ui/button";
-import { useState, useEffect, type FormEvent } from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { useState, useEffect, FormEvent } from "react";
 import useSocketContext from "@/hooks/useSocketContext";
 import { useParams } from "react-router-dom";
 import useAuth from "@/hooks/useAuth";
@@ -24,52 +23,56 @@ export interface LiveChatMessage {
 const ChatPanel = () => {
     const [messages, setMessages] = useState<LiveChatMessage[]>([]);
     const [text, setText] = useState("");
+
     const { lectureId } = useParams<{ lectureId: string }>();
     const { socket } = useSocketContext();
     const { user } = useAuth();
 
+    /* ================= SEND MESSAGE ================= */
     const sendMessage = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         if (!socket || !text.trim()) return;
 
-        const { msg }: { msg: LiveChatMessage } = await socket.emitWithAck("chat:send", {
+        const res = await socket.emitWithAck("chat:send", {
             lectureId,
             user,
             message: text,
         });
 
-        setMessages((prev) => [...prev, msg])
+        if (res?.error) return;
 
         setText("");
     };
 
+    /* ================= SYNC + LISTEN ================= */
     useEffect(() => {
         if (!socket || !lectureId) return;
 
         socket.emit(
             "chat:sync",
             { lectureId },
-            ({ messages }: { messages: LiveChatMessage[] }) => {
-                setMessages(messages);
+            (res: { messages?: LiveChatMessage[]; error?: string }) => {
+                if (res?.messages) {
+                    setMessages(res.messages);
+                }
             }
         );
 
-        socket.on("chat:new", (msg: LiveChatMessage) => {
-            setMessages((prev) => [...prev, msg]);
-        });
+        const onNewMessage = (msg: LiveChatMessage) => {
+            setMessages(prev => [...prev, msg]);
+        };
 
-        socket.on("chat:deleted", ({ messageId }: { messageId: string }) => {
-            setMessages((prev) => prev.filter((m) => m._id !== messageId));
-        });
+        socket.on("chat:new", onNewMessage);
 
         return () => {
-            socket.off("chat:new");
-            socket.off("chat:deleted");
+            socket.off("chat:new", onNewMessage);
         };
+
     }, [socket, lectureId]);
 
     return (
         <div className="flex flex-col h-full">
+
             {/* Messages */}
             <ScrollArea className="flex-1 min-h-0 px-6">
                 <div className="space-y-6 py-4">
@@ -77,7 +80,7 @@ const ChatPanel = () => {
                     {messages.length === 0 && (
                         <div className="text-center text-muted-foreground py-10">
                             <p className="font-medium">No messages yet</p>
-                            <p className="text-xs">Messages will appear here once they are sent</p>
+                            <p className="text-xs">Messages will appear here once sent</p>
                         </div>
                     )}
 
@@ -120,6 +123,7 @@ const ChatPanel = () => {
                             </div>
                         );
                     })}
+
                 </div>
             </ScrollArea>
 
@@ -132,12 +136,12 @@ const ChatPanel = () => {
                         placeholder="Message students..."
                         className="bg-muted/50 border-none focus-visible:ring-1 focus-visible:ring-primary/60"
                     />
-
                     <Button size="icon" className="bg-primary hover:bg-primary/90">
                         <Send className="h-4 w-4" />
                     </Button>
                 </form>
             </div>
+
         </div>
     );
 };

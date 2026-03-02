@@ -182,7 +182,7 @@ const getStudents = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     try {
         // pagination values
         const page = Number(req.query.page) || 1;
-        const limit = 1;
+        const limit = 5;
         const skip = (page - 1) * limit;
         const classroom = req.authorizedResource;
         const totalStudents = classroom.students.length;
