@@ -54,8 +54,6 @@ export const registerQnaSocket = (classroom: Namespace, socket: Socket) => {
 
       // Broadcast to everyone in namespace room (including sender)
       classroom.to(lectureId).emit("qna:new", q);
-      socket.emit("qna:new", q);
-
       cb?.({ success: true });
     } catch (err) {
       cb?.({ error: "Failed to ask question" });
@@ -87,11 +85,6 @@ export const registerQnaSocket = (classroom: Namespace, socket: Socket) => {
         upvotes: q.upvotes,
       });
 
-      socket.emit("qna:update", {
-        questionId,
-        upvotes: q.upvotes,
-      });
-
       cb?.({ success: true });
     } catch (err) {
       cb?.({ error: "Upvote failed" });
@@ -118,11 +111,6 @@ export const registerQnaSocket = (classroom: Namespace, socket: Socket) => {
       classroom.to(lectureId).emit("qna:answered", {
         questionId,
       });
-
-      socket.emit("qna:answered", {
-        questionId,
-      });
-
       cb?.({ success: true });
     } catch (err) {
       cb?.({ error: "Failed to mark answered" });

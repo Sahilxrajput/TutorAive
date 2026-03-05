@@ -344,94 +344,113 @@ const LiveTeacherPage = () => {
 
     const startScreenShare = async () => {
         if (!producerTransportRef.current) return;
-        setIsScreenSharing(true)
 
-        const screenStream = await navigator.mediaDevices.getDisplayMedia({
-            video: { width: 1920, height: 1080, frameRate: { ideal: 60, max: 60 }, displaySurface: 'monitor' },
-            audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false, sampleRate: 48000 }
-        });
+        try {
+            const screenStream = await navigator.mediaDevices.getDisplayMedia({
+                video: {
+                    width: 1920,
+                    height: 1080,
+                    frameRate: { ideal: 60, max: 60 },
+                    displaySurface: "monitor",
+                },
+                audio: {
+                    echoCancellation: false,
+                    noiseSuppression: false,
+                    autoGainControl: false,
+                    sampleRate: 48000,
+                },
+            });
 
-        screenStreamRef.current = screenStream;
+            const screenVideoTrack = screenStream.getVideoTracks()[0];
+            let screenAudioTrack = screenStream.getAudioTracks()[0];
 
-        // attach stream to video element
-        if (screenVideoRef.current) {
-            screenVideoRef.current.srcObject = screenStream;
-        }
+            if (!screenVideoTrack) {
+                screenStream.getTracks().forEach(t => t.stop());
+                return;
+            }
 
-        const screenVideoTrack = screenStream.getVideoTracks()[0];
-        let screenAudioTrack = screenStream.getAudioTracks()[0];
+            // Apply constraints safely
+            await screenVideoTrack
+                .applyConstraints({
+                    width: 1920,
+                    height: 1080,
+                    frameRate: { ideal: 60, max: 60 },
+                })
+                .catch(() => { });
 
+            // If user didn’t share audio, create silent track
+            if (!screenAudioTrack) {
+                screenAudioTrack = createSilentAudioTrack();
+            }
 
-        if (screenVideoTrack) {
-            await screenVideoTrack.applyConstraints({
-                width: 1920,
-                height: 1080,
-                frameRate: { ideal: 60, max: 60 },
-            }).catch(err => console.warn("applyConstraints failed:", err));
-        }
-        if (!producerTransportRef.current) {
-            console.warn('Send transport not available.');
-            screenStream.getTracks().forEach(track => track.stop());
-            return;
-        }
+            // Save stream ref
+            screenStreamRef.current = screenStream;
 
-        // to handle run time error when peer just cancel or deny from sharing screen
-        if (!screenAudioTrack) {
-            screenAudioTrack = createSilentAudioTrack();
-        }
+            // Attach locally
+            if (screenVideoRef.current) {
+                screenVideoRef.current.srcObject = screenStream;
+            }
 
-        // IMPORTANT: detect manual stop
-        if (screenVideoTrack) {
+            // Detect manual stop
             screenVideoTrack.onended = () => {
                 stopScreenShare();
             };
-        }
 
-        // IMPORTANT: detect manual stop
-        if (screenAudioTrack) {
-            screenAudioTrack.onended = () => {
-                stopScreenShare();
-            };
-        }
+            if (screenAudioTrack) {
+                screenAudioTrack.onended = () => {
+                    stopScreenShare();
+                };
+            }
 
-        // SCREEN VIDEO
-        if (screenVideoTrack) {
+            // Produce screen video
             screenProducerRef.current = await producerTransportRef.current.produce({
                 track: screenVideoTrack,
                 encodings: [
                     {
                         maxBitrate: 4_000_000,
                         maxFramerate: 30,
-                        priority: 'high',
-                        networkPriority: 'high',
+                        priority: "high",
+                        networkPriority: "high",
                         scaleResolutionDownBy: 1,
-                    }
+                    },
                 ],
                 codecOptions: {
                     videoGoogleStartBitrate: 2000,
                     videoGoogleMaxBitrate: 4000,
                     videoGoogleMinBitrate: 1000,
                 },
-                appData: { mediaTag: 'screen-video' },
+                appData: { mediaTag: "screen-video" },
             });
 
-            screenProducerRef.current.on('trackended', () => startScreenShare());
-        }
-
-        // SCREEN AUDIO 
-        if (screenAudioTrack) {
-            saudioProducerRef.current = await producerTransportRef.current.produce({
-                track: screenAudioTrack,
-                appData: { mediaTag: "screen-audio" },
-                codecOptions: {
-                    opusMaxPlaybackRate: 48000,
-                    opusStereo: true,
-                },
-                encodings: [{ maxBitrate: 128000 }]
+            screenProducerRef.current.on("trackended", () => {
+                stopScreenShare();
             });
-            saudioProducerRef.current.on('trackended', () => startScreenShare());
+
+            // Produce screen audio
+            if (screenAudioTrack) {
+                saudioProducerRef.current = await producerTransportRef.current.produce({
+                    track: screenAudioTrack,
+                    appData: { mediaTag: "screen-audio" },
+                    codecOptions: {
+                        opusMaxPlaybackRate: 48000,
+                        opusStereo: true,
+                    },
+                    encodings: [{ maxBitrate: 128000 }],
+                });
+
+                saudioProducerRef.current.on("trackended", () => {
+                    stopScreenShare();
+                });
+            }
+
+            // Only now update UI
+            setIsScreenSharing(true);
+
+        } catch (err) {
+            // User cancelled or permission denied
+            console.warn("Screen share cancelled or failed:", err);
         }
-    }
+    };
 
     const stopScreenShare = () => {
         // If screen was never started, do nothing
@@ -441,7 +460,6 @@ const LiveTeacherPage = () => {
         // 1. Notify server FIRST
         if (socket) {
             socket.emit("stop-screen-share", { roomId: lectureId });
-            setIsScreenSharing(false)
         }
 
         // detach stream to video element

@@ -47,9 +47,7 @@ export const registerPollSocket = (classroom: Namespace, socket: Socket) => {
           totalVotes: 0,
         };
 
-        console.log("publicPoll", publicPoll);
         classroom.to(lectureId).emit("poll:created", publicPoll);
-
         cb?.({ success: true});
       } catch (err) {
         console.error("poll:create error:", err);
@@ -87,6 +85,6 @@ export const registerPollSocket = (classroom: Namespace, socket: Socket) => {
       totalVotes,
     };
 
-    socket.to(lectureId).emit("poll:updated", publicPoll);
+    classroom.to(lectureId).emit("poll:updated", publicPoll);
   });
 };

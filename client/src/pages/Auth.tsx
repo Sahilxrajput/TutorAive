@@ -72,7 +72,7 @@ const App = () => {
 
     const GoogleAuth = () => {
         try {
-            if (!formData.role.trim()) {
+            if (authMode === "signup" && !formData.role.trim()) {
                 toast.info("select user role");
                 return;
             }
@@ -176,28 +176,40 @@ const App = () => {
                     </div>
 
                     {/* Role Switcher */}
-                    <div className="grid grid-cols-2 gap-4 mb-10">
-                        {[
-                            { id: 'student', label: 'Student', icon: <User className="w-4 h-4" /> },
-                            { id: 'instructor', label: 'Instructor', icon: <GraduationCap className="w-4 h-4" /> }
-                        ].map((r) => (
-                            <button
-                                key={r.id}
-                                onClick={() => setFormData(prev => ({
-                                    ...prev,
-                                    role: r.id
-                                }))}
-                                className={cn("flex flex-col items-center gap-2 py-4 rounded-3xl border-2 transition-all font-black uppercase text-[10px] tracking-[0.2em]",
-                                    formData.role === r.id
-                                        ? "bg-primary/5 border-primary text-primary shadow-xl shadow-primary/5"
-                                        : "bg-transparent border-border text-muted-foreground hover:border-border-foreground/20"
-                                )}
+                    {authMode === 'signup' &&
+                        <AnimatePresence mode="wait">
+                            <motion.div
+                                key={authMode}
+                                initial={{ opacity: 0, x: 10 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: -10 }}
+                                transition={{ duration: 0.2 }}
+                                className="grid grid-cols-2 gap-4 mb-10"
                             >
-                                {r.icon}
-                                {r.label}
-                            </button>
-                        ))}
-                    </div>
+                                {[
+                                    { id: 'student', label: 'Student', icon: <User className="w-4 h-4" /> },
+                                    { id: 'instructor', label: 'Instructor', icon: <GraduationCap className="w-4 h-4" /> }
+                                ].map((r) => (
+                                    <button
+                                        key={r.id}
+                                        onClick={() => setFormData(prev => ({
+                                            ...prev,
+                                            role: r.id
+                                        }))}
+                                        className={cn("flex flex-col items-center gap-2 py-4 rounded-3xl border-2 transition-all font-black uppercase text-[10px] tracking-[0.2em]",
+                                            formData.role === r.id
+                                                ? "bg-primary/5 border-primary text-primary shadow-xl shadow-primary/5"
+                                                : "bg-transparent border-border text-muted-foreground hover:border-border-foreground/20"
+                                        )}
+                                    >
+                                        {r.icon}
+                                        {r.label}
+                                    </button>
+                                ))}
+                            </motion.div>
+                        </AnimatePresence>
+                    }
+
 
                     {/* Social Gateway */}
                     <button

@@ -79,8 +79,6 @@ export default function PollsPanel({ isTeacher = false }: PollsPanelProps) {
             return;
         }
 
-        if (!res?.publicPoll) return;
-
         setNewQuestion("");
         setNewOptions(["", ""]);
         setIsCreating(false);
@@ -100,7 +98,6 @@ export default function PollsPanel({ isTeacher = false }: PollsPanelProps) {
         };
 
         const onPollUpdated = (updatedPoll: Poll) => {
-            console.log("update : ", updatedPoll)
 
             setPolls(prev =>
                 prev.map(p => (p._id === updatedPoll._id ? updatedPoll : p))

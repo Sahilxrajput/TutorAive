@@ -67,8 +67,6 @@ export const registerChatSocket = (classroom: Namespace, socket: Socket) => {
 
       // Broadcast to everyone INCLUDING sender
       classroom.to(lectureId).emit("chat:new", msg);
-      socket.emit("chat:new", msg);
-
       cb?.({ success: true });
     } catch {
       cb?.({ error: "Failed to send message" });

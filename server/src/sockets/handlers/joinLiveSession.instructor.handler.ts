@@ -29,7 +29,7 @@ export const handleInstructorJoinLiveSession =
       return cb({ error: "You are not authorized" });
     }
 
-    // @todo
+    // @note
     // 3. Status guards
     // if (lecture.status === "live") {
     //   console.log("[join] lecture already live");

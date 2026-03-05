@@ -1,4 +1,4 @@
-import { useRef, } from "react";
+import { useEffect, useRef, } from "react";
 import { Users} from "lucide-react";
 import { Card } from "../ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
@@ -6,6 +6,7 @@ import { Badge } from "../ui/badge";
 import useAuth from "@/hooks/useAuth";
 import { motion } from "framer-motion"
 import { useFullscreen } from "@/hooks/useFullscreen";
+import { toast } from "sonner";
 
 interface VideoStageProps {
     isInstructor: boolean;
@@ -21,6 +22,11 @@ const VideoStage =
         const { user } = useAuth();
         const containerRef = useRef<HTMLDivElement>(null);
         const { isFullScreen } = useFullscreen()
+
+
+        useEffect(()=>{
+            toast.info("screenShare: " + isScreenSharing)
+        }, [isScreenSharing])
 
         return (
             <Card

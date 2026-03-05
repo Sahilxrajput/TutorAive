@@ -307,7 +307,7 @@ const LiveStudentPage = () => {
                     screenRef={screenVideoRef}
                     videoRef={teacherVideoRef}
                     isInstructor={false}
-                    viewerCount={viewerCount}
+                    peerCount={viewerCount}
                 />
 
                 <ControlBarForStudent

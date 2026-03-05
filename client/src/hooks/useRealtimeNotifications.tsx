@@ -11,8 +11,6 @@ export const useRealtimeNotifications = () => {
         if (!socket) return;
 
         const handleLectureUpdate = (payload: ILecture) => {
-            console.log("socket received");
-            console.log(payload);
 
             switch (payload.status) {
                 case "live":
