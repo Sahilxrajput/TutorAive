@@ -7,8 +7,12 @@ import type { AppData, Consumer, DtlsParameters, RtpCapabilities, RtpParameters,
 import { useNavigate, useParams } from "react-router-dom";
 import { ClassStartPermissionAlert } from "@/components/classroom/ClassStartPermissionAlert";
 import SidebarTabs from "@/components/classroom/SidebarTabs";
-const VideoStage = lazy(() => import("@/components/classroom/VideoStage"));
+import LiveSubtitle from "@/components/LiveSubtitle";         // ← AI: subtitle overlay
+import SessionEndPage from "@/components/SessionEndPage";     // ← AI: post-session page
+
+import VideoStage from "@/components/classroom/VideoStage";
 const ControlBarForStudent = lazy(() => import("./ControlBarForStudent"));
+
 interface IJoinRoom {
     rtpCapabilities: RtpCapabilities,
     error?: string
@@ -16,7 +20,7 @@ interface IJoinRoom {
 
 const LiveStudentPage = () => {
     const [isModalOpen, setIsModalOpen] = useState(true);
-    const [openChat, setOpenChat] = useState(false)
+    const [openChat, setOpenChat] = useState(false);
     const [viewerCount] = useState(42);
     const { user, isInstructor } = useAuth();
     const { socket } = useSocketContext();
@@ -29,15 +33,21 @@ const LiveStudentPage = () => {
     const screenVideoRef = useRef<HTMLVideoElement | null>(null);
     const screenStreamRef = useRef<MediaStream | null>(null);
     const deviceRef = useRef<Device>(null);
-    const consumerTransportRef = useRef<Transport>(null)
+    const consumerTransportRef = useRef<Transport>(null);
     const screenVideoConsumerRef = useRef<Consumer | null>(null);
     const screenAudioConsumerRef = useRef<Consumer | null>(null);
     const [isScreenSharing, setIsScreenSharing] = useState(false);
     const navigate = useNavigate();
 
+    // ── AI: Subtitle state ───────────────────────────────────────────────────
+    const [liveSubtitleText, setLiveSubtitleText] = useState("");   // yellow interim text
+    const [finalSubtitleText, setFinalSubtitleText] = useState(""); // confirmed final text
+    const [subtitlesEnabled, setSubtitlesEnabled] = useState(true);
+    const [sessionEnded, setSessionEnded] = useState(false); // triggers SessionEndPage
 
-    const clearStram = () => {
-        if (!teacherVideoRef.current) return
+
+    const clearStream = () => {
+        if (!teacherVideoRef.current) return;
         teacherVideoRef.current.srcObject = null;
         teacherVideoRef.current = null;
 
@@ -50,211 +60,156 @@ const LiveStudentPage = () => {
             deviceRef.current = null;
         }
 
-        stop()
-    }
+        stop();
+    };
 
     function leaveRoom() {
         if (!socket) return;
-        socket.emit("leave:live-session")
-        // navigate("/")
-        clearStram()
+        socket.emit("leave:live-session");
+        clearStream();
+        // ── AI: Show summary + quiz instead of just clearing ─────────────────
+        setSessionEnded(true);
     }
 
     function goConnect() {
-        return deviceRef.current === null ? joinRoom() : createRecvTransport()
+        return deviceRef.current === null ? joinRoom() : createRecvTransport();
     }
 
     const joinRoom = async () => {
         try {
-            if (!socket) {
-                return
-            }
+            if (!socket) return;
 
             const Payload = {
                 roomId: lectureId,
                 userId: user?._id,
                 name: user?.firstName
-            }
+            };
 
-            const { rtpCapabilities, error }: IJoinRoom = await socket.emitWithAck('join:live-session', Payload)
+            const { rtpCapabilities, error }: IJoinRoom = await socket.emitWithAck('join:live-session', Payload);
 
             if (error) {
-                toast.error(error)
-                navigate("/")
-                return
+                toast.error(error);
+                navigate("/");
+                return;
             }
 
-            const device = new Device()
-            await device.load({
-                routerRtpCapabilities: rtpCapabilities
-            })
-            deviceRef.current = device
+            const device = new Device();
+            await device.load({ routerRtpCapabilities: rtpCapabilities });
+            deviceRef.current = device;
 
-            await createRecvTransport()
-
+            await createRecvTransport();
 
         } catch (error: any) {
             if (error.name === 'UnsupportedError')
-                toast.error("browser not supported")
+                toast.error("browser not supported");
         }
-    }
+    };
 
     const createRecvTransport = async () => {
-        if (!socket || !deviceRef.current) return
+        if (!socket || !deviceRef.current) return;
 
-        const downTransport = await socket.emitWithAck('createWebRtcTransport', { isSender: false, roomId: lectureId })
-        if (downTransport.error) {
-            return
-        }
+        const downTransport = await socket.emitWithAck('createWebRtcTransport', { isSender: false, roomId: lectureId });
+        if (downTransport.error) return;
 
-
-        const consumerTransport = deviceRef.current.createRecvTransport(downTransport)
+        const consumerTransport = deviceRef.current.createRecvTransport(downTransport);
 
         consumerTransport.on('connect', async ({ dtlsParameters }: { dtlsParameters: DtlsParameters }, cb: () => void) => {
             try {
                 const res = await socket.emitWithAck('transport-connect', {
-                    roomId: lectureId, //@todo
+                    roomId: lectureId,
                     transportId: consumerTransport.id,
                     dtlsParameters,
-                })
+                });
+                if (res?.error) return;
+                cb();
+            } catch { console.log("createrecvTransport error") }
+        });
 
-                if (res?.error) {
-                    return
-                }
-                // producerIdRef.current = res.producerId
+        consumerTransportRef.current = consumerTransport;
 
-                // Tell the transport that parameters were transmitted.
-                cb()
-            } catch {
-                // console.log(error)
-            }
-        })
-
-        consumerTransportRef.current = consumerTransport
-
-        const producers = await socket.emitWithAck('get-producres', { roomId: lectureId })
+        const producers = await socket.emitWithAck('get-producres', { roomId: lectureId });
 
         for (const producerInfo of producers) {
             const producerId = producerInfo.id;
             const appData: AppData = producerInfo.appData;
             await createConsumer(producerId, appData);
         }
-    }
+    };
 
     const createConsumer = useCallback(async (producerId: string, appData: AppData) => {
-        if (!socket || !deviceRef.current || !consumerTransportRef.current) {
-            return
-        }
-        const res: { error?: string, id: string, producerId: string, kind: 'video' | 'audio', rtpParameters: RtpParameters } = await socket.emitWithAck('consume', {
-            roomId: lectureId,
-            producerId,
-            rtpCapabilities: deviceRef.current.rtpCapabilities
-        })
+        if (!socket || !deviceRef.current || !consumerTransportRef.current) return;
 
-        if (res.error) {
-            return;
-        }
+        const res: { error?: string, id: string, producerId: string, kind: 'video' | 'audio', rtpParameters: RtpParameters } =
+            await socket.emitWithAck('consume', {
+                roomId: lectureId,
+                producerId,
+                rtpCapabilities: deviceRef.current.rtpCapabilities
+            });
+
+        if (res.error) return;
 
         const recvTransport = consumerTransportRef.current;
-
         const consumer = await recvTransport.consume(res);
         const { kind } = res;
         const mediatag = appData?.mediaTag;
 
-        // CAM VIDEO 
+        // CAM VIDEO
         if (kind === 'video' && mediatag === "cam-video" && teacherVideoRef.current) {
             const stream = new MediaStream([consumer.track]);
             teacherVideoRef.current.srcObject = stream;
             teacherVideoRef.current.autoplay = true;
             teacherVideoRef.current.playsInline = true;
-
-            teacherVideoRef.current
-                .play()
-
-            socket.emit('consumer-resume', {
-                consumerId: consumer.id,
-                roomId: lectureId
-            });
+            teacherVideoRef.current.play();
+            socket.emit('consumer-resume', { consumerId: consumer.id, roomId: lectureId });
         }
 
-        //  MIC AUDIO
+        // MIC AUDIO
         if (kind === 'audio' && mediatag === "mic-audio") {
-            //@check
             const audioEl = document.createElement('audio');
             audioEl.autoplay = true;
             audioEl.srcObject = new MediaStream([consumer.track]);
-            audioEl.play()
-            // .then(() => console.log("audio elm created successfully!")).catch(() => console.debug('audio play blocked'));
+            audioEl.play();
             document.body.appendChild(audioEl);
             socket.emit('consumer-resume', { roomId: lectureId, consumerId: consumer.id });
         }
 
-        //   SCREEN VIDEO
+        // SCREEN VIDEO
         if (kind === "video" && mediatag === "screen-video") {
             screenVideoConsumerRef.current = consumer;
             attachScreenStream();
 
-            // ADD CLEANUP HERE
             consumer.on("transportclose", () => {
-
-                // 1. Clear the video element
                 if (screenVideoRef.current) {
                     screenVideoRef.current.pause();
                     screenVideoRef.current.srcObject = null;
                 }
-
-                // 2. Reset refs
                 screenVideoConsumerRef.current = null;
                 screenAudioConsumerRef.current = null;
-
-                // 3. Update UI state
                 setIsScreenSharing(false);
             });
-
 
             socket.emit("consumer-resume", { roomId: lectureId, consumerId: consumer.id });
             return;
         }
 
-        //   SCREEN AUDIO
+        // SCREEN AUDIO
         if (kind === "audio" && mediatag === "screen-audio") {
             screenAudioConsumerRef.current = consumer;
-
             attachScreenStream();
 
-            // ADD CLEANUP HERE
             consumer.on("transportclose", () => {
-
-                // 2. Reset refs
                 screenAudioConsumerRef.current = null;
-
-                // 3. Update UI state
                 setIsScreenSharing(false);
             });
 
-
-            socket.emit("consumer-resume", {
-                roomId: lectureId,
-                consumerId: consumer.id,
-            });
-
+            socket.emit("consumer-resume", { roomId: lectureId, consumerId: consumer.id });
             return;
         }
 
-
-
-        //@todo
-        // consumer.on('transportclose', () => {
-        //     consumedProducerIdsRef.current.delete(producerId);
-        //     remoteStreams.current.delete(producerId);
-        //     assignRemoteStreams();
-        // });
-    }, [lectureId, socket])
+    }, [lectureId, socket]);
 
     function attachScreenStream() {
-        if (!screenVideoConsumerRef.current) {
-            return;
-        }
+        if (!screenVideoConsumerRef.current) return;
 
         setIsScreenSharing(true);
 
@@ -264,10 +219,9 @@ const LiveStudentPage = () => {
         if (screenAudioConsumerRef.current) {
             stream.addTrack(screenAudioConsumerRef.current.track);
         }
+
         screenStreamRef.current = stream;
-
         setIsScreenSharing(true);
-
     }
 
     useEffect(() => {
@@ -277,7 +231,6 @@ const LiveStudentPage = () => {
 
         screenVideoRef.current.srcObject = screenStreamRef.current;
         screenVideoRef.current.muted = false;
-
         screenVideoRef.current.play().catch(() => { });
     }, [isScreenSharing]);
 
@@ -289,14 +242,35 @@ const LiveStudentPage = () => {
             createConsumer(producerId, appData);
         });
 
+        // ── AI: Receive live transcript chunks from teacher ───────────────────
+        // Emitted by backend transcriptSocket.ts when teacher speaks
+        socket.on("transcript:chunk", ({ text, interim }: { text: string; interim: string }) => {
+            if (text) setFinalSubtitleText(prev => prev + " " + text);
+            setLiveSubtitleText(interim ?? "");
+        });
+
+        // ── AI: Teacher ended session → show summary + quiz ───────────────────
         socket.on("live-session:closed", () => {
-            clearStram()
-        })
+            clearStream();
+            setSessionEnded(true);
+        });
 
         return () => {
             socket.off("new-producer");
+            socket.off("transcript:chunk");
+            socket.off("live-session:closed");
         };
     }, [socket, createConsumer]);
+
+    // ── AI: Render SessionEndPage when session is over ───────────────────────
+    if (sessionEnded && lectureId) {
+        return (
+            <SessionEndPage
+                sessionId={lectureId}
+                onReturnHome={() => navigate("/")}
+            />
+        );
+    }
 
     return (
         <div className="flex h-screen w-full bg-background text-foreground overflow-hidden font-sans">
@@ -310,13 +284,22 @@ const LiveStudentPage = () => {
                     peerCount={viewerCount}
                 />
 
+                <LiveSubtitle
+                    text={liveSubtitleText}
+                    finalText={finalSubtitleText}
+                    isActive={subtitlesEnabled}
+                />
+
                 <ControlBarForStudent
                     isChatOpen={openChat}
+                    onToggleCaption={() => setSubtitlesEnabled(v => !v)}
+                    subtitlesEnabled={subtitlesEnabled}
                     onLeave={leaveRoom}
                     onToggleChat={() => setOpenChat(v => !v)}
                 />
 
             </main>
+
             <ClassStartPermissionAlert isOpen={isModalOpen} setIsOpen={setIsModalOpen} onConfirm={goConnect} />
             {openChat && <SidebarTabs isTeacher={isInstructor} />}
         </div>

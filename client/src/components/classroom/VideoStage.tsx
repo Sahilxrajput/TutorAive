@@ -1,5 +1,5 @@
-import { useEffect, useRef, } from "react";
-import { Users} from "lucide-react";
+import { FC, useEffect, useRef, } from "react";
+import { Users } from "lucide-react";
 import { Card } from "../ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Badge } from "../ui/badge";
@@ -14,17 +14,18 @@ interface VideoStageProps {
     videoRef: React.RefObject<HTMLVideoElement | null>;
     isScreenSharing: boolean;
     isCamOff?: boolean;
+    isListening?: boolean;
     peerCount: number;
 }
 
-const VideoStage =
-    ({ isInstructor, isScreenSharing, isCamOff, peerCount, screenRef, videoRef }: VideoStageProps) => {
+const VideoStage: FC<VideoStageProps> =
+    ({ isInstructor, isScreenSharing, isCamOff, peerCount, screenRef, videoRef, isListening }) => {
         const { user } = useAuth();
         const containerRef = useRef<HTMLDivElement>(null);
         const { isFullScreen } = useFullscreen()
 
 
-        useEffect(()=>{
+        useEffect(() => {
             toast.info("screenShare: " + isScreenSharing)
         }, [isScreenSharing])
 
@@ -36,10 +37,12 @@ const VideoStage =
                 {/* Instructor header */}
                 {isInstructor && (
                     <div className="absolute top-2 left-0 right-0 flex items-center justify-between px-4 z-20">
-                        <Badge className="bg-red-400 w-14 flex items-center gap-1 animate-pulse">
-                            <span className="bg-white rounded-full h-2 w-2" />
-                            Live
-                        </Badge>
+                        {isListening ? (
+                            <Badge className="bg-card flex items-center gap-2">
+                                <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                                <span className="text-white text-xs font-medium">Live Captions ON</span>
+                            </Badge>
+                        ) : <p></p>}
 
                         <Badge className="bg-card flex items-center gap-2">
                             <Users className="h-3.5 w-3.5" />
@@ -105,7 +108,7 @@ const VideoStage =
                             autoPlay
                             muted
                             playsInline
-                                className="w-full h-full object-cover pointer-events-none"
+                            className="w-full h-full object-cover pointer-events-none"
                         />
                     )}
 

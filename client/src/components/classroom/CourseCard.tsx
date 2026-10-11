@@ -10,7 +10,7 @@ interface Props {
     onClick: () => void
 }
 
-const SectorCard = ({ course, isEnrolled, index, onClick }: Props) => {
+const CourseCard = ({ course, isEnrolled, index, onClick }: Props) => {
     return (
         <motion.div
             layout
@@ -24,7 +24,7 @@ const SectorCard = ({ course, isEnrolled, index, onClick }: Props) => {
                 "group relative flex flex-col justify-between p-8 rounded-[2.5rem] border transition-all duration-500 cursor-pointer overflow-hidden",
                 "bg-card/60 dark:bg-neutral-900/40 backdrop-blur-xl border-border dark:border-white/5",
                 "hover:border-primary/40 hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.3)] dark:hover:shadow-[0_30px_60px_-15px_rgba(var(--primary-rgb),0.1)]",
-                isEnrolled && "border-primary/30 bg-primary/[0.02]"
+                isEnrolled && "border-primary/30 bg-primary/5"
             )}
         >
             <div className="absolute -right-20 -top-20 w-64 h-64 bg-primary/5 blur-[80px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
@@ -87,4 +87,4 @@ const SectorCard = ({ course, isEnrolled, index, onClick }: Props) => {
     );
 };
 
-export default SectorCard
+export default CourseCard

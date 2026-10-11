@@ -13,7 +13,7 @@ import { IClassroom } from "@/types/type";
 import API from "@/lib/api";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import SectorCard from "@/components/classroom/CourseCard";
+import CourseCard from "@/components/classroom/CourseCard";
 import LunchButton from "@/components/classroom/LunchButton";
 import { notifyError } from "@/utils/notifyError";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -205,7 +205,7 @@ const BrowseClassroom = () => {
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                                         <AnimatePresence mode="popLayout">
                                             {enrolledList.map((course, i) => (
-                                                <SectorCard
+                                                <CourseCard
                                                     key={course._id}
                                                     course={course}
                                                     isEnrolled={true}
@@ -231,7 +231,7 @@ const BrowseClassroom = () => {
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                                         <AnimatePresence mode="popLayout">
                                             {availableList.map((course, i) => (
-                                                <SectorCard
+                                                <CourseCard
                                                     key={course._id}
                                                     course={course}
                                                     isEnrolled={false}

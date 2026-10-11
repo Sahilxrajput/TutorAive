@@ -1,5 +1,21 @@
 export type Theme = "light" | "dark";
 
+function updateFavicon(theme: Theme) {
+  let faviconTag = document.getElementById("app-favicon") as HTMLLinkElement;
+
+  if (!faviconTag) {
+    faviconTag = document.createElement("link");
+    faviconTag.id = "app-favicon";
+    faviconTag.rel = "icon";
+    document.head.appendChild(faviconTag);
+  }
+
+  faviconTag.href =
+    theme === "dark"
+      ? `/dark-logo.png?v=${Date.now()}`
+      : `/light-logo.png?v=${Date.now()}`;
+}
+
 export function setTheme(theme: Theme) {
   const root = document.documentElement;
 
@@ -10,6 +26,9 @@ export function setTheme(theme: Theme) {
   }
 
   localStorage.setItem("theme", theme);
+
+  // Sync favicon on theme change
+  updateFavicon(theme);
 }
 
 export function initTheme() {

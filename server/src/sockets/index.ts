@@ -16,6 +16,7 @@ import { registerQnaSocket } from "./qna.socket";
 import { registerChatSocket } from "./chat.socket";
 import { registerPollSocket } from "./poll.socket";
 import { registerSystemSocket } from "./system.socket";
+import { registerTranscriptSocket } from "./transcriptSocket";
 import { leaveInstructorLiveSession } from "./handlers/leaveInstructorLiveSession";
 import { handleStudentJoinLiveSession } from "./handlers/joinLiveSession.student.handler";
 import { handleInstructorJoinLiveSession } from "./handlers/joinLiveSession.instructor.handler";
@@ -85,6 +86,7 @@ export const initSocket = async (httpServer: HttpServer) => {
     registerQnaSocket(classroom, socket);
     registerChatSocket(classroom, socket);
     registerPollSocket(classroom, socket);
+    registerTranscriptSocket(socket);
     registerSystemSocket(socket);
 
     socket.on("join:classroom", (classroomId: string) => {

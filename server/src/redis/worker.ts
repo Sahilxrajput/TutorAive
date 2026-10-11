@@ -71,15 +71,17 @@ export function createRedisWorker() {
             });
           }
           //  3. Send Emails (optional)
-          for (const student of classroom.students) {
-            const studentObj = student as any;
-            if (!studentObj.email) continue;
-            await sendAssignmentEmail({
-              toEmail: studentObj.email,
-              classroomName: classroomTitle,
-              assignmentUrl,
-              assignmentTitle,
-            });
+          if (process.env.NODE_ENV === "production") {
+            for (const student of classroom.students) {
+              const studentObj = student as any;
+              if (!studentObj.email) continue;
+              await sendAssignmentEmail({
+                toEmail: studentObj.email,
+                classroomName: classroomTitle,
+                assignmentUrl,
+                assignmentTitle,
+              });
+            }
           }
           break;
         }
@@ -128,16 +130,18 @@ export function createRedisWorker() {
           }
 
           //  3. Send Emails (optional)
-          for (const student of classroom.students) {
-            const studentObj = student as any;
-            if (!studentObj.email) continue;
-            await sendResourceUploadEmail({
-              toEmail: studentObj.email,
-              classroomName: classroomTitle,
-              resourceUrl,
-              resourceTitle: title,
-            });
-            console.log("Email sent to:", studentObj.email);
+          if (process.env.NODE_ENV === "production") {
+            for (const student of classroom.students) {
+              const studentObj = student as any;
+              if (!studentObj.email) continue;
+              await sendResourceUploadEmail({
+                toEmail: studentObj.email,
+                classroomName: classroomTitle,
+                resourceUrl,
+                resourceTitle: title,
+              });
+              console.log("Email sent to:", studentObj.email);
+            }
           }
           break;
         }
@@ -190,17 +194,19 @@ export function createRedisWorker() {
           }
 
           //  3. Send Emails (optional)
-          for (const student of classroom.students) {
-            const studentObj = student as any;
-            if (!studentObj.email) continue;
-            await sendClassStatusEmail({
-              toEmail: studentObj.email,
-              classroomName: classroom.title,
-              lectureId: lecture._id.toString(),
-              status: lecture.status,
-              title: lecture.title,
-              startTime: lecture.startTime.toString(),
-            });
+          if (process.env.NODE_ENV === "production") {
+            for (const student of classroom.students) {
+              const studentObj = student as any;
+              if (!studentObj.email) continue;
+              await sendClassStatusEmail({
+                toEmail: studentObj.email,
+                classroomName: classroom.title,
+                lectureId: lecture._id.toString(),
+                status: lecture.status,
+                title: lecture.title,
+                startTime: lecture.startTime.toString(),
+              });
+            }
           }
 
           break;

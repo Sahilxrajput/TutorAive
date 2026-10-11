@@ -63,7 +63,8 @@
 }
 
 :root {
-  --background: #f8fafc;
+  /* --background: #f8fafc; */
+  --background: #e4e4e5;
   --foreground: #0f172a;
   --card: #ffffff;
   --primary: #0d9488;
@@ -248,6 +249,10 @@
   }
 }
 
+input[type="email"] {
+  @apply text-primary;
+}
+
 @layer components {
   .heading-gradient {
     @apply bg-gradient-to-r
@@ -272,6 +277,18 @@
 
   .dark ::selection {
     @apply selection:bg-indigo-500/30;
+  }
+
+  /* input,
+  select,
+  textarea {
+    @apply text-primary;
+  } */
+
+  input:not([type="submit"]):not([type="checkbox"]):not([type="radio"]),
+  select,
+  textarea {
+    @apply text-primary;
   }
 }
 

@@ -30,7 +30,7 @@ services:
     ports:
       - "27017:27017"
     volumes:
-      - backend_mongo_data:/data/db
+      - mongo_data:/data/db
     # Added Healthcheck with Authentication
     healthcheck:
       test: ["CMD", "mongosh", "--username", "sahil", "--password", "980980", "--authenticationDatabase", "admin", "--eval", "db.adminCommand('ping')"]
@@ -70,6 +70,6 @@ services:
       - "5000:5000"
 
 volumes:
-    backend_mongo_data:
+    mongo_data:
         external: true
     redis_data:

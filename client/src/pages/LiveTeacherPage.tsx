@@ -15,6 +15,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { ClassStartPermissionAlert } from '@/components/classroom/ClassStartPermissionAlert';
 import SidebarTabs from "@/components/classroom/SidebarTabs";
+import { useTranscription } from '@/hooks/useTranscription';
 const ControlsBar = lazy(() => import('@/components/classroom/ControlsBar'));
 const VideoStage = lazy(() => import("@/components/classroom/VideoStage"));
 
@@ -38,6 +39,16 @@ const LiveTeacherPage = () => {
         classroomId: string;
         lectureId: string;
     }>();
+    // ── AI: Transcription hook ───────────────────────────────────────────────
+    const {
+        isListening,
+        startTranscription,
+        stopTranscription,
+        error: transcriptError,
+    } = useTranscription({
+        sessionId: lectureId!,
+        socket
+    });
 
     const localVideoRef = useRef<HTMLVideoElement | null>(null);
     const streamRef = useRef<MediaStream | null>(null);
@@ -67,6 +78,14 @@ const LiveTeacherPage = () => {
         };
     }, [socket, lectureId]);
 
+    // ── Show transcription errors as toasts ──────────────────────────────────
+    useEffect(() => {
+        if (transcriptError) {
+            toast.warning(`Subtitles: ${transcriptError}`);
+        }
+    }, [transcriptError]);
+
+
     async function start() {
         const stream = await navigator.mediaDevices.getUserMedia({
             video: true,
@@ -81,6 +100,9 @@ const LiveTeacherPage = () => {
             localVideoRef.current.srcObject = stream;
         }
         await (deviceRef.current === null ? joinRoom() : createSendTransport())
+
+        // ── AI: Start transcription once mic + stream are ready ──────────────
+        setTimeout(() => startTranscription(), 2000);
     }
 
     async function toggleMic() {
@@ -91,12 +113,20 @@ const LiveTeacherPage = () => {
             streamRef.current?.getAudioTracks().forEach(track => track.stop());
             const silentTrack = createSilentAudioTrack();
             if (silentTrack) await micProducer.replaceTrack({ track: silentTrack });
+
+            // ── AI: Pause transcription when mic is muted ────────────────────
+            // Stop recognition so we don't capture silence/noise as text
+            await stopTranscription();
+
         } else {
             const newMicTrack = await navigator.mediaDevices.getUserMedia({
                 audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
             })
                 .then(s => s.getAudioTracks()[0]);
             if (newMicTrack) await micProducer.replaceTrack({ track: newMicTrack });
+
+            // ── AI: Resume transcription when mic is unmuted ─────────────────
+            startTranscription();
         }
 
         setMic(!mic);
@@ -166,8 +196,12 @@ const LiveTeacherPage = () => {
         setCam(!cam);
     }
 
-    const leaveRoom = () => {
+    const leaveRoom = async() => {
         if (!socket) return;
+
+        // ── AI: Stop transcription first → flushes buffer + saves endedAt ───
+        await stopTranscription();
+
 
         // 1. Notify server FIRST
         socket.emit("leave:live-session", { roomId: lectureId });
@@ -492,6 +526,7 @@ const LiveTeacherPage = () => {
                     videoRef={localVideoRef}
                     screenRef={screenVideoRef}
                     isInstructor={true}
+                    isListening={isListening}
                     peerCount={peerCount}
                     isCamOff={isCamOff}
                     isScreenSharing={isScreenSharing}

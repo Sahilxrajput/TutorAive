@@ -1,21 +1,26 @@
 import { Button } from '@/components/ui/button';
 import { useFullscreen } from '@/hooks/useFullscreen';
-import { Maximize, MessageCircle, Minimize, PhoneOff, Share2 } from 'lucide-react';
-import {  useState } from 'react';
+import { cn } from '@/lib/utils';
+import { Captions, CaptionsOff, Maximize, MessageCircle, Minimize, PhoneOff, Share2 } from 'lucide-react';
+import { FC, useState } from 'react';
 import { toast } from 'sonner';
 
 type Props = {
     isChatOpen: boolean;
     onToggleChat: () => void;
+    onToggleCaption: () => void;
     onLeave: () => void;
+    subtitlesEnabled: boolean
 };
 
 
-const ControlBarForStudent = ({
+const ControlBarForStudent: FC<Props> = ({
     isChatOpen,
+    subtitlesEnabled,
+    onToggleCaption,
     onToggleChat,
     onLeave
-}: Props) => {
+}) => {
 
     const { isFullScreen, toggle } = useFullscreen();
     const [urlCopied, setUrlCopied] = useState(false);
@@ -30,7 +35,7 @@ const ControlBarForStudent = ({
                 setUrlCopied(true);
 
                 toast.success("Copied", {
-                    duration: 2000, 
+                    duration: 2000,
                 });
 
                 setTimeout(() => setUrlCopied(false), 2000);
@@ -53,6 +58,22 @@ const ControlBarForStudent = ({
                 <Button onClick={copyUrlToClipboard} variant={urlCopied ? "default" : "ghost"} className="rounded-full h-12 w-12">
                     <Share2 />
                 </Button>
+
+                <Button
+                    title="Toggle subtitles"
+                    onClick={onToggleCaption}
+                    variant={urlCopied ? "default" : "ghost"}
+                    className={cn("rounded-full h-12 w-12",
+                        !subtitlesEnabled
+                            && "bg-indigo-900/50 text-indigo-300 border-indigo-700"
+                    )}>
+                    {subtitlesEnabled ? (
+                        <CaptionsOff />
+                    ) : (
+                        <Captions />
+                    )}
+                </Button>
+
 
                 <Button onClick={toggle} variant="ghost" className='rounded-full h-12 w-12'>
                     {isFullScreen ? (
