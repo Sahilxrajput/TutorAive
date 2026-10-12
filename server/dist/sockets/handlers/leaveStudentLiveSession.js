@@ -17,7 +17,7 @@ const lecture_model_1 = __importDefault(require("../../models/lecture.model"));
 const PeerManager_1 = require("../../managers/PeerManager");
 const RoomManager_1 = require("../../managers/RoomManager");
 const attendence_model_1 = __importDefault(require("../../models/attendence.model"));
-const leaveStudentLiveSession = (socket) => () => __awaiter(void 0, void 0, void 0, function* () {
+const leaveStudentLiveSession = (classroom, socket) => () => __awaiter(void 0, void 0, void 0, function* () {
     const peer = PeerManager_1.peerManager.get(socket.id);
     if (!peer || !peer.roomId) {
         console.log("peer / roomId not exist");
@@ -33,6 +33,11 @@ const leaveStudentLiveSession = (socket) => () => __awaiter(void 0, void 0, void
     console.log("[leave] student left:", peer.socketId);
     delete socket.data.activeRoomId;
     socket.leave(roomId);
+    setTimeout(() => {
+        const room = classroom.adapter.rooms.get(roomId);
+        const count = room ? room.size : 0;
+        classroom.to(roomId).emit("peer:count", { count });
+    }, 0);
     // 1. consumers
     for (const consumer of peer.consumers.values()) {
         try {
@@ -91,7 +96,8 @@ const leaveStudentLiveSession = (socket) => () => __awaiter(void 0, void 0, void
         return;
     const lectureStartTime = new Date(lecture.startTime);
     // Calculate lateness based on JOIN time, not leave time
-    const joinedLate = attendance.joinedAt.getTime() - lectureStartTime.getTime() > 10 * 60 * 1000; // 10 min
+    const joinedLate = attendance.joinedAt.getTime() - lectureStartTime.getTime() >
+        10 * 60 * 1000; // 10 min
     const MIN_REQUIRED_DURATION = 5 * 60 * 1000; // 5 minutes
     let status = "absent";
     if (totalDuration >= MIN_REQUIRED_DURATION) {
@@ -107,4 +113,3 @@ const leaveStudentLiveSession = (socket) => () => __awaiter(void 0, void 0, void
     console.log(`[attendance] ${studentId} marked ${status} (duration: ${Math.floor(totalDuration / 60000)} min)`);
 });
 exports.leaveStudentLiveSession = leaveStudentLiveSession;
-;

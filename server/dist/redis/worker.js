@@ -53,16 +53,18 @@ function createRedisWorker() {
                     });
                 }
                 //  3. Send Emails (optional)
-                for (const student of classroom.students) {
-                    const studentObj = student;
-                    if (!studentObj.email)
-                        continue;
-                    yield (0, sendEmail_1.sendAssignmentEmail)({
-                        toEmail: studentObj.email,
-                        classroomName: classroomTitle,
-                        assignmentUrl,
-                        assignmentTitle,
-                    });
+                if (process.env.NODE_ENV === "production") {
+                    for (const student of classroom.students) {
+                        const studentObj = student;
+                        if (!studentObj.email)
+                            continue;
+                        yield (0, sendEmail_1.sendAssignmentEmail)({
+                            toEmail: studentObj.email,
+                            classroomName: classroomTitle,
+                            assignmentUrl,
+                            assignmentTitle,
+                        });
+                    }
                 }
                 break;
             }
@@ -98,17 +100,19 @@ function createRedisWorker() {
                     });
                 }
                 //  3. Send Emails (optional)
-                for (const student of classroom.students) {
-                    const studentObj = student;
-                    if (!studentObj.email)
-                        continue;
-                    yield (0, sendEmail_1.sendResourceUploadEmail)({
-                        toEmail: studentObj.email,
-                        classroomName: classroomTitle,
-                        resourceUrl,
-                        resourceTitle: title,
-                    });
-                    console.log("Email sent to:", studentObj.email);
+                if (process.env.NODE_ENV === "production") {
+                    for (const student of classroom.students) {
+                        const studentObj = student;
+                        if (!studentObj.email)
+                            continue;
+                        yield (0, sendEmail_1.sendResourceUploadEmail)({
+                            toEmail: studentObj.email,
+                            classroomName: classroomTitle,
+                            resourceUrl,
+                            resourceTitle: title,
+                        });
+                        console.log("Email sent to:", studentObj.email);
+                    }
                 }
                 break;
             }
@@ -154,18 +158,20 @@ function createRedisWorker() {
                     });
                 }
                 //  3. Send Emails (optional)
-                for (const student of classroom.students) {
-                    const studentObj = student;
-                    if (!studentObj.email)
-                        continue;
-                    yield (0, sendEmail_1.sendClassStatusEmail)({
-                        toEmail: studentObj.email,
-                        classroomName: classroom.title,
-                        lectureId: lecture._id.toString(),
-                        status: lecture.status,
-                        title: lecture.title,
-                        startTime: lecture.startTime.toString(),
-                    });
+                if (process.env.NODE_ENV === "production") {
+                    for (const student of classroom.students) {
+                        const studentObj = student;
+                        if (!studentObj.email)
+                            continue;
+                        yield (0, sendEmail_1.sendClassStatusEmail)({
+                            toEmail: studentObj.email,
+                            classroomName: classroom.title,
+                            lectureId: lecture._id.toString(),
+                            status: lecture.status,
+                            title: lecture.title,
+                            startTime: lecture.startTime.toString(),
+                        });
+                    }
                 }
                 break;
             }

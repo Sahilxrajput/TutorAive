@@ -1,4 +1,6 @@
-import { Router } from "mediasoup/node/lib/RouterTypes";
+import type { types } from "mediasoup";
+
+type Router = types.Router;
 import Room from "../classes/room";
 import Peer from "../classes/peer";
 

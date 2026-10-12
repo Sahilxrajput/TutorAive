@@ -15,6 +15,7 @@ const sockets_1 = require("./sockets");
 const worker_1 = require("./redis/worker");
 /* --------------- routes ------------------------ */
 const auth_routes_1 = __importDefault(require("./routes/auth.routes"));
+const ai_routes_1 = __importDefault(require("./routes/ai.routes"));
 const contact_routes_1 = __importDefault(require("./routes/contact.routes"));
 const classroom_routes_1 = __importDefault(require("./routes/classroom.routes"));
 const user_routes_1 = __importDefault(require("./routes/user.routes"));
@@ -51,6 +52,7 @@ app.use(passport_1.default.initialize());
 (0, worker_1.createRedisWorker)();
 app.get("/", (_, res) => res.send("Server is  Running"));
 app.use("/health", health_route_1.default);
+app.use("/api/ai", ai_routes_1.default);
 app.use("/api/assignments", assignment_routes_1.default);
 app.use("/api/attendance", attendence_routes_1.default);
 app.use("/api/auth", auth_routes_1.default);

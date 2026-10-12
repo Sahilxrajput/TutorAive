@@ -29,7 +29,7 @@ const handleInstructorJoinLiveSession = (socket) => (_a, cb_1) => __awaiter(void
     if (lecture.createdBy.toString() !== socket.data.userId) {
         return cb({ error: "You are not authorized" });
     }
-    // @todo
+    // @note
     // 3. Status guards
     // if (lecture.status === "live") {
     //   console.log("[join] lecture already live");
@@ -56,7 +56,6 @@ const handleInstructorJoinLiveSession = (socket) => (_a, cb_1) => __awaiter(void
         });
         room = RoomManager_1.roomManager.createRoom(roomId, router, peer);
         PeerManager_1.peerManager.add(peer);
-        console.log("room create");
         socket.to(roomId).emit("live-session:started", {
             socketId: socket.id,
             name,

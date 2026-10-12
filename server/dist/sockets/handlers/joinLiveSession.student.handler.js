@@ -18,7 +18,7 @@ const peer_1 = __importDefault(require("../../classes/peer"));
 const PeerManager_1 = require("../../managers/PeerManager");
 const RoomManager_1 = require("../../managers/RoomManager");
 const lecture_model_1 = __importDefault(require("../../models/lecture.model"));
-const handleStudentJoinLiveSession = (socket) => (_a, cb_1) => __awaiter(void 0, [_a, cb_1], void 0, function* ({ roomId, name, userId }, cb) {
+const handleStudentJoinLiveSession = (classroom, socket) => (_a, cb_1) => __awaiter(void 0, [_a, cb_1], void 0, function* ({ roomId, name, userId }, cb) {
     try {
         console.log("roomId:", roomId);
         if (!roomId || !userId) {
@@ -55,11 +55,14 @@ const handleStudentJoinLiveSession = (socket) => (_a, cb_1) => __awaiter(void 0,
         PeerManager_1.peerManager.add(peer);
         socket.data.activeRoomId = roomId;
         socket.join(roomId);
-        socket.to(roomId).emit("peer-joined", {
+        socket.to(roomId).emit("new-peer-joined", {
             socketId: socket.id,
             name,
             userId,
         });
+        const roomSocket = classroom.adapter.rooms.get(roomId);
+        const count = roomSocket ? roomSocket.size : 0;
+        classroom.to(roomId).emit("peer:count", { count });
         return cb({ rtpCapabilities: room.router.rtpCapabilities });
     }
     catch (err) {

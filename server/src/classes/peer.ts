@@ -1,6 +1,8 @@
-import { Consumer } from "mediasoup/node/lib/ConsumerTypes";
-import { Producer } from "mediasoup/node/lib/ProducerTypes";
-import { Transport } from "mediasoup/node/lib/TransportTypes";
+import type { types } from "mediasoup";
+
+type Consumer = types.Consumer;
+type Producer = types.Producer;
+type Transport = types.Transport;
 
 class Peer {
   public readonly userId: string;

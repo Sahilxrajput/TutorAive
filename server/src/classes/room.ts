@@ -1,6 +1,8 @@
-import { Router } from "mediasoup/node/lib/RouterTypes";
+import type { types } from "mediasoup";
+
+type Router = types.Router;
+type Transport = types.Transport;
 import Peer from "./peer";
-import { Transport } from "mediasoup/node/lib/TransportTypes";
 
 class Room {
   public readonly roomId: string;
@@ -8,7 +10,6 @@ class Room {
   public readonly host: Peer;
 
   private peers: Map<string, Peer>; // socketId -> Peer
-
 
   constructor(roomId: string, router: Router, host: Peer) {
     this.roomId = roomId;
@@ -128,6 +129,5 @@ class Room {
     console.log("[room] room closed:", this.roomId);
   }
 }
-
 
 export default Room;

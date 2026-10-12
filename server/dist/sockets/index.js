@@ -27,6 +27,7 @@ const qna_socket_1 = require("./qna.socket");
 const chat_socket_1 = require("./chat.socket");
 const poll_socket_1 = require("./poll.socket");
 const system_socket_1 = require("./system.socket");
+const transcriptSocket_1 = require("./transcriptSocket");
 const leaveInstructorLiveSession_1 = require("./handlers/leaveInstructorLiveSession");
 const joinLiveSession_student_handler_1 = require("./handlers/joinLiveSession.student.handler");
 const joinLiveSession_instructor_handler_1 = require("./handlers/joinLiveSession.instructor.handler");
@@ -41,11 +42,9 @@ const initSocket = (httpServer) => __awaiter(void 0, void 0, void 0, function* (
     const classroom = exports.io.of("/classroom");
     classroom.use(socketAuth_1.socketAuthMiddleware);
     classroom.on("connection", (socket) => {
-        console.log("Somthing connected!", socket.id);
         const userId = socket.data.userId;
         const isInstructor = socket.data.userRole === "instructor";
         if (!userId) {
-            console.error("Socket connected WITHOUT userId");
             socket.disconnect(true);
             return;
         }
@@ -53,7 +52,7 @@ const initSocket = (httpServer) => __awaiter(void 0, void 0, void 0, function* (
         // console.log(`User ${userId} joined user:${userId}`);
         socket.on("join:live-session", isInstructor
             ? (0, joinLiveSession_instructor_handler_1.handleInstructorJoinLiveSession)(socket)
-            : (0, joinLiveSession_student_handler_1.handleStudentJoinLiveSession)(socket));
+            : (0, joinLiveSession_student_handler_1.handleStudentJoinLiveSession)(classroom, socket));
         socket.on("createWebRtcTransport", (0, webrtcTransport_handler_1.handleCreateWebRtcTransport)(socket));
         socket.on("transport-connect", (0, transportConnect_handler_1.handleTransportConnect)());
         socket.on("transport-produce", (0, transportProduce_handler_1.handleTransportProduce)(socket));
@@ -62,7 +61,7 @@ const initSocket = (httpServer) => __awaiter(void 0, void 0, void 0, function* (
         socket.on("get-producres", (0, getProducers_handler_1.handleGetProducers)());
         socket.on("leave:live-session", isInstructor
             ? (0, leaveInstructorLiveSession_1.leaveInstructorLiveSession)(socket)
-            : (0, leaveStudentLiveSession_1.leaveStudentLiveSession)(socket));
+            : (0, leaveStudentLiveSession_1.leaveStudentLiveSession)(classroom, socket));
         // socket.on("lecture:join", ({ lectureId, user }) => {
         //   socket.join(lectureId);
         //   emitSystemMessage(
@@ -72,9 +71,10 @@ const initSocket = (httpServer) => __awaiter(void 0, void 0, void 0, function* (
         //   );
         // });
         //* registered Sockets
-        (0, qna_socket_1.registerQnaSocket)(socket);
-        (0, chat_socket_1.registerChatSocket)(socket);
-        (0, poll_socket_1.registerPollSocket)(socket);
+        (0, qna_socket_1.registerQnaSocket)(classroom, socket);
+        (0, chat_socket_1.registerChatSocket)(classroom, socket);
+        (0, poll_socket_1.registerPollSocket)(classroom, socket);
+        (0, transcriptSocket_1.registerTranscriptSocket)(socket);
         (0, system_socket_1.registerSystemSocket)(socket);
         socket.on("join:classroom", (classroomId) => {
             socket.join(classroomId);
@@ -92,7 +92,7 @@ const initSocket = (httpServer) => __awaiter(void 0, void 0, void 0, function* (
         }));
         socket.on("disconnect", isInstructor
             ? (0, leaveInstructorLiveSession_1.leaveInstructorLiveSession)(socket)
-            : (0, leaveStudentLiveSession_1.leaveStudentLiveSession)(socket));
+            : (0, leaveStudentLiveSession_1.leaveStudentLiveSession)(classroom, socket));
     });
 });
 exports.initSocket = initSocket;
