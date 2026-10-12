@@ -7,17 +7,17 @@ exports.generateRefreshToken = exports.generateAccessToken = void 0;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const generateAccessToken = (user) => {
     const { _id, role, userName } = user;
-    // @ts-ignore
+    const expiresIn = (process.env
+        .ACCESS_TOKEN_EXPIRES || "15m");
     return jsonwebtoken_1.default.sign({ _id, role, userName }, process.env.ACCESS_TOKEN_SECRET, {
-        expiresIn: process.env.ACCESS_TOKEN_EXPIRES || "15m",
+        expiresIn,
     });
 };
 exports.generateAccessToken = generateAccessToken;
 const generateRefreshToken = (user) => {
     const { _id } = user;
-    // @ts-ignore
-    return jsonwebtoken_1.default.sign({ _id }, process.env.REFRESH_TOKEN_SECRET, {
-        expiresIn: process.env.REFRESH_TOKEN_EXPIRES || "7d",
-    });
+    const expiresIn = (process.env
+        .REFRESH_TOKEN_EXPIRES || "7d");
+    return jsonwebtoken_1.default.sign({ _id }, process.env.REFRESH_TOKEN_SECRET, { expiresIn });
 };
 exports.generateRefreshToken = generateRefreshToken;

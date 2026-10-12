@@ -1,18 +1,22 @@
-import jwt from "jsonwebtoken";
+import jwt, { type SignOptions } from "jsonwebtoken";
 import { IUser } from "../types/type";
 
-export const generateAccessToken = (user: IUser) => {
+export const generateAccessToken = (user: IUser): string => {
   const { _id, role, userName } = user;
-  // @ts-ignore
+
+  const expiresIn: SignOptions["expiresIn"] = (process.env
+    .ACCESS_TOKEN_EXPIRES || "15m") as SignOptions["expiresIn"];
+
   return jwt.sign({ _id, role, userName }, process.env.ACCESS_TOKEN_SECRET!, {
-    expiresIn: process.env.ACCESS_TOKEN_EXPIRES || "15m",
+    expiresIn,
   });
 };
 
-export const generateRefreshToken = (user: IUser) => {
+export const generateRefreshToken = (user: IUser): string => {
   const { _id } = user;
-  // @ts-ignore
-  return jwt.sign({ _id }, process.env.REFRESH_TOKEN_SECRET!, {
-    expiresIn: process.env.REFRESH_TOKEN_EXPIRES || "7d",
-  });
+
+  const expiresIn: SignOptions["expiresIn"] = (process.env
+    .REFRESH_TOKEN_EXPIRES || "7d") as SignOptions["expiresIn"];
+
+  return jwt.sign({ _id }, process.env.REFRESH_TOKEN_SECRET!, { expiresIn });
 };
