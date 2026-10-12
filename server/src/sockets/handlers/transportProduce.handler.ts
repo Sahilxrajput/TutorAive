@@ -1,7 +1,9 @@
 import { Socket } from "socket.io";
 import { roomManager } from "../../managers/RoomManager";
 import { peerManager } from "../../managers/PeerManager";
-import { AppData, RtpParameters } from "mediasoup/node/lib/types";
+import type { types } from "mediasoup";
+type AppData = types.AppData;
+type RtpParameters = types.RtpParameters;
 
 interface TransportProducePayload {
   roomId: string;
@@ -21,7 +23,7 @@ export const handleTransportProduce =
       rtpParameters,
       appData,
     }: TransportProducePayload,
-    cb: Function
+    cb: Function,
   ) => {
     try {
       console.log("request to create producer");

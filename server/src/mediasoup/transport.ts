@@ -1,4 +1,6 @@
-import { Router } from "mediasoup/node/lib/RouterTypes";
+import type { types } from "mediasoup";
+type Router = types.Router;
+
 import { webRtcTransport_options } from "../config/mediasoup";
 
 export async function createWebRtcTransport(router: Router) {
